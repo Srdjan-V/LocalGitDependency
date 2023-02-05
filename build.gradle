@@ -1,0 +1,34 @@
+apply {
+    plugin "maven-publish"
+    plugin 'java-gradle-plugin'
+    plugin 'java'
+    plugin 'idea'
+}
+group = "srki2k"
+repositories {
+    mavenCentral()
+}
+
+//using java 8 for compatibility with old projects
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+
+dependencies {
+    implementation gradleApi()
+    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.4.0.202211300538-r'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+gradlePlugin {
+    plugins {
+        localGitDependency {
+            id = 'srki2k.localgitdependency'
+            implementationClass = 'srki2k.localgitdependency.GitProjectPlugin'
+        }
+    }
+    automatedPublishing = false
+}
