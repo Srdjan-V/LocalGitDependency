@@ -14,7 +14,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 dependencies {
     implementation gradleApi()
-    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '6.4.0.202211300538-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
 }
