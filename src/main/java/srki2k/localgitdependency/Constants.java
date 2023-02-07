@@ -13,9 +13,10 @@ public class Constants {
     public final static String JAVA_IMPLEMENTATION = "implementation";
 
 
-    public static final Supplier<File> libDirs = () -> new File(Instances.getProject().getLayout().getProjectDirectory().getAsFile(), "/libs");
 
-    public static final Function<File, File> initScriptDirs = file -> new File(file, "/initScripts");
+    public static final Supplier<File> defaultLibDirs = () -> new File(Instances.getProject().getLayout().getProjectDirectory().getAsFile(), "/libs");
+
+    public static final Function<File, File> defaultInitScriptDirs = file -> new File(file, "/initScripts");
 
     public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
 

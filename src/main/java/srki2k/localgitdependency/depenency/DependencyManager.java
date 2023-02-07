@@ -4,8 +4,8 @@ import groovy.lang.Closure;
 import org.gradle.api.Project;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.Instances;
+import srki2k.localgitdependency.property.Property;
 import srki2k.localgitdependency.util.GitUtils;
-import srki2k.localgitdependency.util.GradleUtil;
 import srki2k.localgitdependency.util.Logger;
 
 import java.io.IOException;
@@ -16,44 +16,22 @@ import java.util.stream.Stream;
 
 public class DependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
-    private final Dependency.DefaultProperty defaultGlobalProperty;
-
-    {
-        defaultGlobalProperty = new Dependency.DefaultProperty();
-        defaultGlobalProperty.defaultConfiguration(Constants.JAVA_IMPLEMENTATION);
-        defaultGlobalProperty.initScript(Constants.initScriptDirs.apply(Constants.libDirs.get()));
-        defaultGlobalProperty.dir(Constants.libDirs.get());
-        defaultGlobalProperty.dependencyType(Dependency.DependencyType.MavenLocal);
-        defaultGlobalProperty.keepGitUpdated(true);
-        defaultGlobalProperty.manualBuild(false);
-    }
-
-    private Dependency.DefaultProperty globalProperty;
-
-    public void globalProperty(Closure<?> configureClosure) {
-        if (configureClosure != null) {
-            Dependency.DefaultProperty defaultProperty = new Dependency.DefaultProperty();
-            configureClosure.setDelegate(defaultProperty);
-            configureClosure.call();
-            this.globalProperty = defaultProperty;
-        }
-    }
 
     public void registerDependency(String configurationName, String dependencyURL, Closure<?> configureClosure) {
-        Dependency.Property dependencyProperty = new Dependency.Property(dependencyURL);
+        Property.Builder dependencyProperty = new Property.Builder(dependencyURL);
 
         if (configureClosure != null) {
             configureClosure.setDelegate(dependencyProperty);
             configureClosure.call();
         }
 
-        dependencies.add(new Dependency(configurationName, dependencyProperty, globalProperty, defaultGlobalProperty));
+        dependencies.add(new Dependency(configurationName, new Property(dependencyProperty)));
     }
 
     public void registerGitDependencies() {
         for (Dependency dependency : dependencies) {
             GitUtils.setupGit(dependency);
-            GradleUtil.createInitScript(dependency);
+            Instances.getGradleApiManager().createInitScript(dependency);
         }
     }
 
@@ -67,7 +45,7 @@ public class DependencyManager {
 
             if (explicitBuild || !dependency.isManualBuild()) {
                 try {
-                    GradleUtil.buildGradleProject(dependency);
+                    Instances.getGradleApiManager().buildGradleProject(dependency);
                 } catch (Exception exception) {
                     Logger.error("Exception thrown while building Dependency {}", dependency.getName());
                     Logger.error("Exception {}", exception);

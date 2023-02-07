@@ -2,9 +2,10 @@ package srki2k.localgitdependency.depenency;
 
 import org.gradle.api.GradleException;
 import srki2k.localgitdependency.Constants;
+import srki2k.localgitdependency.Instances;
+import srki2k.localgitdependency.property.Property;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -21,62 +22,22 @@ public class Dependency {
     private final boolean keepGitUpdated;
     private final boolean manualBuild;
     private final DependencyType dependencyType;
-
     private List<Exception> gitExceptions;
 
-    public Dependency(String configurationName, Property dependencyProperty, DefaultProperty property, DefaultProperty defaultGlobalProperty) {
-        applyDefaultProperty(dependencyProperty, resolveProperty(property, defaultGlobalProperty));
+    public Dependency(String configurationName, Property dependencyProperty) {
+        Instances.getPropertyManager().applyDefaultProperty(dependencyProperty);
 
-        this.url = dependencyProperty.url;
-        this.configurationName = configurationName == null ? dependencyProperty.name : configurationName;
-        this.name = dependencyProperty.name == null ? getNameFromUrl(url) : dependencyProperty.name;
-        this.commit = dependencyProperty.commit == null ? org.eclipse.jgit.lib.Constants.MASTER : dependencyProperty.commit;
-        this.dir = Constants.concatFile.apply(dependencyProperty.dir, name);
-        this.initScript = Constants.concatFile.apply(dependencyProperty.initScript, name + ".gradle");
-        this.keepGitUpdated = dependencyProperty.keepGitUpdated;
-        this.manualBuild = dependencyProperty.manualBuild;
-        this.dependencyType = dependencyProperty.dependencyType;
+        this.url = dependencyProperty.getUrl();
+        this.configurationName = configurationName == null ? dependencyProperty.getName() : configurationName;
+        this.name = dependencyProperty.getName() == null ? getNameFromUrl(url) : dependencyProperty.getName();
+        this.commit = dependencyProperty.getCommit() == null ? org.eclipse.jgit.lib.Constants.MASTER : dependencyProperty.getCommit();
+        this.dir = Constants.concatFile.apply(dependencyProperty.getDir(), name);
+        this.initScript = Constants.concatFile.apply(dependencyProperty.getInitScript(), name + ".gradle");
+        this.keepGitUpdated = dependencyProperty.getKeepGitUpdated();
+        this.manualBuild = dependencyProperty.getManualBuild();
+        this.dependencyType = dependencyProperty.getDependencyType();
 
         validateDependency();
-    }
-
-    //applies missing dependencyProperty from the globalProperty
-    private void applyDefaultProperty(Property dependencyProperty, DefaultProperty property) {
-        for (Field field : CommonProperty.class.getDeclaredFields()) {
-            try {
-                if (field.get(dependencyProperty) == null) {
-                    field.set(dependencyProperty, field.get(property));
-                }
-            } catch (Exception e) {
-                throw new GradleException("Unexpected error while reflecting CommonProperty class", e);
-            }
-        }
-    }
-
-    //applies missing globalProperty from the defaultGlobalProperty
-    private DefaultProperty resolveProperty(DefaultProperty globalProperty, DefaultProperty defaultGlobalProperty) {
-        if (globalProperty == null) {
-            return defaultGlobalProperty;
-        }
-
-        DefaultProperty resolvedProperty = new DefaultProperty();
-        for (Field field : CommonProperty.class.getDeclaredFields()) {
-            try {
-                Object globalPropertyField = field.get(globalProperty);
-                Object defaultGlobalPropertyField = field.get(defaultGlobalProperty);
-
-                if (globalPropertyField == null) {
-                    field.set(resolvedProperty, defaultGlobalPropertyField);
-                } else {
-                    field.set(resolvedProperty, globalPropertyField);
-                }
-
-            } catch (Exception e) {
-                throw new GradleException("Unexpected error while reflecting CommonProperty class", e);
-            }
-        }
-
-        return resolvedProperty;
     }
 
     private void validateDependency() {
@@ -181,80 +142,6 @@ public class Dependency {
     @Override
     public int hashCode() {
         return Objects.hash(name);
-    }
-
-    //Property's that only a dependency can have
-    public static class Property extends CommonProperty {
-        private final String url;
-
-        //Dependency name
-        private String name;
-        private String commit;
-
-        public Property(String url) {
-            this.url = url;
-        }
-
-        public void name(String name) {
-            this.name = name;
-        }
-
-        public void commit(String commit) {
-            this.commit = commit;
-        }
-
-        public void branch(String branch) {
-            this.commit = branch;
-        }
-
-        public void tag(String tag) {
-            this.commit = tag;
-        }
-    }
-
-    //Property's for global configuration
-    public static class DefaultProperty extends CommonProperty {
-        public DefaultProperty() {
-        }
-    }
-
-    //Base property's for dependency's global configurations
-    private abstract static class CommonProperty {
-        String defaultConfiguration;
-        Boolean manualBuild;
-        Boolean keepGitUpdated;
-        File dir;
-        File initScript;
-
-        DependencyType dependencyType;
-
-
-        private CommonProperty() {
-        }
-
-        public void defaultConfiguration(String defaultConfiguration) {
-            this.defaultConfiguration = defaultConfiguration;
-        }
-
-        public void manualBuild(boolean manualBuild) {
-            this.manualBuild = manualBuild;
-        }
-
-        public void keepGitUpdated(boolean keepGitUpdated) {
-            this.keepGitUpdated = keepGitUpdated;
-        }
-
-        public void dir(File dir) {
-            this.dir = dir;
-        }
-
-        public void initScript(File initScript) {
-            this.initScript = initScript;
-        }
-
-        public void dependencyType(DependencyType dependencyType) {
-            this.dependencyType = dependencyType;
-        }
     }
 
     //Type of the crated dependency

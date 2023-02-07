@@ -5,8 +5,10 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import srki2k.localgitdependency.depenency.DependencyManager;
 import srki2k.localgitdependency.extentions.SettingsExtension;
+import srki2k.localgitdependency.property.PropertyManager;
 import srki2k.localgitdependency.tasks.BuildGitDependencies;
 import srki2k.localgitdependency.tasks.UndoLocalGitChanges;
+import srki2k.localgitdependency.util.GradleApiManager;
 
 public class GitProjectPlugin implements Plugin<Project> {
 
@@ -17,6 +19,8 @@ public class GitProjectPlugin implements Plugin<Project> {
 
         Instances.setProject(project);
         Instances.setDependencyManager(new DependencyManager());
+        Instances.setGradleApiManager(new GradleApiManager());
+        Instances.setPropertyManager(new PropertyManager());
         Instances.setSettingsExtension(project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, SettingsExtension.class));
 
         createTask(project, Constants.UNDO_LOCAL_GIT_CHANGES, UndoLocalGitChanges.class);

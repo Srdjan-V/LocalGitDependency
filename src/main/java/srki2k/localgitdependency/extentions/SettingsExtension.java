@@ -16,7 +16,7 @@ public class SettingsExtension {
     }
 
     public void configureGlobal(Closure<?> configureClosure) {
-        Instances.getDependencyManager().globalProperty(configureClosure);
+        Instances.getPropertyManager().globalProperty(configureClosure);
     }
 
     public void add(String dependencyURL) {
