@@ -4,7 +4,7 @@ import org.gradle.api.Project;
 import srki2k.localgitdependency.depenency.DependencyManager;
 import srki2k.localgitdependency.extentions.SettingsExtension;
 import srki2k.localgitdependency.property.PropertyManager;
-import srki2k.localgitdependency.util.GradleApiManager;
+import srki2k.localgitdependency.gradle.GradleApiManager;
 
 public class Instances {
     private static Project project;

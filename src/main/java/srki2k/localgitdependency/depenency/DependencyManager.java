@@ -29,9 +29,10 @@ public class DependencyManager {
     }
 
     public void registerGitDependencies() {
+        Instances.getGradleApiManager().createMainInitScript();
         for (Dependency dependency : dependencies) {
             GitUtils.setupGit(dependency);
-            Instances.getGradleApiManager().createInitScript(dependency);
+            Instances.getGradleApiManager().createDependecyInitScript(dependency);
         }
     }
 

@@ -8,7 +8,7 @@ import srki2k.localgitdependency.extentions.SettingsExtension;
 import srki2k.localgitdependency.property.PropertyManager;
 import srki2k.localgitdependency.tasks.BuildGitDependencies;
 import srki2k.localgitdependency.tasks.UndoLocalGitChanges;
-import srki2k.localgitdependency.util.GradleApiManager;
+import srki2k.localgitdependency.gradle.GradleApiManager;
 
 public class GitProjectPlugin implements Plugin<Project> {
 

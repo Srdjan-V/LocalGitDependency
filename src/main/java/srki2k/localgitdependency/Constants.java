@@ -13,6 +13,7 @@ public class Constants {
     public final static String JAVA_IMPLEMENTATION = "implementation";
 
 
+    public final static String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
 
     public static final Supplier<File> defaultLibDirs = () -> new File(Instances.getProject().getLayout().getProjectDirectory().getAsFile(), "/libs");
 

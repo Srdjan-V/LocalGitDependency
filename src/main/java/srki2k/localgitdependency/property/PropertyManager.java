@@ -33,6 +33,8 @@ public class PropertyManager {
             configureClosure.setDelegate(defaultProperty);
             configureClosure.call();
             this.globalProperty = new DefaultProperty(defaultProperty);
+            this.globalProperty = resolveProperty();
+            // TODO: 07/02/2023 run resolveProperty() only when the property changes, and not for every dep
         }
     }
 
@@ -50,7 +52,7 @@ public class PropertyManager {
         }
 
         DefaultProperty resolvedProperty = new DefaultProperty(null);
-        for (Field field : CommonProperty.class.getDeclaredFields()) {
+        for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
             try {
                 Object globalPropertyField = field.get(globalProperty);
                 Object defaultGlobalPropertyField = field.get(defaultGlobalProperty);
@@ -73,7 +75,7 @@ public class PropertyManager {
     public void applyDefaultProperty(Property dependencyProperty) {
         DefaultProperty property = resolveProperty();
 
-        for (Field field : CommonProperty.class.getDeclaredFields()) {
+        for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
             try {
                 if (field.get(dependencyProperty) == null) {
                     field.set(dependencyProperty, field.get(property));
