@@ -5,6 +5,8 @@ apply {
     plugin 'idea'
 }
 group = "srki2k"
+version = 0.1
+
 repositories {
     mavenCentral()
 }
@@ -26,9 +28,23 @@ tasks.named('test') {
 gradlePlugin {
     plugins {
         localGitDependency {
-            id = 'srki2k.localgitdependency'
+            id = 'srki2k.local-git-dependency'
             implementationClass = 'srki2k.localgitdependency.GitProjectPlugin'
         }
+
+        modelInjection {
+            id = "srki2k.model-injection"
+            implementationClass = "srki2k.localgitdependency.injection.plugin.ModelInjectionPlugin"
+        }
+
     }
-    automatedPublishing = false
+   // automatedPublishing = false
+}
+
+publishing {
+    publications {
+        pluginMaven(MavenPublication) {
+            artifactId = 'local-git-dependency'
+        }
+    }
 }
