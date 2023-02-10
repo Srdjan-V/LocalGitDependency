@@ -8,54 +8,45 @@ import srki2k.localgitdependency.depenency.Dependency;
 import java.lang.reflect.Field;
 
 public class PropertyManager {
-    private final DefaultProperty defaultGlobalProperty;
+    private boolean customGlobalProperty;
+    private DefaultProperty globalProperty;
 
     {
         DefaultProperty.Builder builder = new DefaultProperty.Builder();
         builder.defaultConfiguration(Constants.JAVA_IMPLEMENTATION);
-        builder.initScript(Constants.defaultInitScriptDirs.apply(Constants.defaultLibDirs.get()));
+        builder.persistentFolder(Constants.defaultPersistentDir.apply(Constants.defaultLibDirs.get()));
         builder.dir(Constants.defaultLibDirs.get());
         builder.dependencyType(Dependency.DependencyType.MavenLocal);
         builder.keepGitUpdated(true);
         builder.manualBuild(false);
 
-        defaultGlobalProperty = new DefaultProperty(builder);
+        globalProperty = new DefaultProperty(builder);
     }
-
-    private DefaultProperty globalProperty;
 
     public void globalProperty(Closure<?> configureClosure) {
         if (configureClosure != null) {
-            if (globalProperty != null) {
+            if (customGlobalProperty) {
                 throw new GradleException("you cant change the globalProperty once they are set");
             }
             DefaultProperty.Builder defaultProperty = new DefaultProperty.Builder();
             configureClosure.setDelegate(defaultProperty);
             configureClosure.call();
-            this.globalProperty = new DefaultProperty(defaultProperty);
-            this.globalProperty = resolveProperty();
-            // TODO: 07/02/2023 run resolveProperty() only when the property changes, and not for every dep
+            this.globalProperty = resolveProperty(new DefaultProperty(defaultProperty));
+            customGlobalProperty = true;
         }
     }
 
     public DefaultProperty getGlobalProperty() {
-        if (globalProperty == null) {
-            return defaultGlobalProperty;
-        }
         return globalProperty;
     }
 
     //applies missing globalProperty from the defaultGlobalProperty
-    private DefaultProperty resolveProperty() {
-        if (globalProperty == null) {
-            return defaultGlobalProperty;
-        }
-
+    private DefaultProperty resolveProperty(DefaultProperty newGlobalProperty) {
         DefaultProperty resolvedProperty = new DefaultProperty(null);
         for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
             try {
-                Object globalPropertyField = field.get(globalProperty);
-                Object defaultGlobalPropertyField = field.get(defaultGlobalProperty);
+                Object globalPropertyField = field.get(newGlobalProperty);
+                Object defaultGlobalPropertyField = field.get(globalProperty);
 
                 if (globalPropertyField == null) {
                     field.set(resolvedProperty, defaultGlobalPropertyField);
@@ -73,12 +64,10 @@ public class PropertyManager {
 
     //applies missing dependencyProperty from the globalProperty
     public void applyDefaultProperty(Property dependencyProperty) {
-        DefaultProperty property = resolveProperty();
-
         for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
             try {
                 if (field.get(dependencyProperty) == null) {
-                    field.set(dependencyProperty, field.get(property));
+                    field.set(dependencyProperty, field.get(globalProperty));
                 }
             } catch (Exception e) {
                 throw new GradleException("Unexpected error while reflecting CommonProperty class", e);

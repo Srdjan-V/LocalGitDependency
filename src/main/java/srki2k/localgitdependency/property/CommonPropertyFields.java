@@ -12,6 +12,6 @@ public abstract class CommonPropertyFields {
     Boolean manualBuild;
     Boolean keepGitUpdated;
     File dir;
-    File initScript;
+    File persistentFolder;
     Dependency.DependencyType dependencyType;
 }

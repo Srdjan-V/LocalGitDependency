@@ -22,8 +22,8 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return dir;
     }
 
-    public File getInitScript() {
-        return initScript;
+    public File getPersistentFolder() {
+        return persistentFolder;
     }
 
     public Dependency.DependencyType getDependencyType() {

@@ -25,8 +25,8 @@ public abstract class CommonProperty extends CommonPropertyFields {
         this.dir = dir;
     }
 
-    public void initScript(File initScript) {
-        this.initScript = initScript;
+    public void persistentFolder(File initScript) {
+        this.persistentFolder = initScript;
     }
 
     public void dependencyType(Dependency.DependencyType dependencyType) {
