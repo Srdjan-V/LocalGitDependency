@@ -7,19 +7,19 @@ public class GradleInit {
     public static String createInitProbe() {
         StringBuilder stringBuilder = new StringBuilder("initscript {").append(System.lineSeparator());
 
-        appendLine(stringBuilder, 1,"repositories {");
-        appendLine(stringBuilder,2, "mavenCentral()");
-        appendLine(stringBuilder,2, "mavenLocal()");
-        appendLine(stringBuilder,1, "}");
+        appendLine(stringBuilder, 1, "repositories {");
+        appendLine(stringBuilder, 2, "mavenCentral()");
+        appendLine(stringBuilder, 2, "mavenLocal()");
+        appendLine(stringBuilder, 1, "}");
 
-        appendLine(stringBuilder, 1 ,"dependencies {");
-        appendLine(stringBuilder,2,"classpath \"srki2k:local-git-dependency:0.+\""); // TODO: 07/02/2023 make the version dynamic
-        appendLine(stringBuilder,1, "}");
-        appendLine(stringBuilder,0, "}");
+        appendLine(stringBuilder, 1, "dependencies {");
+        appendLine(stringBuilder, 2, "classpath \"srki2k:local-git-dependency:0.+\""); // TODO: 07/02/2023 make the version dynamic
+        appendLine(stringBuilder, 1, "}");
+        appendLine(stringBuilder, 0, "}");
 
-        appendLine(stringBuilder,0, "rootProject {");
+        appendLine(stringBuilder, 0, "rootProject {");
         appendLine(stringBuilder, 1, Plugins.MODEL_INJECTION.toString());
-        appendLine(stringBuilder,0, "}");
+        appendLine(stringBuilder, 0, "}");
 
         return stringBuilder.toString();
     }
@@ -154,7 +154,8 @@ public class GradleInit {
             for (Publication publication : publications) {
                 appendLine(stringBuilder, 3, String.format("%s(MavenPublication) {", publication.publicationName));
                 appendLine(stringBuilder, 4, "from components.java");
-                appendLine(stringBuilder, 4, String.format("archives %s", publication.task.name));
+                if (publication.task != null)
+                    appendLine(stringBuilder, 4, String.format("archives %s", publication.task.name));
                 appendLine(stringBuilder, 3, "}");
             }
             appendLine(stringBuilder, 2, "}");

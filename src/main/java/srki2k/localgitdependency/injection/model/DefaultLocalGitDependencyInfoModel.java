@@ -1,8 +1,9 @@
 package srki2k.localgitdependency.injection.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInfoModel {
+public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInfoModel, Serializable {
     private final String projectId;
     private final String projectGradleVersion;
     private final boolean hasJavaPlugin;
@@ -47,7 +48,7 @@ public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInf
         return allJarTasksNames;
     }
 
-    @Override
+    // TODO: 07/02/2023 remove
     public List<String> getAllPublicationsNames() {
         return allPublicationsNames;
     }

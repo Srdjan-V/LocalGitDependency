@@ -12,6 +12,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.eclipse.jgit.lib.Constants.*;
+
 public class Dependency {
     private final String url;
     private final String configurationName;
@@ -30,7 +32,7 @@ public class Dependency {
         this.url = dependencyProperty.getUrl();
         this.configurationName = configurationName == null ? dependencyProperty.getName() : configurationName;
         this.name = dependencyProperty.getName() == null ? getNameFromUrl(url) : dependencyProperty.getName();
-        this.commit = dependencyProperty.getCommit() == null ? org.eclipse.jgit.lib.Constants.MASTER : dependencyProperty.getCommit();
+        this.commit = dependencyProperty.getCommit() == null ? DEFAULT_REMOTE_NAME + "/" + MASTER : dependencyProperty.getCommit();
         this.dir = Constants.concatFile.apply(dependencyProperty.getDir(), name);
         this.initScript = Constants.concatFile.apply(dependencyProperty.getInitScript(), name + ".gradle");
         this.keepGitUpdated = dependencyProperty.getKeepGitUpdated();
@@ -112,7 +114,7 @@ public class Dependency {
     }
 
     public boolean hasGitExceptions() {
-        return !gitExceptions.isEmpty();
+        return gitExceptions != null && !gitExceptions.isEmpty();
     }
 
     public List<Exception> getGitExceptions() {
@@ -120,8 +122,8 @@ public class Dependency {
     }
 
     public void addGitExceptions(Exception gitException) {
-        List<Exception> exceptions = createList(this.gitExceptions);
-        exceptions.add(gitException);
+        this.gitExceptions = createList(this.gitExceptions);
+        this.gitExceptions.add(gitException);
     }
 
     private static List<Exception> createList(List<Exception> o) {

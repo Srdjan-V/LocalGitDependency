@@ -15,6 +15,4 @@ public interface LocalGitDependencyInfoModel {
 
     List<String> getAllJarTasksNames();
 
-    List<String> getAllPublicationsNames();
-
 }

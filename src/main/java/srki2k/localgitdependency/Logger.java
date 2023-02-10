@@ -1,6 +1,4 @@
-package srki2k.localgitdependency.util;
-
-import srki2k.localgitdependency.Instances;
+package srki2k.localgitdependency;
 
 public class Logger {
     private final static org.gradle.api.logging.Logger logger = Instances.getProject().getLogger();

@@ -38,7 +38,7 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
         }
 
         return new DefaultLocalGitDependencyInfoModel(
-                Objects.requireNonNull(project.property("groop")).toString() + Objects.requireNonNull(project.property("name")),
+                project.getGroup() + ":" + project.getName() + ":" + project.getVersion(),
                 project.getGradle().getGradleVersion(),
                 hasJavaPlugin,
                 hasMavenPublishPlugin,

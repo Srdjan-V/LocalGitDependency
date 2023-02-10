@@ -15,6 +15,11 @@ public class Constants {
 
     public final static String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
 
+
+    public final static Function<String, String> PublicationName = s -> "LocalGitMavenDependencyForProject" + s;
+
+    public final static Function<String, String> JarTaskName = s -> "LocalGitMavenTaskForProject" + s;
+
     public static final Supplier<File> defaultLibDirs = () -> new File(Instances.getProject().getLayout().getProjectDirectory().getAsFile(), "/libs");
 
     public static final Function<File, File> defaultInitScriptDirs = file -> new File(file, "/initScripts");

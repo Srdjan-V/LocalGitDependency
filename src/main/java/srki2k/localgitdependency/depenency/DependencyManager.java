@@ -4,9 +4,9 @@ import groovy.lang.Closure;
 import org.gradle.api.Project;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.Instances;
+import srki2k.localgitdependency.git.GitManager;
 import srki2k.localgitdependency.property.Property;
-import srki2k.localgitdependency.util.GitUtils;
-import srki2k.localgitdependency.util.Logger;
+import srki2k.localgitdependency.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,9 +30,22 @@ public class DependencyManager {
 
     public void registerGitDependencies() {
         Instances.getGradleApiManager().createMainInitScript();
+        boolean expressions = false;
         for (Dependency dependency : dependencies) {
-            GitUtils.setupGit(dependency);
-            Instances.getGradleApiManager().createDependecyInitScript(dependency);
+            if (GitManager.initRepo(dependency)) {
+                expressions = true;
+                continue;
+            }
+            Instances.getGradleApiManager().createDependencyInitScript(dependency);
+        }
+        if (expressions) {
+            List<List<Exception>> exceptionList = new ArrayList<>();
+            for (Dependency dependency : dependencies) {
+                exceptionList.add(dependency.getGitExceptions());
+            }
+            RuntimeException runtimeException = new RuntimeException("Exception(s) occurred while interacting with git");
+            exceptionList.stream().flatMap(List::stream).forEach(runtimeException::addSuppressed);
+            throw runtimeException;
         }
     }
 
@@ -104,9 +117,11 @@ public class DependencyManager {
     public void addBuiltDependencies() {
         for (Dependency dependency : dependencies) {
             switch (dependency.getDependencyType()) {
-                case Jar: addBuiltJarsAsDependencies(dependency);
-                break;
-                case MavenLocal: addMavenJarsAsDependencies(dependency);
+                case Jar:
+                    addBuiltJarsAsDependencies(dependency);
+                    break;
+                case MavenLocal:
+                    addMavenJarsAsDependencies(dependency);
             }
         }
     }
