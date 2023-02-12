@@ -17,6 +17,8 @@ public class PersistentProperty {
     private String workingDirSHA1;
     private DefaultLocalGitDependencyInfoModel defaultLocalGitDependencyInfoModel;
 
+    private boolean dirty;
+
     public PersistentProperty(Property dependencyProperty, Dependency dependency) {
         this.dependency = dependency;
         this.persistentFile = Constants.persistentJsonFile.apply(dependencyProperty.getPersistentFolder(), dependency.getName());
@@ -29,6 +31,19 @@ public class PersistentProperty {
         }
     }
 
+    public Dependency getDependency() {
+        return dependency;
+    }
+
+    public String getWorkingDirSHA1() {
+        return workingDirSHA1;
+    }
+
+    public void setWorkingDirSHA1(String workingDirSHA1) {
+        this.dirty = true;
+        this.workingDirSHA1 = workingDirSHA1;
+    }
+
     private void loadFromJson() throws IOException, ParseException {
         JSONObject json = (JSONObject) new JSONParser().parse(new FileReader(persistentFile));
         workingDirSHA1 = (String) json.get(currentWorkingDirSHA1);
@@ -38,6 +53,21 @@ public class PersistentProperty {
     }
 
     public void saveToPersistentFile() {
+        if (!dirty) return;
+
+        if (!persistentFile.getParentFile().exists()) {
+            persistentFile.getParentFile().mkdirs();
+        }
+
+        if (!persistentFile.exists()) {
+            try {
+                persistentFile.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
         JSONObject jo = new JSONObject();
 
         // putting data to JSONObject

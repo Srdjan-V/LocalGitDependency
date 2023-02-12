@@ -104,6 +104,12 @@ public class DependencyManager {
         }
     }
 
+    public void savePersistentData() {
+        for (Dependency dependency : dependencies) {
+            dependency.getPersistentProperty().saveToPersistentFile();
+        }
+    }
+
     public Set<Dependency> getDependencies() {
         return dependencies;
     }

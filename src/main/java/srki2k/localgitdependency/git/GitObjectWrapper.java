@@ -6,28 +6,39 @@ import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.TagOpt;
+import org.eclipse.jgit.util.sha1.SHA1;
 import srki2k.localgitdependency.Logger;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
-// TODO: 10/02/2023 test
+// TODO: 10/02/2023 redo some parts of this class
 // Some code has been taken from
 // https://github.com/alexvasilkov/GradleGitDependenciesPlugin/blob/master/src/main/groovy/com/alexvasilkov/gradle/git/utils/GitUtils.groovy
 class GitObjectWrapper implements AutoCloseable, GitTasks {
+    private boolean cloned;
     private boolean gitExceptions;
     private Git git;
     private GitInfo gitInfo;
-
+    private List<File> changedFiles;
 
     GitObjectWrapper(GitInfo gitInfo) {
         this.gitInfo = gitInfo;
         try {
             git = Git.open(srki2k.localgitdependency.Constants.concatFile.apply(gitInfo.getDir(), Constants.DOT_GIT));
         } catch (RepositoryNotFoundException initRepo) {
+            cloned = true;
             cloneRepo();
         } catch (Exception exception) {
             gitInfo.addGitExceptions(exception);
@@ -36,6 +47,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
 
     @Override
     public void setup() {
+        if (cloned) return;
         final String remoteUrl = git.getRepository().getConfig().getString("remote", Constants.DEFAULT_REMOTE_NAME, "url");
 
         if (remoteUrl == null) {
@@ -61,25 +73,56 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
                 }
             }
 
+            String persistentWorkingDirSHA1 = gitInfo.getDependency().getPersistentProperty().getWorkingDirSHA1();
+            String workingDirSHA1;
+            if (hasLocalChanges()) {
+                workingDirSHA1 = createSHA1OfLocalChanges();
+            } else {
+                workingDirSHA1 = head();
+            }
+
+            if (persistentWorkingDirSHA1 == null) {
+                gitInfo.setRefreshed();
+                gitInfo.getDependency().getPersistentProperty().setWorkingDirSHA1(workingDirSHA1);
+                return;
+            }
+
+            if (persistentWorkingDirSHA1.equals(workingDirSHA1)) return;
+            gitInfo.setRefreshed();
+            gitInfo.getDependency().getPersistentProperty().setWorkingDirSHA1(workingDirSHA1);
+
         } catch (IOException e) {
             gitExceptions(e);
         }
     }
 
     public boolean hasLocalChanges() {
-        boolean changes = false;
+        if (changedFiles != null && changedFiles.isEmpty()) return false;
+        changedFiles = new ArrayList<>();
+
         try {
             Status status = git.status().call();
-            changes = !status.getAdded().isEmpty();
-            changes |= !status.getChanged().isEmpty();
-            changes |= !status.getRemoved().isEmpty();
-            changes |= !status.getUntracked().isEmpty();
-            changes |= !status.getModified().isEmpty();
-            changes |= !status.getMissing().isEmpty();
-        } catch (GitAPIException e) {
+            //Use reflection to skip the creation of unmodifiable sets
+            Field diffField = Status.class.getDeclaredField("diff");
+            diffField.setAccessible(true);
+            IndexDiff diff = (IndexDiff) diffField.get(status);
+
+            addChanges(diff.getAdded());
+            addChanges(diff.getChanged());
+            addChanges(diff.getRemoved());
+            addChanges(diff.getUntracked());
+            addChanges(diff.getModified());
+            addChanges(diff.getMissing());
+        } catch (NoSuchFieldException | IllegalAccessException | GitAPIException e) {
             gitExceptions(e);
         }
-        return changes;
+        return !changedFiles.isEmpty();
+    }
+
+    private void addChanges(Set<String> set) {
+        for (String file : set) {
+            changedFiles.add(new File(gitInfo.getDir(), file));
+        }
     }
 
     public void cloneRepo() {
@@ -92,6 +135,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
                     .setDirectory(gitInfo.getDir())
                     .setURI(gitInfo.getUrl())
                     .setRemote(Constants.DEFAULT_REMOTE_NAME)
+                    .setNoCheckout(true)
                     .call();
 
             git.checkout().setName(gitInfo.getCommit()).call();
@@ -137,14 +181,27 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         }
     }
 
-    @Override
-    public String createSHA1OfCurrentState() {
+    public String createSHA1OfLocalChanges() throws IOException {
         try {
-            return ObjectId.toString(git.getRepository().resolve("HEAD^{tree}"));
+            SHA1 sha1 = SHA1.newInstance();
+            byte[] buffer = new byte[4096];
+            int read;
+
+            for (File file : changedFiles) {
+                if (file.exists()) {
+                    FileInputStream inputStream = new FileInputStream(file);
+                    while ((read = inputStream.read(buffer)) > 0) {
+                        sha1.update(buffer, 0, read);
+                    }
+                    inputStream.close();
+                } else {
+                    sha1.update(file.getAbsolutePath().getBytes(StandardCharsets.UTF_8));
+                }
+            }
+            return ObjectId.fromRaw(sha1.digest()).getName();
         } catch (IOException e) {
-            gitExceptions(e);
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
 
@@ -162,22 +219,23 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         if (headId.startsWith(targetId)) return true;
 
         // If not then we should check if there is a tag with given name pointing to current head.
-        Ref tag = null;
+        Ref tag = git.getRepository().getRefDatabase().exactRef(Constants.R_TAGS + targetId);
 
         // Annotated tags need extra effort
-        Ref peeledTag = null;
-
-        try {
-            tag = git.getRepository().getRefDatabase().exactRef(Constants.R_TAGS + targetId);
-            peeledTag = tag == null ? null : git.getRepository().getRefDatabase().peel(tag);
-        } catch (IOException e) {
-            gitExceptions(e);
-        }
+        Ref peeledTag = tag == null ? null : git.getRepository().getRefDatabase().peel(tag);
 
         ObjectId tagObjectId = peeledTag != null ? peeledTag.getPeeledObjectId() : tag != null ? tag.getObjectId() : null;
 
-        final String tagId = ObjectId.toString(tagObjectId);
-        return Objects.equals(tagId, headId);
+        // Search for a remote
+        if (tagObjectId == null) {
+            Ref remote = git.getRepository().getRefDatabase().exactRef(Constants.R_REMOTES + targetId);
+            if (remote != null) {
+                return Objects.equals(ObjectId.toString(remote.getObjectId()), headId);
+            }
+            // TODO: 13/02/2023 this should throw a error
+        }
+
+        return Objects.equals(ObjectId.toString(tagObjectId), headId);
     }
 
     private String head() throws IOException {

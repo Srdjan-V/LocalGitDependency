@@ -25,8 +25,8 @@ public class Constants {
     public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!persistent");
     public static final Function<File, File> defaultLibsDir = file -> new File(file, "/libs");
 
-    public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> new File(persistentFolder, name + "Init.gradle");
-    public static final BiFunction<File, String, File> persistentJsonFile = (persistentFolder, name) -> new File(persistentFolder, name + ".json");
+    public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> new File(persistentFolder, name + "/" + name + "Init.gradle");
+    public static final BiFunction<File, String, File> persistentJsonFile = (persistentFolder, name) -> new File(persistentFolder, name + "/" + name + ".json");
 
     public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
 
