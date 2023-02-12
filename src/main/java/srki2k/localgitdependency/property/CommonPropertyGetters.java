@@ -30,4 +30,7 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return dependencyType;
     }
 
+    public Boolean getGradleProbeCashing() {
+        return gradleProbeCashing;
+    }
 }

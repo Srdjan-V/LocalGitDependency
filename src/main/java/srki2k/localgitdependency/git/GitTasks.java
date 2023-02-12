@@ -4,4 +4,5 @@ public interface GitTasks {
     void setup();
     void update();
     void clearLocalChanges();
+    String createSHA1OfCurrentState();
 }

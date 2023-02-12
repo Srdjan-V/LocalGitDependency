@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInfoModel, Serializable {
+    public static final long serialVersionUID = 1L;
     private final String projectId;
     private final String projectGradleVersion;
     private final boolean hasJavaPlugin;

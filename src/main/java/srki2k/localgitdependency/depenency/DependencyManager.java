@@ -4,9 +4,8 @@ import groovy.lang.Closure;
 import org.gradle.api.Project;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.Instances;
-import srki2k.localgitdependency.git.GitManager;
-import srki2k.localgitdependency.property.Property;
 import srki2k.localgitdependency.Logger;
+import srki2k.localgitdependency.property.Property;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,36 +27,15 @@ public class DependencyManager {
         dependencies.add(new Dependency(configurationName, new Property(dependencyProperty)));
     }
 
-    public void registerGitDependencies() {
-        Instances.getGradleApiManager().createMainInitScript();
-        boolean expressions = false;
-        for (Dependency dependency : dependencies) {
-            if (GitManager.initRepo(dependency)) {
-                expressions = true;
-                continue;
-            }
-            Instances.getGradleApiManager().createDependencyInitScript(dependency);
-        }
-        if (expressions) {
-            List<List<Exception>> exceptionList = new ArrayList<>();
-            for (Dependency dependency : dependencies) {
-                exceptionList.add(dependency.getGitExceptions());
-            }
-            RuntimeException runtimeException = new RuntimeException("Exception(s) occurred while interacting with git");
-            exceptionList.stream().flatMap(List::stream).forEach(runtimeException::addSuppressed);
-            throw runtimeException;
-        }
-    }
-
     // TODO: 06/02/2023  make a better implementation
     public void buildDependencies(boolean explicitBuild) {
         for (Dependency dependency : dependencies) {
-            if (!dependency.getDir().exists()) {
+            if (!dependency.getGitInfo().getDir().exists()) {
                 Logger.error("Dependency {} was not cloned, skipping build", dependency.getName());
                 continue;
             }
 
-            if (explicitBuild || !dependency.isManualBuild()) {
+            if (explicitBuild || !dependency.getGradleInfo().isManualBuild()) {
                 try {
                     Instances.getGradleApiManager().buildGradleProject(dependency);
                 } catch (Exception exception) {
@@ -77,7 +55,7 @@ public class DependencyManager {
     }
 
     public void addBuiltJarsAsDependencies(Dependency dependency) {
-        Path libs = Constants.buildDir.apply(dependency.getDir()).toPath();
+        Path libs = Constants.buildDir.apply(dependency.getGitInfo().getDir()).toPath();
 
         if (!Files.exists(libs)) {
             Logger.error("Dependency {} was cloned, but no libs folder was found", dependency.getName());

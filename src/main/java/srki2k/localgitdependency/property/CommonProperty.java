@@ -32,4 +32,9 @@ public abstract class CommonProperty extends CommonPropertyFields {
     public void dependencyType(Dependency.DependencyType dependencyType) {
         this.dependencyType = dependencyType;
     }
+
+    public void gradleProbeCashing(boolean gradleProbeCashing) {
+        this.gradleProbeCashing = gradleProbeCashing;
+    }
+
 }

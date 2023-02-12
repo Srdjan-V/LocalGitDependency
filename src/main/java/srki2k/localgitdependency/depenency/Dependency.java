@@ -1,51 +1,63 @@
 package srki2k.localgitdependency.depenency;
 
 import org.gradle.api.GradleException;
-import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.Instances;
+import srki2k.localgitdependency.git.GitInfo;
+import srki2k.localgitdependency.gradle.GradleInfo;
 import srki2k.localgitdependency.property.Property;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.eclipse.jgit.lib.Constants.*;
-
 public class Dependency {
-    private final String url;
-    private final String configurationName;
     private final String name;
-    private final String commit;
-    private final File dir;
-    private final File initScript;
-    private final boolean keepGitUpdated;
-    private final boolean manualBuild;
+    private final String configurationName;
+    private final PersistentProperty persistentProperty;
     private final DependencyType dependencyType;
-    private List<Exception> gitExceptions;
+    private final GitInfo gitInfo;
+    private final GradleInfo gradleInfo;
 
     public Dependency(String configurationName, Property dependencyProperty) {
         Instances.getPropertyManager().applyDefaultProperty(dependencyProperty);
 
-        this.url = dependencyProperty.getUrl();
+        this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
         this.configurationName = configurationName == null ? dependencyProperty.getName() : configurationName;
-        this.name = dependencyProperty.getName() == null ? getNameFromUrl(url) : dependencyProperty.getName();
-        this.commit = dependencyProperty.getCommit() == null ? DEFAULT_REMOTE_NAME + "/" + MASTER : dependencyProperty.getCommit();
-        this.dir = Constants.concatFile.apply(dependencyProperty.getDir(), name);
-        this.initScript = Constants.concatFile.apply(dependencyProperty.getInitScript(), name + ".gradle");
-        this.keepGitUpdated = dependencyProperty.getKeepGitUpdated();
-        this.manualBuild = dependencyProperty.getManualBuild();
         this.dependencyType = dependencyProperty.getDependencyType();
-
-        validateDependency();
+        this.gitInfo = new GitInfo(dependencyProperty, this);
+        this.gradleInfo = new GradleInfo(dependencyProperty, this);
+        this.persistentProperty = new PersistentProperty(dependencyProperty, this);
+        validate();
     }
 
-    private void validateDependency() {
+    public String getConfigurationName() {
+        return configurationName;
+    }
+
+    public GitInfo getGitInfo() {
+        return gitInfo;
+    }
+
+    public GradleInfo getGradleInfo() {
+        return gradleInfo;
+    }
+
+    public PersistentProperty getPersistentProperty() {
+        return persistentProperty;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public DependencyType getDependencyType() {
+        return dependencyType;
+    }
+
+    private void validate() {
         StringBuilder errors = null;
 
-        if (url == null) {
+        if (gitInfo.getUrl() == null) {
             errors = crateStringBuilder(null);
             errors.append("Property: 'url' is not specified").append(System.lineSeparator());
         }
@@ -53,21 +65,14 @@ public class Dependency {
             errors = crateStringBuilder(errors);
             errors.append("Property: 'name' is not specified").append(System.lineSeparator());
         }
-        if (dir.exists() && !dir.isDirectory()) {
+        if (gitInfo.getDir().exists() && !gitInfo.getDir().isDirectory()) {
             errors = crateStringBuilder(errors);
-            errors.append("Property: 'dir' is not a directory ").append(dir).append(System.lineSeparator());
+            errors.append("Property: 'dir' is not a directory ").append(gitInfo.getDir()).append(System.lineSeparator());
         }
 
         if (errors != null) {
             throw new GradleException(errors.toString());
         }
-    }
-
-    private StringBuilder crateStringBuilder(StringBuilder errors) {
-        if (errors == null) {
-            return new StringBuilder("Git dependency errors:").append(System.lineSeparator());
-        }
-        return errors;
     }
 
     private static String getNameFromUrl(String url) {
@@ -77,60 +82,11 @@ public class Dependency {
         return matcher.find() ? matcher.group(1) : null;
     }
 
-    public String getConfigurationName() {
-        return configurationName;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getCommit() {
-        return commit;
-    }
-
-    public File getDir() {
-        return dir;
-    }
-
-    public File getInitScript() {
-        return initScript;
-    }
-
-    public boolean isKeepGitUpdated() {
-        return keepGitUpdated;
-    }
-
-    public boolean isManualBuild() {
-        return manualBuild;
-    }
-
-    public DependencyType getDependencyType() {
-        return dependencyType;
-    }
-
-    public boolean hasGitExceptions() {
-        return gitExceptions != null && !gitExceptions.isEmpty();
-    }
-
-    public List<Exception> getGitExceptions() {
-        return gitExceptions;
-    }
-
-    public void addGitExceptions(Exception gitException) {
-        this.gitExceptions = createList(this.gitExceptions);
-        this.gitExceptions.add(gitException);
-    }
-
-    private static List<Exception> createList(List<Exception> o) {
-        if (o == null) {
-            return new ArrayList<>();
+    private StringBuilder crateStringBuilder(StringBuilder errors) {
+        if (errors == null) {
+            return new StringBuilder("Git dependency errors:").append(System.lineSeparator());
         }
-        return o;
+        return errors;
     }
 
     @Override
@@ -150,6 +106,7 @@ public class Dependency {
     public enum DependencyType {
         MavenLocal,
         Jar
+
     }
 
 }

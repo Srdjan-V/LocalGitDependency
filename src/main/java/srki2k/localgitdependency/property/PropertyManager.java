@@ -14,11 +14,12 @@ public class PropertyManager {
     {
         DefaultProperty.Builder builder = new DefaultProperty.Builder();
         builder.defaultConfiguration(Constants.JAVA_IMPLEMENTATION);
-        builder.persistentFolder(Constants.defaultPersistentDir.apply(Constants.defaultLibDirs.get()));
-        builder.dir(Constants.defaultLibDirs.get());
+        builder.persistentFolder(Constants.defaultPersistentDir.apply(Constants.defaultDir.get()));
+        builder.dir(Constants.defaultLibsDir.apply(Constants.defaultDir.get()));
         builder.dependencyType(Dependency.DependencyType.MavenLocal);
         builder.keepGitUpdated(true);
         builder.manualBuild(false);
+        builder.gradleProbeCashing(true);
 
         globalProperty = new DefaultProperty(builder);
     }

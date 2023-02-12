@@ -14,4 +14,5 @@ public abstract class CommonPropertyFields {
     File dir;
     File persistentFolder;
     Dependency.DependencyType dependencyType;
+    Boolean gradleProbeCashing;
 }

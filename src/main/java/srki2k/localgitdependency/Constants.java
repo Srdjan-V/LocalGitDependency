@@ -20,9 +20,13 @@ public class Constants {
 
     public final static Function<String, String> JarTaskName = s -> "LocalGitMavenTaskForProject" + s;
 
-    public static final Supplier<File> defaultLibDirs = () -> new File(Instances.getProject().getLayout().getProjectDirectory().getAsFile(), "/libs");
+    public static final Supplier<File> defaultDir = () -> new File(Instances.getProject().getLayout().getProjectDirectory().getAsFile(), "/localGitDependency");
 
-    public static final Function<File, File> defaultInitScriptDirs = file -> new File(file, "/initScripts");
+    public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!persistent");
+    public static final Function<File, File> defaultLibsDir = file -> new File(file, "/libs");
+
+    public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> new File(persistentFolder, name + "Init.gradle");
+    public static final BiFunction<File, String, File> persistentJsonFile = (persistentFolder, name) -> new File(persistentFolder, name + ".json");
 
     public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
 
