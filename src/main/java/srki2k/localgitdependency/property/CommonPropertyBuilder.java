@@ -5,16 +5,12 @@ import srki2k.localgitdependency.depenency.Dependency;
 import java.io.File;
 
 //Base property's for dependency's global configurations
-public abstract class CommonProperty extends CommonPropertyFields {
-    CommonProperty() {
+public abstract class CommonPropertyBuilder extends CommonPropertyFields {
+    CommonPropertyBuilder() {
     }
 
     public void defaultConfiguration(String defaultConfiguration) {
         this.defaultConfiguration = defaultConfiguration;
-    }
-
-    public void manualBuild(boolean manualBuild) {
-        this.manualBuild = manualBuild;
     }
 
     public void keepGitUpdated(boolean keepGitUpdated) {

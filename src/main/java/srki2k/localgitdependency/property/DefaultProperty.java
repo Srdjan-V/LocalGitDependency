@@ -8,6 +8,6 @@ public class DefaultProperty extends CommonPropertyGetters {
         }
     }
 
-    public static class Builder extends CommonProperty {
+    public static class Builder extends CommonPropertyBuilder {
     }
 }

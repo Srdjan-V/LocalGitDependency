@@ -10,10 +10,6 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return defaultConfiguration;
     }
 
-    public Boolean getManualBuild() {
-        return manualBuild;
-    }
-
     public Boolean getKeepGitUpdated() {
         return keepGitUpdated;
     }

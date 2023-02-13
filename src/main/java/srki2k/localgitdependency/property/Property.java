@@ -25,7 +25,7 @@ public class Property extends CommonPropertyGetters {
         return commit;
     }
 
-    public static class Builder extends CommonProperty {
+    public static class Builder extends CommonPropertyBuilder {
         private final String url;
         private String name;
         private String commit;

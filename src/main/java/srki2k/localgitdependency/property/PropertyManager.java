@@ -19,7 +19,6 @@ public class PropertyManager {
         builder.dir(Constants.defaultLibsDir.apply(Constants.defaultDir.get()));
         builder.dependencyType(Dependency.DependencyType.MavenLocal);
         builder.keepGitUpdated(true);
-        builder.manualBuild(false);
         builder.gradleProbeCashing(true);
 
         globalProperty = new DefaultProperty(builder);

@@ -32,7 +32,7 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
             Instances.getGitManager().initRepos();
             Instances.getGradleManager().initGradleAPI();
             Instances.getDependencyManager().savePersistentData();
-            Instances.getGradleManager().buildDependecies();
+            Instances.getGradleManager().buildDependencies();
             Instances.getDependencyManager().addBuiltDependencies();
         });
     }

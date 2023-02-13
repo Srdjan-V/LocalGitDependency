@@ -9,7 +9,6 @@ public abstract class CommonPropertyFields {
     }
 
     String defaultConfiguration;
-    Boolean manualBuild;
     Boolean keepGitUpdated;
     File dir;
     File persistentFolder;

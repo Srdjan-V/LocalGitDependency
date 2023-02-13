@@ -3,7 +3,8 @@ import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.Test;
 import srki2k.localgitdependency.Instances;
 
-import java.io.File;
+import java.io.*;
+import java.util.Properties;
 
 public class TaskTest {
 
@@ -13,11 +14,21 @@ public class TaskTest {
         File projectDir = new File(".", "test/project/");
         new File(projectDir, "run").mkdirs();
         File homeDir = new File(".", "test/gradle_home/");
+
         project = ProjectBuilder.builder()
                 .withProjectDir(projectDir)
                 .withGradleUserHomeDir(homeDir)
                 .build();
 
+        Properties properties = new Properties();
+        try (BufferedReader reader = new BufferedReader(new FileReader(new File("gradle.properties")))) {
+            properties.load(reader);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        project.setVersion(properties.getProperty("version"));
+        project.setGroup(properties.getProperty("group"));
         project.getPluginManager().apply("srki2k.local-git-dependency");
         project.getPluginManager().apply("java");
     }
@@ -42,7 +53,6 @@ public class TaskTest {
             GradleUtil.buildGradleProject(dependency);
         });*/
     }
-
 
 
 }

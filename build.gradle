@@ -4,8 +4,8 @@ apply {
     plugin 'java'
     plugin 'idea'
 }
-group = "srki2k"
-version = 0.1
+group = project.group
+version = project.version
 
 repositories {
     mavenCentral()

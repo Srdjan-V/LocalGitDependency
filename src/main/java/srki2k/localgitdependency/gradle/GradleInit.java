@@ -1,78 +1,78 @@
 package srki2k.localgitdependency.gradle;
 
+import srki2k.localgitdependency.Instances;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 public class GradleInit {
-    private GradleInit() {
-    }
-
     public static String createInitProbe() {
-        StringBuilder stringBuilder = new StringBuilder("initscript {").append(System.lineSeparator());
+        GradleInit gradleInit = new GradleInit();
+        gradleInit.appendLine(1, "repositories {");
+        gradleInit.appendLine(2, "mavenCentral()");
+        gradleInit.appendLine(2, "mavenLocal()");
+        gradleInit.appendLine(1, "}");
 
-        appendLine(stringBuilder, 1, "repositories {");
-        appendLine(stringBuilder, 2, "mavenCentral()");
-        appendLine(stringBuilder, 2, "mavenLocal()");
-        appendLine(stringBuilder, 1, "}");
+        gradleInit.appendLine(1, "dependencies {");
+        gradleInit.appendLine(2, String.format("classpath \"srki2k:local-git-dependency:%s\"", Instances.getProject().getVersion()));
+        gradleInit.appendLine(1, "}");
+        gradleInit.appendLine(0, "}");
 
-        appendLine(stringBuilder, 1, "dependencies {");
-        appendLine(stringBuilder, 2, "classpath \"srki2k:local-git-dependency:0.+\""); // TODO: 07/02/2023 make the version dynamic
-        appendLine(stringBuilder, 1, "}");
-        appendLine(stringBuilder, 0, "}");
+        gradleInit.appendLine(0, "rootProject {");
+        gradleInit.appendLine(1, Plugins.modelInjection().toString());
 
-        appendLine(stringBuilder, 0, "rootProject {");
-        appendLine(stringBuilder, 1, Plugins.MODEL_INJECTION.toString());
-        appendLine(stringBuilder, 0, "}");
-
-        return stringBuilder.toString();
+        return gradleInit.render();
     }
 
-    public static String crateInitProject(Plugins[] plugins, JavaJars[] javaJars, Task[] tasks, Artifacts artifact, Publishing publishing) {
-        StringBuilder stringBuilder = new StringBuilder("rootProject {").append(System.lineSeparator());
-        for (Plugins plugin : plugins) {
-            appendLine(stringBuilder, 1, plugin.toString());
-        }
+    private final StringBuilder stringBuilder;
 
-        if (javaJars != null) {
-            appendLine(stringBuilder, 1, "java {");
-            for (JavaJars javaBlock : javaJars) {
-                appendLine(stringBuilder, 2, javaBlock.toString());
-            }
-            appendLine(stringBuilder, 1, "}");
-        }
-
-        if (tasks != null) {
-            for (Task task : tasks) {
-                task.buildTask(stringBuilder);
-            }
-        }
-
-        if (artifact != null) {
-            artifact.buildArtifact(stringBuilder);
-        }
-
-        if (publishing != null) {
-            publishing.buildPublishing(stringBuilder);
-        }
-
-        return stringBuilder.append("}").toString();
+    public static String crateInitProject(Consumer<GradleInit> gradle) {
+        return new GradleInit(gradle).render();
     }
 
-    private final static String stringIndent = "    ";
+    private GradleInit(Consumer<GradleInit> gradle) {
+        stringBuilder = new StringBuilder("rootProject {").append(System.lineSeparator());
+        gradle.accept(this);
+    }
 
-    private static void appendLine(StringBuilder stringBuilder, int indent, String string) {
+    private GradleInit() {
+        stringBuilder = new StringBuilder("initscript {").append(System.lineSeparator());
+    }
+
+    private void appendLine(int indent, String string) {
         for (int i = 0; i < indent; i++) {
-            stringBuilder.append(stringIndent);
+            stringBuilder.append("    ");
         }
         stringBuilder.append(string).append(System.lineSeparator());
     }
 
-    enum Plugins {
-        MAVEN_PUBLISH("apply plugin: \"maven-publish\""),
-        JAVA("apply plugin: \"java\""),
-        MODEL_INJECTION("apply plugin: srki2k.localgitdependency.injection.plugin.ModelInjectionPlugin");
+    public void setPlugins(Consumer<List<Plugins>> plugins) {
+        List<Plugins> pluginsList = new ArrayList<>();
+        plugins.accept(pluginsList);
 
+        for (Plugins plugin : pluginsList) {
+            appendLine(1, plugin.toString());
+        }
+    }
+
+    static class Plugins {
         private final String plugin;
 
-        Plugins(String plugin) {
+        private Plugins(String plugin) {
             this.plugin = plugin;
+        }
+
+        public static Plugins mavenPublish() {
+            return new Plugins("apply plugin: \"maven-publish\"");
+        }
+
+        public static Plugins java() {
+            return new Plugins("apply plugin: \"java\"");
+        }
+
+        public static Plugins modelInjection() {
+            return new Plugins("apply plugin: srki2k.localgitdependency.injection.plugin.ModelInjectionPlugin");
         }
 
         @Override
@@ -81,19 +81,50 @@ public class GradleInit {
         }
     }
 
-    enum JavaJars {
-        JAVADOC("withJavadocJar()"),
-        SOURCES("withSourcesJar()");
-        private final String javaBlock;
 
-        JavaJars(String javaBlock) {
-            this.javaBlock = javaBlock;
+    public void setJavaJars(Consumer<List<JavaJars>> javaJars) {
+        List<JavaJars> javaJarsList = new ArrayList<>();
+        javaJars.accept(javaJarsList);
+
+        for (JavaJars javaJar : javaJarsList) {
+            appendLine(1, javaJar.toString());
+        }
+    }
+
+    static class JavaJars {
+        private final String jars;
+
+        private JavaJars(String jars) {
+            this.jars = jars;
+        }
+
+        public static JavaJars javadoc() {
+            return new JavaJars("withJavadocJar()");
+        }
+
+        public static JavaJars sources() {
+            return new JavaJars("withSourcesJar()");
         }
 
         @Override
         public String toString() {
-            return javaBlock;
+            return jars;
         }
+    }
+
+    public void setTasks(Consumer<List<Task>> Tasks) {
+        List<Task> tasks = new ArrayList<>();
+        Tasks.accept(tasks);
+
+        for (Task task : tasks) {
+            task.buildTask(this);
+        }
+
+        appendLine(1, "artifacts {");
+        for (Task task : tasks) {
+            appendLine(2, String.format("archives %s", task.name));
+        }
+        appendLine(1, "}");
     }
 
     static class Task {
@@ -107,28 +138,29 @@ public class GradleInit {
             this.classifier = classifier;
         }
 
-        public void buildTask(StringBuilder stringBuilder) {
-            appendLine(stringBuilder, 1, String.format("tasks.register(\"%s\", Jar) {", name));
-            appendLine(stringBuilder, 2, String.format("from %s", sourceSets));
-            appendLine(stringBuilder, 2, String.format("classifier = '%s'", classifier));
-            appendLine(stringBuilder, 1, "}");
+        public void buildTask(GradleInit gradleInit) {
+            gradleInit.appendLine(1, String.format("tasks.register(\"%s\", Jar) {", name));
+            gradleInit.appendLine(2, String.format("from %s", sourceSets));
+            gradleInit.appendLine(2, String.format("classifier = '%s'", classifier));
+            gradleInit.appendLine(1, "}");
         }
     }
 
-    static class Artifacts {
-        private final Task[] tasks;
+    public void setPublications(Consumer<List<Publication>> Publication) {
+        List<Publication> publications = new ArrayList<>();
+        Publication.accept(publications);
 
-        public Artifacts(Task... tasks) {
-            this.tasks = tasks;
+        appendLine(1, "publishing {");
+        appendLine(2, "publications {");
+        for (Publication publication : publications) {
+            appendLine(3, String.format("%s(MavenPublication) {", publication.publicationName));
+            appendLine(4, "from components.java");
+            if (publication.task != null)
+                appendLine(4, String.format("artifact %s", publication.task.name));
+            appendLine(3, "}");
         }
-
-        public void buildArtifact(StringBuilder stringBuilder) {
-            appendLine(stringBuilder, 1, "artifacts {");
-            for (Task task : tasks) {
-                appendLine(stringBuilder, 2, String.format("archives %s", task.name));
-            }
-            appendLine(stringBuilder, 1, "}");
-        }
+        appendLine(2, "}");
+        appendLine(1, "}");
     }
 
     static class Publication {
@@ -141,25 +173,13 @@ public class GradleInit {
         }
     }
 
-    static class Publishing {
-        private final Publication[] publications;
+    public String render() {
+        appendLine(0, "}");
+        return stringBuilder.toString();
+    }
 
-        public Publishing(Publication... publications) {
-            this.publications = publications;
-        }
-
-        public void buildPublishing(StringBuilder stringBuilder) {
-            appendLine(stringBuilder, 1, "publishing {");
-            appendLine(stringBuilder, 2, "publications {");
-            for (Publication publication : publications) {
-                appendLine(stringBuilder, 3, String.format("%s(MavenPublication) {", publication.publicationName));
-                appendLine(stringBuilder, 4, "from components.java");
-                if (publication.task != null)
-                    appendLine(stringBuilder, 4, String.format("artifact %s", publication.task.name));
-                appendLine(stringBuilder, 3, "}");
-            }
-            appendLine(stringBuilder, 2, "}");
-            appendLine(stringBuilder, 1, "}");
-        }
+    @Override
+    public String toString() {
+        return stringBuilder.toString();
     }
 }

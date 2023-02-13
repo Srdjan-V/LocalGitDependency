@@ -29,7 +29,7 @@ public class Constants {
     public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> {
         File persistentInitScript = new File(persistentFolder, name + "/" + name + "Init.gradle");
         if (!persistentInitScript.exists()) {
-            persistentInitScript.getParentFile().mkdir();
+            persistentInitScript.getParentFile().mkdirs();
             try {
                 persistentInitScript.createNewFile();
             } catch (IOException e) {
@@ -41,7 +41,7 @@ public class Constants {
     public static final BiFunction<File, String, File> persistentJsonFile = (persistentFolder, name) -> {
         File persistentJsonFile = new File(persistentFolder, name + "/" + name + ".json");
         if (!persistentJsonFile.exists()) {
-            persistentJsonFile.getParentFile().mkdir();
+            persistentJsonFile.getParentFile().mkdirs();
             try {
                 persistentJsonFile.createNewFile();
             } catch (IOException e) {

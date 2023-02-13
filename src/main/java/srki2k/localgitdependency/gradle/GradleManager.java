@@ -18,8 +18,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class GradleManager {
     private final Map<File, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
@@ -47,19 +49,23 @@ public class GradleManager {
                 probeProject(dependency);
             }
 
-            createDependencyInitScript(dependency);
+            if (!dependency.getGradleInfo().isGradleProbeCashing()) {
+                createDependencyInitScript(dependency);
+            }
         }
     }
 
-    public void buildDependecies() {
+    public void buildDependencies() {
         for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
-            switch (dependency.getDependencyType()) {
-                case Jar:
-                    buildGradleProject(dependency);
-                    break;
+            if (dependency.getGitInfo().hasRefreshed()) {
+                switch (dependency.getDependencyType()) {
+                    case Jar:
+                        buildGradleProject(dependency);
+                        break;
 
-                case MavenLocal:
-                    publishGradleProject(dependency);
+                    case MavenLocal:
+                        publishGradleProject(dependency);
+                }
             }
         }
     }
@@ -108,27 +114,32 @@ public class GradleManager {
     }
 
     private void createDependencyInitScript(Dependency dependency) {
-        int[] gradleVersion = Arrays.stream(dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+        DefaultLocalGitDependencyInfoModel model = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel();
+        int[] gradleVersion = Arrays.stream(model.projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+
+        Consumer<List<GradleInit.Plugins>> plugins = pluginsList -> {
+            pluginsList.add(GradleInit.Plugins.java());
+            pluginsList.add(GradleInit.Plugins.mavenPublish());
+        };
+
         String initFile;
         if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
-            initFile = GradleInit.crateInitProject(
-                    new GradleInit.Plugins[]{GradleInit.Plugins.JAVA, GradleInit.Plugins.MAVEN_PUBLISH},
-                    null,
-                    null,
-                    null,
-                    new GradleInit.Publishing(new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), null))
-            );
+            Consumer<GradleInit> configuration = gradleInit -> {
+                gradleInit.setPlugins(plugins);
+                gradleInit.setJavaJars(javaJars -> javaJars.add(GradleInit.JavaJars.sources()));
+                gradleInit.setPublications(taskPublication -> taskPublication.add(new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), null)));
+            };
+            initFile = GradleInit.crateInitProject(configuration);
         } else {
             GradleInit.Task sourceTask = new GradleInit.Task(Constants.JarTaskName.apply(dependency.getName()), "sourceSets.main.allJava", "source");
             GradleInit.Publication taskPublication = new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), sourceTask);
 
-            initFile = GradleInit.crateInitProject(
-                    new GradleInit.Plugins[]{GradleInit.Plugins.JAVA, GradleInit.Plugins.MAVEN_PUBLISH},
-                    null,
-                    new GradleInit.Task[]{sourceTask},
-                    new GradleInit.Artifacts(sourceTask),
-                    new GradleInit.Publishing(taskPublication)
-            );
+            Consumer<GradleInit> configuration = gradleInit -> {
+                gradleInit.setPlugins(plugins);
+                gradleInit.setTasks(tasks -> tasks.add(sourceTask));
+                gradleInit.setPublications(taskPublication1 -> taskPublication1.add(taskPublication));
+            };
+            initFile = GradleInit.crateInitProject(configuration);
         }
         writeToFile(dependency.getGradleInfo().getInitScript(), initFile);
     }
