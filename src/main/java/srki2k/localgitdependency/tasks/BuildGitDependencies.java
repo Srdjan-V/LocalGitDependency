@@ -2,13 +2,13 @@ package srki2k.localgitdependency.tasks;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
-import srki2k.localgitdependency.Instances;
 
 public abstract class BuildGitDependencies extends DefaultTask {
 
     @TaskAction
     public void task$BuildGitDependencies() {
-        Instances.getDependencyManager().buildDependencies(true);
+        // TODO: 13/02/2023 probably remove
+        //Instances.getDependencyManager().buildDependencies(true);
     }
 
 }

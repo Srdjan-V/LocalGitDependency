@@ -30,7 +30,7 @@ gradlePlugin {
     plugins {
         localGitDependency {
             id = 'srki2k.local-git-dependency'
-            implementationClass = 'srki2k.localgitdependency.GitProjectPlugin'
+            implementationClass = 'srki2k.localgitdependency.LocalGitDependencyPlugin'
         }
 
         modelInjection {

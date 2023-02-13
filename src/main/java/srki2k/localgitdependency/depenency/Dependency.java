@@ -22,7 +22,7 @@ public class Dependency {
         Instances.getPropertyManager().applyDefaultProperty(dependencyProperty);
 
         this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
-        this.configurationName = configurationName == null ? dependencyProperty.getName() : configurationName;
+        this.configurationName = configurationName == null ? dependencyProperty.getDefaultConfiguration() : configurationName;
         this.dependencyType = dependencyProperty.getDependencyType();
         this.gitInfo = new GitInfo(dependencyProperty, this);
         this.gradleInfo = new GradleInfo(dependencyProperty, this);
@@ -42,7 +42,7 @@ public class Dependency {
         return gradleInfo;
     }
 
-    public PersistentInfo getPersistentProperty() {
+    public PersistentInfo getPersistentInfo() {
         return persistentInfo;
     }
 

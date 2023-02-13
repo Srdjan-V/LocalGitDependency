@@ -43,11 +43,24 @@ public class GradleManager {
     public void initGradleAPI() {
         createMainInitScript();
         for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
-            if (!dependency.getPersistentProperty().isValidModel()) {
+            if (!dependency.getPersistentInfo().isValidModel()) {
                 probeProject(dependency);
             }
 
             createDependencyInitScript(dependency);
+        }
+    }
+
+    public void buildDependecies() {
+        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+            switch (dependency.getDependencyType()) {
+                case Jar:
+                    buildGradleProject(dependency);
+                    break;
+
+                case MavenLocal:
+                    publishGradleProject(dependency);
+            }
         }
     }
 
@@ -69,11 +82,11 @@ public class GradleManager {
                     localGitDependencyInfoModel.getAllJarTasksNames(),
                     null
             );
-            dependency.getPersistentProperty().setDefaultLocalGitDependencyInfoModel(defaultLocalGitDependencyInfoModel);
+            dependency.getPersistentInfo().setDefaultLocalGitDependencyInfoModel(defaultLocalGitDependencyInfoModel);
         }
     }
 
-    public void buildGradleProject(Dependency dependency) {
+    private void buildGradleProject(Dependency dependency) {
         DefaultGradleConnector connector = getGradleConnector(dependency);
         try (ProjectConnection connection = connector.connect()) {
             BuildLauncher build = connection.newBuild();
@@ -83,24 +96,24 @@ public class GradleManager {
         }
     }
 
-    public void publishGradleProject(Dependency dependency) {
+    private void publishGradleProject(Dependency dependency) {
         DefaultGradleConnector connector = getGradleConnector(dependency);
         try (ProjectConnection connection = connector.connect()) {
             BuildLauncher build = connection.newBuild();
             build.withArguments("--init-script", dependency.getGradleInfo().getInitScript().getAbsolutePath());
             // TODO: 07/02/2023 set generated publication
-            build.forTasks("maven-publish");
+            build.forTasks("publishToMavenLocal");
             build.run();
         }
     }
 
     private void createDependencyInitScript(Dependency dependency) {
-        int[] gradleVersion = Arrays.stream(dependency.getPersistentProperty().getDefaultLocalGitDependencyInfoModel().projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+        int[] gradleVersion = Arrays.stream(dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
         String initFile;
         if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
             initFile = GradleInit.crateInitProject(
                     new GradleInit.Plugins[]{GradleInit.Plugins.JAVA, GradleInit.Plugins.MAVEN_PUBLISH},
-                    new GradleInit.JavaJars[]{GradleInit.JavaJars.SOURCES},
+                    null,
                     null,
                     null,
                     new GradleInit.Publishing(new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), null))

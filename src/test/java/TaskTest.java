@@ -30,7 +30,7 @@ public class TaskTest {
         Instances.getGitManager().initRepos();
         Instances.getGradleManager().initGradleAPI();
         Instances.getDependencyManager().savePersistentData();
-        //Instances.getDependencyManager().buildDependencies(true);
+        Instances.getDependencyManager().addBuiltDependencies();
     }
 
     @Test

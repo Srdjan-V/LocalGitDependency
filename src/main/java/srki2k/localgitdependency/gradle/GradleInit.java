@@ -155,7 +155,7 @@ public class GradleInit {
                 appendLine(stringBuilder, 3, String.format("%s(MavenPublication) {", publication.publicationName));
                 appendLine(stringBuilder, 4, "from components.java");
                 if (publication.task != null)
-                    appendLine(stringBuilder, 4, String.format("archives %s", publication.task.name));
+                    appendLine(stringBuilder, 4, String.format("artifact %s", publication.task.name));
                 appendLine(stringBuilder, 3, "}");
             }
             appendLine(stringBuilder, 2, "}");

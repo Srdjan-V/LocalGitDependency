@@ -89,7 +89,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
     }
 
     private void checkSHA1() throws IOException, GitAPIException, NoSuchFieldException, IllegalAccessException {
-        String persistentWorkingDirSHA1 = gitInfo.getDependency().getPersistentProperty().getWorkingDirSHA1();
+        String persistentWorkingDirSHA1 = gitInfo.getDependency().getPersistentInfo().getWorkingDirSHA1();
         String workingDirSHA1;
         if (hasLocalChanges()) {
             workingDirSHA1 = createSHA1OfLocalChanges();
@@ -99,13 +99,13 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
 
         if (persistentWorkingDirSHA1 == null) {
             gitInfo.setRefreshed();
-            gitInfo.getDependency().getPersistentProperty().setWorkingDirSHA1(workingDirSHA1);
+            gitInfo.getDependency().getPersistentInfo().setWorkingDirSHA1(workingDirSHA1);
             return;
         }
 
         if (persistentWorkingDirSHA1.equals(workingDirSHA1)) return;
         gitInfo.setRefreshed();
-        gitInfo.getDependency().getPersistentProperty().setWorkingDirSHA1(workingDirSHA1);
+        gitInfo.getDependency().getPersistentInfo().setWorkingDirSHA1(workingDirSHA1);
     }
 
     private boolean hasLocalChanges() throws NoSuchFieldException, IllegalAccessException, GitAPIException {

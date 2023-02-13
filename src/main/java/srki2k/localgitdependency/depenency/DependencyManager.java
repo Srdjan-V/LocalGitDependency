@@ -27,6 +27,7 @@ public class DependencyManager {
         dependencies.add(new Dependency(configurationName, new Property(dependencyProperty)));
     }
 
+/*
     // TODO: 06/02/2023  make a better implementation
     public void buildDependencies(boolean explicitBuild) {
         for (Dependency dependency : dependencies) {
@@ -46,15 +47,18 @@ public class DependencyManager {
             }
 
 
+*/
 /*            if (dependency.isManualBuild()) {
                 if (GitUtils.hasLocalChangesInDir(dependency.getDir())) {
                     Logger.warn("Dependency {} has local changes but is not being automatically built", dependency.getName());
                 }
-            }*/
+            }*//*
+
         }
     }
+*/
 
-    public void addBuiltJarsAsDependencies(Dependency dependency) {
+    private void addBuiltJarsAsDependencies(Dependency dependency) {
         Path libs = Constants.buildDir.apply(dependency.getGitInfo().getDir()).toPath();
 
         if (!Files.exists(libs)) {
@@ -88,8 +92,11 @@ public class DependencyManager {
         project.getDependencies().add(dependency.getConfigurationName(), project.getLayout().files(deeps));
     }
 
-    public void addMavenJarsAsDependencies(Dependency dependency) {
-        // TODO: 05/02/2023
+    private void addMavenJarsAsDependencies(Dependency dependency) {
+        // TODO: 05/02/2023 add logging
+
+        Project project = Instances.getProject();
+        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
     }
 
     public void addBuiltDependencies() {
@@ -106,7 +113,7 @@ public class DependencyManager {
 
     public void savePersistentData() {
         for (Dependency dependency : dependencies) {
-            dependency.getPersistentProperty().saveToPersistentFile();
+            dependency.getPersistentInfo().saveToPersistentFile();
         }
     }
 
