@@ -8,6 +8,7 @@ import srki2k.localgitdependency.depenency.Dependency;
 import java.lang.reflect.Field;
 
 public class PropertyManager {
+    private boolean createdEssentialDirectories;
     private boolean customGlobalProperty;
     private DefaultProperty globalProperty;
 
@@ -24,6 +25,23 @@ public class PropertyManager {
         globalProperty = new DefaultProperty(builder);
     }
 
+    private void createEssentialDirectories() {
+        if (createdEssentialDirectories) return;
+
+        if (!globalProperty.persistentFolder.exists()) {
+            globalProperty.persistentFolder.mkdirs();
+        } else if (!globalProperty.persistentFolder.isDirectory()) {
+            throw new GradleException(globalProperty.persistentFolder.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
+        }
+
+        if (!globalProperty.dir.exists()) {
+            globalProperty.dir.mkdirs();
+        } else if (!globalProperty.dir.isDirectory()) {
+            throw new GradleException(globalProperty.dir.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
+        }
+        createdEssentialDirectories = true;
+    }
+
     public void globalProperty(Closure<?> configureClosure) {
         if (configureClosure != null) {
             if (customGlobalProperty) {
@@ -38,6 +56,7 @@ public class PropertyManager {
     }
 
     public DefaultProperty getGlobalProperty() {
+        createEssentialDirectories();
         return globalProperty;
     }
 

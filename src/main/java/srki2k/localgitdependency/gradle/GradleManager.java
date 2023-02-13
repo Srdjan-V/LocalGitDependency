@@ -8,6 +8,7 @@ import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.Instances;
 import srki2k.localgitdependency.depenency.Dependency;
+import srki2k.localgitdependency.injection.model.DefaultLocalGitDependencyInfoModel;
 import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 
 import java.io.BufferedOutputStream;
@@ -42,7 +43,33 @@ public class GradleManager {
     public void initGradleAPI() {
         createMainInitScript();
         for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
-            //dependency.
+            if (!dependency.getPersistentProperty().isValidModel()) {
+                probeProject(dependency);
+            }
+
+            createDependencyInitScript(dependency);
+        }
+    }
+
+    private void probeProject(Dependency dependency) {
+        File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
+        File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
+
+        DefaultGradleConnector connector = getGradleConnector(dependency);
+        try (ProjectConnection connection = connector.connect()) {
+            ModelBuilder<LocalGitDependencyInfoModel> customModelBuilder = connection.model(LocalGitDependencyInfoModel.class);
+            customModelBuilder.withArguments("--init-script", mainInit.getAbsolutePath());
+            LocalGitDependencyInfoModel localGitDependencyInfoModel = customModelBuilder.get();
+            // TODO: 13/02/2023 crate a better bridge 
+            DefaultLocalGitDependencyInfoModel defaultLocalGitDependencyInfoModel = new DefaultLocalGitDependencyInfoModel(
+                    localGitDependencyInfoModel.getProjectId(),
+                    localGitDependencyInfoModel.projectGradleVersion(),
+                    localGitDependencyInfoModel.hasJavaPlugin(),
+                    localGitDependencyInfoModel.hasMavenPublishPlugin(),
+                    localGitDependencyInfoModel.getAllJarTasksNames(),
+                    null
+            );
+            dependency.getPersistentProperty().setDefaultLocalGitDependencyInfoModel(defaultLocalGitDependencyInfoModel);
         }
     }
 
@@ -67,45 +94,32 @@ public class GradleManager {
         }
     }
 
-    public void createDependencyInitScript(Dependency dependency) {
-        File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
-        if (!initScriptFolder.exists()) {
-            initScriptFolder.mkdirs();
+    private void createDependencyInitScript(Dependency dependency) {
+        int[] gradleVersion = Arrays.stream(dependency.getPersistentProperty().getDefaultLocalGitDependencyInfoModel().projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+        String initFile;
+        if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
+            initFile = GradleInit.crateInitProject(
+                    new GradleInit.Plugins[]{GradleInit.Plugins.JAVA, GradleInit.Plugins.MAVEN_PUBLISH},
+                    new GradleInit.JavaJars[]{GradleInit.JavaJars.SOURCES},
+                    null,
+                    null,
+                    new GradleInit.Publishing(new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), null))
+            );
+        } else {
+            GradleInit.Task sourceTask = new GradleInit.Task(Constants.JarTaskName.apply(dependency.getName()), "sourceSets.main.allJava", "source");
+            GradleInit.Publication taskPublication = new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), sourceTask);
+
+            initFile = GradleInit.crateInitProject(
+                    new GradleInit.Plugins[]{GradleInit.Plugins.JAVA, GradleInit.Plugins.MAVEN_PUBLISH},
+                    null,
+                    new GradleInit.Task[]{sourceTask},
+                    new GradleInit.Artifacts(sourceTask),
+                    new GradleInit.Publishing(taskPublication)
+            );
         }
-
-        File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
-
-        DefaultGradleConnector connector = getGradleConnector(dependency);
-        try (ProjectConnection connection = connector.connect()) {
-            ModelBuilder<LocalGitDependencyInfoModel> customModelBuilder = connection.model(LocalGitDependencyInfoModel.class);
-            customModelBuilder.withArguments("--init-script", mainInit.getAbsolutePath());
-            LocalGitDependencyInfoModel model = customModelBuilder.get();
-            int[] gradleVersion = Arrays.stream(model.projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
-
-            String initFile;
-            if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
-                initFile = GradleInit.crateInitProject(
-                        new GradleInit.Plugins[]{GradleInit.Plugins.JAVA, GradleInit.Plugins.MAVEN_PUBLISH},
-                        new GradleInit.JavaJars[]{GradleInit.JavaJars.SOURCES},
-                        null,
-                        null,
-                        new GradleInit.Publishing(new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), null))
-                );
-            } else {
-                GradleInit.Task sourceTask = new GradleInit.Task(Constants.JarTaskName.apply(dependency.getName()), "sourceSets.main.allJava", "source");
-                GradleInit.Publication taskPublication = new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), sourceTask);
-
-                initFile = GradleInit.crateInitProject(
-                        new GradleInit.Plugins[]{GradleInit.Plugins.JAVA, GradleInit.Plugins.MAVEN_PUBLISH},
-                        null,
-                        new GradleInit.Task[]{sourceTask},
-                        new GradleInit.Artifacts(sourceTask),
-                        new GradleInit.Publishing(taskPublication)
-                );
-            }
-            writeToFile(dependency.getGradleInfo().getInitScript(), initFile);
-        }
+        writeToFile(dependency.getGradleInfo().getInitScript(), initFile);
     }
+
 
     private void createMainInitScript() {
         File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();

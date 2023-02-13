@@ -26,8 +26,9 @@ public class TaskTest {
     @Test
     void beforeAll() {
         Instances.getSettingsExtension().add("implementation", "https://github.com/Srdjan-V/TweakedLib.git");
-        //Instances.getSettingsExtension().add("https://github.com/CleanroomMC/GroovyScript.git");
+        Instances.getSettingsExtension().add("https://github.com/CleanroomMC/GroovyScript.git");
         Instances.getGitManager().initRepos();
+        Instances.getGradleManager().initGradleAPI();
         Instances.getDependencyManager().savePersistentData();
         //Instances.getDependencyManager().buildDependencies(true);
     }

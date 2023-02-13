@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 public class Dependency {
     private final String name;
     private final String configurationName;
-    private final PersistentProperty persistentProperty;
+    private final PersistentInfo persistentInfo;
     private final DependencyType dependencyType;
     private final GitInfo gitInfo;
     private final GradleInfo gradleInfo;
@@ -26,7 +26,7 @@ public class Dependency {
         this.dependencyType = dependencyProperty.getDependencyType();
         this.gitInfo = new GitInfo(dependencyProperty, this);
         this.gradleInfo = new GradleInfo(dependencyProperty, this);
-        this.persistentProperty = new PersistentProperty(dependencyProperty, this);
+        this.persistentInfo = new PersistentInfo(dependencyProperty, this);
         validate();
     }
 
@@ -42,8 +42,8 @@ public class Dependency {
         return gradleInfo;
     }
 
-    public PersistentProperty getPersistentProperty() {
-        return persistentProperty;
+    public PersistentInfo getPersistentProperty() {
+        return persistentInfo;
     }
 
     public String getName() {

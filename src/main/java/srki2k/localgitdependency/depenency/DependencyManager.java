@@ -37,7 +37,7 @@ public class DependencyManager {
 
             if (explicitBuild || !dependency.getGradleInfo().isManualBuild()) {
                 try {
-                    Instances.getGradleApiManager().buildGradleProject(dependency);
+                    Instances.getGradleManager().buildGradleProject(dependency);
                 } catch (Exception exception) {
                     Logger.error("Exception thrown while building Dependency {}", dependency.getName());
                     Logger.error("Exception {}", exception);

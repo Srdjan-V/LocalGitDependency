@@ -1,6 +1,7 @@
 package srki2k.localgitdependency;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -22,11 +23,33 @@ public class Constants {
 
     public static final Supplier<File> defaultDir = () -> new File(Instances.getProject().getLayout().getProjectDirectory().getAsFile(), "/localGitDependency");
 
-    public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!persistent");
+    public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!data");
     public static final Function<File, File> defaultLibsDir = file -> new File(file, "/libs");
 
-    public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> new File(persistentFolder, name + "/" + name + "Init.gradle");
-    public static final BiFunction<File, String, File> persistentJsonFile = (persistentFolder, name) -> new File(persistentFolder, name + "/" + name + ".json");
+    public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> {
+        File persistentInitScript = new File(persistentFolder, name + "/" + name + "Init.gradle");
+        if (!persistentInitScript.exists()) {
+            persistentInitScript.getParentFile().mkdir();
+            try {
+                persistentInitScript.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return persistentInitScript;
+    };
+    public static final BiFunction<File, String, File> persistentJsonFile = (persistentFolder, name) -> {
+        File persistentJsonFile = new File(persistentFolder, name + "/" + name + ".json");
+        if (!persistentJsonFile.exists()) {
+            persistentJsonFile.getParentFile().mkdir();
+            try {
+                persistentJsonFile.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return persistentJsonFile;
+    };
 
     public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
 

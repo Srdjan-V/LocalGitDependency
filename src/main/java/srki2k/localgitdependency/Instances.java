@@ -39,11 +39,11 @@ public class Instances {
         Instances.dependencyManager = dependencyManager;
     }
 
-    public static GradleManager getGradleApiManager() {
+    public static GradleManager getGradleManager() {
         return gradleManager;
     }
 
-    public static void setGradleApiManager(GradleManager gradleManager) {
+    public static void setGradleManager(GradleManager gradleManager) {
         if (Instances.gradleManager != null) {
             Instances.gradleManager.disconnectAllGradleConnectors();
         }

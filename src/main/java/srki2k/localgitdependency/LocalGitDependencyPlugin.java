@@ -11,7 +11,7 @@ import srki2k.localgitdependency.tasks.BuildGitDependencies;
 import srki2k.localgitdependency.tasks.UndoLocalGitChanges;
 import srki2k.localgitdependency.gradle.GradleManager;
 
-public class GitProjectPlugin implements Plugin<Project> {
+public class LocalGitDependencyPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
@@ -20,7 +20,7 @@ public class GitProjectPlugin implements Plugin<Project> {
 
         Instances.setProject(project);
         Instances.setDependencyManager(new DependencyManager());
-        Instances.setGradleApiManager(new GradleManager());
+        Instances.setGradleManager(new GradleManager());
         Instances.setPropertyManager(new PropertyManager());
         Instances.setGitManager(new GitManager());
         Instances.setSettingsExtension(project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, SettingsExtension.class));
@@ -30,9 +30,8 @@ public class GitProjectPlugin implements Plugin<Project> {
 
         project.afterEvaluate(p -> {
             Instances.getGitManager().initRepos();
-            Instances.getGradleApiManager().initGradleAPI();
-            Instances.getDependencyManager().buildDependencies(false);
-            Instances.getDependencyManager().addBuiltDependencies();
+            Instances.getGradleManager().initGradleAPI();
+            Instances.getDependencyManager().savePersistentData();
         });
     }
 
