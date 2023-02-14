@@ -3,7 +3,7 @@ package srki2k.localgitdependency.depenency;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import srki2k.localgitdependency.Constants;
-import srki2k.localgitdependency.injection.model.DefaultLocalGitDependencyInfoModel;
+import srki2k.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
 import srki2k.localgitdependency.property.Property;
 
 import java.io.*;
@@ -68,7 +68,7 @@ public class PersistentInfo {
     public void saveToPersistentFile() {
         if (!dirty) return;
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (PrintWriter pw = new PrintWriter(persistentFile);) {
+        try (PrintWriter pw = new PrintWriter(persistentFile)) {
             pw.write(gson.toJson(gsonSerializableProperty));
         } catch (FileNotFoundException ignore) {
         }

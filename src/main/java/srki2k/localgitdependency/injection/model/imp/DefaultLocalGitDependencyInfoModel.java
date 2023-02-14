@@ -1,7 +1,12 @@
-package srki2k.localgitdependency.injection.model;
+package srki2k.localgitdependency.injection.model.imp;
+
+import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
+import srki2k.localgitdependency.injection.model.PublicationObject;
+import srki2k.localgitdependency.injection.model.TaskObject;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInfoModel, Serializable {
     public static final long serialVersionUID = 1L;
@@ -10,19 +15,19 @@ public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInf
     private final String projectGradleVersion;
     private final boolean hasJavaPlugin;
     private final boolean hasMavenPublishPlugin;
-    private final List<String> allJarTasksNames;
-    private final List<String> allPublicationsNames;
+    private final List<DefaultTaskObject> appropriateTasks;
+    private final DefaultPublicationObject publicationObject;
 
 
     public DefaultLocalGitDependencyInfoModel(
             String projectId, String projectGradleVersion, boolean hasJavaPlugin,
-            boolean hasMavenPublishPlugin, List<String> allJarTasksNames, List<String> allPublicationsNames) {
+            boolean hasMavenPublishPlugin, List<DefaultTaskObject> appropriateTasks, DefaultPublicationObject defaultPublicationObject) {
         this.projectId = projectId;
         this.projectGradleVersion = projectGradleVersion;
         this.hasJavaPlugin = hasJavaPlugin;
         this.hasMavenPublishPlugin = hasMavenPublishPlugin;
-        this.allJarTasksNames = allJarTasksNames;
-        this.allPublicationsNames = allPublicationsNames;
+        this.appropriateTasks = appropriateTasks;
+        this.publicationObject = defaultPublicationObject;
     }
 
     @Override
@@ -46,12 +51,12 @@ public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInf
     }
 
     @Override
-    public List<String> getAllJarTasksNames() {
-        return allJarTasksNames;
+    public List<TaskObject> getAppropriateTasks() {
+        return appropriateTasks.stream().map(defaultTaskObject -> (TaskObject) defaultTaskObject).collect(Collectors.toList());
     }
 
-    // TODO: 07/02/2023 remove
-    public List<String> getAllPublicationsNames() {
-        return allPublicationsNames;
+    @Override
+    public PublicationObject getAppropriatePublication() {
+        return publicationObject;
     }
 }

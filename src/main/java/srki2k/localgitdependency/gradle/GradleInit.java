@@ -81,14 +81,15 @@ public class GradleInit {
         }
     }
 
-
     public void setJavaJars(Consumer<List<JavaJars>> javaJars) {
         List<JavaJars> javaJarsList = new ArrayList<>();
         javaJars.accept(javaJarsList);
 
+        appendLine(1, "java {");
         for (JavaJars javaJar : javaJarsList) {
             appendLine(1, javaJar.toString());
         }
+        appendLine(1, "}");
     }
 
     static class JavaJars {
@@ -155,8 +156,11 @@ public class GradleInit {
         for (Publication publication : publications) {
             appendLine(3, String.format("%s(MavenPublication) {", publication.publicationName));
             appendLine(4, "from components.java");
-            if (publication.task != null)
-                appendLine(4, String.format("artifact %s", publication.task.name));
+            if (publication.tasks != null) {
+                for (Task task:publication.tasks) {
+                    appendLine(4, String.format("artifact %s", task.name));
+                }
+            }
             appendLine(3, "}");
         }
         appendLine(2, "}");
@@ -165,11 +169,11 @@ public class GradleInit {
 
     static class Publication {
         private final String publicationName;
-        private final Task task;
+        private final List<Task> tasks;
 
-        public Publication(String publicationName, Task task) {
+        public Publication(String publicationName, List<Task> tasks) {
             this.publicationName = publicationName;
-            this.task = task;
+            this.tasks = tasks;
         }
     }
 

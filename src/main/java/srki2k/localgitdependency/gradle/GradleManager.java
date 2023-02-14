@@ -8,20 +8,20 @@ import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.Instances;
 import srki2k.localgitdependency.depenency.Dependency;
-import srki2k.localgitdependency.injection.model.DefaultLocalGitDependencyInfoModel;
+import srki2k.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
 import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
+import srki2k.localgitdependency.injection.model.imp.DefaultPublicationObject;
+import srki2k.localgitdependency.injection.model.imp.DefaultTaskObject;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class GradleManager {
     private final Map<File, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
@@ -49,9 +49,11 @@ public class GradleManager {
                 probeProject(dependency);
             }
 
-            if (!dependency.getGradleInfo().isGradleProbeCashing()) {
+/*            if (!dependency.getGradleInfo().isGradleProbeCashing()) {
                 createDependencyInitScript(dependency);
-            }
+            }*/ // TODO: 13/02/2023 fix 
+
+            createDependencyInitScript(dependency);
         }
     }
 
@@ -85,8 +87,8 @@ public class GradleManager {
                     localGitDependencyInfoModel.projectGradleVersion(),
                     localGitDependencyInfoModel.hasJavaPlugin(),
                     localGitDependencyInfoModel.hasMavenPublishPlugin(),
-                    localGitDependencyInfoModel.getAllJarTasksNames(),
-                    null
+                    localGitDependencyInfoModel.getAppropriateTasks().stream().map(taskObject -> (DefaultTaskObject) taskObject).collect(Collectors.toList()),
+                    (DefaultPublicationObject) localGitDependencyInfoModel.getAppropriatePublication()
             );
             dependency.getPersistentInfo().setDefaultLocalGitDependencyInfoModel(defaultLocalGitDependencyInfoModel);
         }
@@ -131,8 +133,8 @@ public class GradleManager {
             };
             initFile = GradleInit.crateInitProject(configuration);
         } else {
-            GradleInit.Task sourceTask = new GradleInit.Task(Constants.JarTaskName.apply(dependency.getName()), "sourceSets.main.allJava", "source");
-            GradleInit.Publication taskPublication = new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), sourceTask);
+            GradleInit.Task sourceTask = new GradleInit.Task(Constants.JarSourceTaskName.apply(dependency.getName()), "sourceSets.main.allJava", "source");
+            GradleInit.Publication taskPublication = new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), Collections.singletonList(sourceTask));
 
             Consumer<GradleInit> configuration = gradleInit -> {
                 gradleInit.setPlugins(plugins);
