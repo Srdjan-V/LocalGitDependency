@@ -4,6 +4,7 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public interface LocalGitDependencyInfoModel {
+    long serialVersionUID = 1L;
     String getProjectId();
     String projectGradleVersion();
     boolean hasJavaPlugin();

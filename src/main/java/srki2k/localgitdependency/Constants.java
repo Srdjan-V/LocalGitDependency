@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Constants {
+    public final static String PROJECT_VERSION = "@PROJECTVERSION@";
     public final static String EXTENSION_NAME = "LocalGitDependency";
     public final static String LOCAL_GIT_DEPENDENCY_EXTENSION = "localGitDependency";
     public final static String UNDO_LOCAL_GIT_CHANGES = "undoLocalGitChanges";
@@ -18,6 +19,9 @@ public class Constants {
 
 
     public final static Function<String, String> PublicationName = s -> "InitScriptPublicationForProject" + s;
+    public final static Function<String, String> PublicationTaskName = s -> "publish" +
+            s.substring(0, 1).toUpperCase() + s.substring(1) +
+            "PublicationToMavenLocal";
 
     public final static Function<String, String> JarSourceTaskName = s -> "InitScriptSourceTaskForProject" + s;
     public final static Function<String, String> JarJavaDocTaskName = s -> "InitScriptJavaDocTaskForProject" + s;

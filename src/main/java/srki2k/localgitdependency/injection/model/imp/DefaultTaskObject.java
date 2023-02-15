@@ -1,11 +1,12 @@
 package srki2k.localgitdependency.injection.model.imp;
 
+import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import srki2k.localgitdependency.injection.model.TaskObject;
 
 import java.io.Serializable;
 
 public class DefaultTaskObject implements TaskObject, Serializable {
-    public static final long serialVersionUID = DefaultLocalGitDependencyInfoModel.serialVersionUID;
+    public static long serialVersionUID = LocalGitDependencyInfoModel.serialVersionUID;
     private final String name;
     private final String classifier;
 

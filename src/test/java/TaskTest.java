@@ -40,7 +40,7 @@ public class TaskTest {
         Instances.getSettingsExtension().add("https://github.com/CleanroomMC/GroovyScript.git");
         Instances.getGitManager().initRepos();
         Instances.getGradleManager().initGradleAPI();
-        Instances.getDependencyManager().savePersistentData();
+        Instances.getPersistenceManager().savePersistentData();
         Instances.getDependencyManager().addBuiltDependencies();
     }
 

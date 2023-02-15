@@ -1,6 +1,6 @@
 package srki2k.localgitdependency.gradle;
 
-import srki2k.localgitdependency.Instances;
+import srki2k.localgitdependency.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class GradleInit {
         gradleInit.appendLine(1, "}");
 
         gradleInit.appendLine(1, "dependencies {");
-        gradleInit.appendLine(2, String.format("classpath \"srki2k:local-git-dependency:%s\"", Instances.getProject().getVersion()));
+        gradleInit.appendLine(2, String.format("classpath \"srki2k:local-git-dependency:%s\"", Constants.PROJECT_VERSION));
         gradleInit.appendLine(1, "}");
         gradleInit.appendLine(0, "}");
 

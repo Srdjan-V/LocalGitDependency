@@ -8,10 +8,8 @@ import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.Instances;
 import srki2k.localgitdependency.depenency.Dependency;
-import srki2k.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
 import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import srki2k.localgitdependency.injection.model.imp.DefaultPublicationObject;
-import srki2k.localgitdependency.injection.model.imp.DefaultTaskObject;
+import srki2k.localgitdependency.persistence.SerializableProperty;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -21,7 +19,6 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class GradleManager {
     private final Map<File, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
@@ -81,16 +78,7 @@ public class GradleManager {
             ModelBuilder<LocalGitDependencyInfoModel> customModelBuilder = connection.model(LocalGitDependencyInfoModel.class);
             customModelBuilder.withArguments("--init-script", mainInit.getAbsolutePath());
             LocalGitDependencyInfoModel localGitDependencyInfoModel = customModelBuilder.get();
-            // TODO: 13/02/2023 crate a better bridge 
-            DefaultLocalGitDependencyInfoModel defaultLocalGitDependencyInfoModel = new DefaultLocalGitDependencyInfoModel(
-                    localGitDependencyInfoModel.getProjectId(),
-                    localGitDependencyInfoModel.projectGradleVersion(),
-                    localGitDependencyInfoModel.hasJavaPlugin(),
-                    localGitDependencyInfoModel.hasMavenPublishPlugin(),
-                    localGitDependencyInfoModel.getAppropriateTasks().stream().map(taskObject -> (DefaultTaskObject) taskObject).collect(Collectors.toList()),
-                    (DefaultPublicationObject) localGitDependencyInfoModel.getAppropriatePublication()
-            );
-            dependency.getPersistentInfo().setDefaultLocalGitDependencyInfoModel(defaultLocalGitDependencyInfoModel);
+            dependency.getPersistentInfo().setDefaultLocalGitDependencyInfoModel(localGitDependencyInfoModel);
         }
     }
 
@@ -109,15 +97,15 @@ public class GradleManager {
         try (ProjectConnection connection = connector.connect()) {
             BuildLauncher build = connection.newBuild();
             build.withArguments("--init-script", dependency.getGradleInfo().getInitScript().getAbsolutePath());
-            // TODO: 07/02/2023 set generated publication
-            build.forTasks("publishToMavenLocal");
+            build.forTasks(Constants.PublicationTaskName.apply(
+                    dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName()));
             build.run();
         }
     }
 
     private void createDependencyInitScript(Dependency dependency) {
-        DefaultLocalGitDependencyInfoModel model = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel();
-        int[] gradleVersion = Arrays.stream(model.projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+        SerializableProperty.DependencyInfoModelSerializable model = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel();
+        int[] gradleVersion = Arrays.stream(model.getProjectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
 
         Consumer<List<GradleInit.Plugins>> plugins = pluginsList -> {
             pluginsList.add(GradleInit.Plugins.java());
@@ -129,17 +117,28 @@ public class GradleManager {
             Consumer<GradleInit> configuration = gradleInit -> {
                 gradleInit.setPlugins(plugins);
                 gradleInit.setJavaJars(javaJars -> javaJars.add(GradleInit.JavaJars.sources()));
-                gradleInit.setPublications(taskPublication -> taskPublication.add(new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), null)));
+                gradleInit.setPublications(taskPublication -> taskPublication.add(
+                        new GradleInit.Publication(
+                                dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName(),
+                                null)));
             };
             initFile = GradleInit.crateInitProject(configuration);
         } else {
-            GradleInit.Task sourceTask = new GradleInit.Task(Constants.JarSourceTaskName.apply(dependency.getName()), "sourceSets.main.allJava", "source");
-            GradleInit.Publication taskPublication = new GradleInit.Publication(Constants.PublicationName.apply(dependency.getName()), Collections.singletonList(sourceTask));
+            SerializableProperty.PublicationObjectSerializable publicationObject = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject();
+
+            List<GradleInit.Task> tasks = new ArrayList<>();
+            for (SerializableProperty.TaskObjectSerializable taskSerializable : publicationObject.getTasks()) {
+                tasks.add(new GradleInit.Task(taskSerializable.getName(), "sourceSets.main.allJava", taskSerializable.getClassifier()));
+            }
+
+            GradleInit.Publication taskPublication = new GradleInit.Publication(
+                    dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName(),
+                    tasks);
 
             Consumer<GradleInit> configuration = gradleInit -> {
                 gradleInit.setPlugins(plugins);
-                gradleInit.setTasks(tasks -> tasks.add(sourceTask));
-                gradleInit.setPublications(taskPublication1 -> taskPublication1.add(taskPublication));
+                gradleInit.setTasks(t -> t.addAll(tasks));
+                gradleInit.setPublications(p -> p.add(taskPublication));
             };
             initFile = GradleInit.crateInitProject(configuration);
         }

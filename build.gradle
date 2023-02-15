@@ -42,6 +42,18 @@ gradlePlugin {
    // automatedPublishing = false
 }
 
+import org.apache.tools.ant.filters.ReplaceTokens
+task filterTokens(type: Sync) {
+
+    inputs.property 'version', version
+
+    from sourceSets.main.java
+    filter(ReplaceTokens, tokens: [PROJECTVERSION: version.toString()])
+    into "$buildDir/src/$sourceSets.main.name/$sourceSets.main.java.name"
+}
+
+compileJava.source = filterTokens.outputs
+
 publishing {
     publications {
         pluginMaven(MavenPublication) {

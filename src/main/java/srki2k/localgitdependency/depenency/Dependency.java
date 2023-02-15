@@ -4,6 +4,7 @@ import org.gradle.api.GradleException;
 import srki2k.localgitdependency.Instances;
 import srki2k.localgitdependency.git.GitInfo;
 import srki2k.localgitdependency.gradle.GradleInfo;
+import srki2k.localgitdependency.persistence.PersistentInfo;
 import srki2k.localgitdependency.property.Property;
 
 import java.util.Objects;

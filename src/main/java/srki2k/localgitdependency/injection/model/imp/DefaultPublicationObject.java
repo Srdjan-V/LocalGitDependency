@@ -1,12 +1,15 @@
 package srki2k.localgitdependency.injection.model.imp;
 
+import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import srki2k.localgitdependency.injection.model.PublicationObject;
+import srki2k.localgitdependency.injection.model.TaskObject;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DefaultPublicationObject implements PublicationObject, Serializable {
-    public static final long serialVersionUID = DefaultLocalGitDependencyInfoModel.serialVersionUID;
+    public static long serialVersionUID = LocalGitDependencyInfoModel.serialVersionUID;
     private final String publicationName;
     private final List<DefaultTaskObject> tasks;
 
@@ -21,7 +24,7 @@ public class DefaultPublicationObject implements PublicationObject, Serializable
     }
 
     @Override
-    public List<DefaultTaskObject> getTasks() {
-        return tasks;
+    public List<TaskObject> getTasks() {
+        return tasks.stream().map(defaultTaskObject -> (TaskObject) defaultTaskObject).collect(Collectors.toList());
     }
 }

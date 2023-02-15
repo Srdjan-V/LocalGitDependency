@@ -111,12 +111,6 @@ public class DependencyManager {
         }
     }
 
-    public void savePersistentData() {
-        for (Dependency dependency : dependencies) {
-            dependency.getPersistentInfo().saveToPersistentFile();
-        }
-    }
-
     public Set<Dependency> getDependencies() {
         return dependencies;
     }

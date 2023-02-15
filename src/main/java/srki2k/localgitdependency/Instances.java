@@ -4,6 +4,7 @@ import org.gradle.api.Project;
 import srki2k.localgitdependency.depenency.DependencyManager;
 import srki2k.localgitdependency.extentions.SettingsExtension;
 import srki2k.localgitdependency.git.GitManager;
+import srki2k.localgitdependency.persistence.PersistenceManager;
 import srki2k.localgitdependency.property.PropertyManager;
 import srki2k.localgitdependency.gradle.GradleManager;
 
@@ -14,6 +15,7 @@ public class Instances {
     private static GradleManager gradleManager;
     private static PropertyManager propertyManager;
     private static GitManager gitManager;
+    private static PersistenceManager persistenceManager;
 
     public static Project getProject() {
         return project;
@@ -65,5 +67,13 @@ public class Instances {
 
     public static void setGitManager(GitManager gitManager) {
         Instances.gitManager = gitManager;
+    }
+
+    public static PersistenceManager getPersistenceManager() {
+        return persistenceManager;
+    }
+
+    public static void setPersistenceManager(PersistenceManager persistenceManager) {
+        Instances.persistenceManager = persistenceManager;
     }
 }
