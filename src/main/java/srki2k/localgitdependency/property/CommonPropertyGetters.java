@@ -15,11 +15,15 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
     }
 
     public File getDir() {
-        return dir;
+        return gitDir;
     }
 
     public File getPersistentFolder() {
         return persistentFolder;
+    }
+
+    public File getMavenLocalFolder() {
+        return mavenLocalFolder;
     }
 
     public Dependency.DependencyType getDependencyType() {

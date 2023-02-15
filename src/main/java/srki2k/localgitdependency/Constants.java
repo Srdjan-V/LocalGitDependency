@@ -18,10 +18,17 @@ public class Constants {
     public final static String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
 
 
-    public final static Function<String, String> PublicationName = s -> "InitScriptPublicationForProject" + s;
+    public final static Function<String, String> MavenPublicationName = s -> "InitScriptPublicationForProject" + s;
+    public final static Function<String, String> MavenRepositoryName = s -> "InitScriptRepositoryForProject" + s;
     public final static Function<String, String> PublicationTaskName = s -> "publish" +
             s.substring(0, 1).toUpperCase() + s.substring(1) +
             "PublicationToMavenLocal";
+
+    public final static BiFunction<String, String, String> FilePublicationTaskName = (p, m) -> "publish" +
+            p.substring(0, 1).toUpperCase() + p.substring(1) +
+            "PublicationTo" +
+            m.substring(0, 1).toUpperCase() + m.substring(1) +
+            "Repository";
 
     public final static Function<String, String> JarSourceTaskName = s -> "InitScriptSourceTaskForProject" + s;
     public final static Function<String, String> JarJavaDocTaskName = s -> "InitScriptJavaDocTaskForProject" + s;
@@ -31,6 +38,8 @@ public class Constants {
     public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!data");
     public static final Function<File, File> defaultLibsDir = file -> new File(file, "/libs");
 
+    public static final Function<File, File> defaultMavenLocalFolder = file -> new File(file, "/mavenLocal");
+    public static final Function<File, File> defaultMavenLocalFolderUrl = file -> new File("file://", file.getAbsolutePath());
     public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> {
         File persistentInitScript = new File(persistentFolder, name + "/" + name + "Init.gradle");
         if (!persistentInitScript.exists()) {

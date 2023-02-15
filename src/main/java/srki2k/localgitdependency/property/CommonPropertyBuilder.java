@@ -17,12 +17,16 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
         this.keepGitUpdated = keepGitUpdated;
     }
 
-    public void dir(File dir) {
-        this.dir = dir;
+    public void gitDir(File dir) {
+        this.gitDir = dir;
     }
 
     public void persistentFolder(File initScript) {
         this.persistentFolder = initScript;
+    }
+
+    public void mavenLocalFolder(File mavenLocalFolder) {
+        this.mavenLocalFolder = mavenLocalFolder;
     }
 
     public void dependencyType(Dependency.DependencyType dependencyType) {

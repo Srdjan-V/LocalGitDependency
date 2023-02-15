@@ -7,6 +7,10 @@ import srki2k.localgitdependency.depenency.Dependency;
 @SuppressWarnings("unused")
 public class SettingsExtension {
 
+    public Dependency.DependencyType getMavenFileLocal() {
+        return Dependency.DependencyType.MavenFileLocal;
+    }
+
     public Dependency.DependencyType getMavenLocal() {
        return Dependency.DependencyType.MavenLocal;
     }

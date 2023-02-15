@@ -7,6 +7,7 @@ import srki2k.localgitdependency.gradle.GradleInfo;
 import srki2k.localgitdependency.persistence.PersistentInfo;
 import srki2k.localgitdependency.property.Property;
 
+import java.io.File;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,6 +15,7 @@ import java.util.regex.Pattern;
 public class Dependency {
     private final String name;
     private final String configurationName;
+    private final File mavenLocalFolder;
     private final PersistentInfo persistentInfo;
     private final DependencyType dependencyType;
     private final GitInfo gitInfo;
@@ -24,6 +26,7 @@ public class Dependency {
 
         this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
         this.configurationName = configurationName == null ? dependencyProperty.getDefaultConfiguration() : configurationName;
+        this.mavenLocalFolder = dependencyProperty.getMavenLocalFolder();
         this.dependencyType = dependencyProperty.getDependencyType();
         this.gitInfo = new GitInfo(dependencyProperty, this);
         this.gradleInfo = new GradleInfo(dependencyProperty, this);
@@ -31,8 +34,16 @@ public class Dependency {
         validate();
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String getConfigurationName() {
         return configurationName;
+    }
+
+    public File getMavenLocalFolder() {
+        return mavenLocalFolder;
     }
 
     public GitInfo getGitInfo() {
@@ -45,10 +56,6 @@ public class Dependency {
 
     public PersistentInfo getPersistentInfo() {
         return persistentInfo;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public DependencyType getDependencyType() {

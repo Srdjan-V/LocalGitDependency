@@ -5,6 +5,7 @@ import org.gradle.api.GradleException;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.depenency.Dependency;
 
+import java.io.File;
 import java.lang.reflect.Field;
 
 public class PropertyManager {
@@ -15,8 +16,10 @@ public class PropertyManager {
     {
         DefaultProperty.Builder builder = new DefaultProperty.Builder();
         builder.defaultConfiguration(Constants.JAVA_IMPLEMENTATION);
-        builder.persistentFolder(Constants.defaultPersistentDir.apply(Constants.defaultDir.get()));
-        builder.dir(Constants.defaultLibsDir.apply(Constants.defaultDir.get()));
+        File defaultDir = Constants.defaultDir.get();
+        builder.persistentFolder(Constants.defaultPersistentDir.apply(defaultDir));
+        builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
+        builder.mavenLocalFolder(Constants.defaultMavenLocalFolder.apply(defaultDir));
         builder.dependencyType(Dependency.DependencyType.MavenLocal);
         builder.keepGitUpdated(true);
         builder.gradleProbeCashing(true);
@@ -33,11 +36,18 @@ public class PropertyManager {
             throw new GradleException(globalProperty.persistentFolder.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
         }
 
-        if (!globalProperty.dir.exists()) {
-            globalProperty.dir.mkdirs();
-        } else if (!globalProperty.dir.isDirectory()) {
-            throw new GradleException(globalProperty.dir.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
+        if (!globalProperty.gitDir.exists()) {
+            globalProperty.gitDir.mkdirs();
+        } else if (!globalProperty.gitDir.isDirectory()) {
+            throw new GradleException(globalProperty.gitDir.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
         }
+
+        if (!globalProperty.mavenLocalFolder.exists()) {
+            globalProperty.mavenLocalFolder.mkdirs();
+        } else if (!globalProperty.gitDir.isDirectory()) {
+            throw new GradleException(globalProperty.mavenLocalFolder.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
+        }
+
         createdEssentialDirectories = true;
     }
 

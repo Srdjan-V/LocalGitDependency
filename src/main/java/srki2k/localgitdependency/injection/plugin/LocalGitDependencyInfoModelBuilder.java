@@ -2,14 +2,14 @@ package srki2k.localgitdependency.injection.plugin;
 
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.publish.PublicationContainer;
+import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
 import org.gradle.api.publish.internal.DefaultPublishingExtension;
 import org.gradle.api.publish.maven.internal.publication.DefaultMavenPublication;
 import org.gradle.tooling.provider.model.ToolingModelBuilder;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
 import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import srki2k.localgitdependency.injection.model.imp.DefaultPublicationObject;
+import srki2k.localgitdependency.injection.model.imp.DefaultPublishingObject;
 import srki2k.localgitdependency.injection.model.imp.DefaultTaskObject;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
         boolean hasMavenPublishPlugin = project.getExtensions().findByName("maven-publish") != null;
 
         List<DefaultTaskObject> appropriateTasks = queueAppropriateTasks(project, hasJavaPlugin);
-        DefaultPublicationObject defaultPublicationObject = queueAppropriateMavenPublications(project, appropriateTasks, hasMavenPublishPlugin);
+        DefaultPublishingObject defaultPublicationObject = queueAppropriateMavenPublications(project, appropriateTasks, hasMavenPublishPlugin);
 
         return new DefaultLocalGitDependencyInfoModel(
                 project.getGroup() + ":" + project.getName() + ":" + project.getVersion(),
@@ -64,12 +64,14 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
     }
 
 
-    private static DefaultPublicationObject queueAppropriateMavenPublications(Project project, List<DefaultTaskObject> appropriateTasks, boolean hasMavenPublishPlugin) {
-        String publicationName = Constants.PublicationName.apply(project.getName());
+    private static DefaultPublishingObject queueAppropriateMavenPublications(Project project, List<DefaultTaskObject> appropriateTasks, boolean hasMavenPublishPlugin) {
+        String publicationName = Constants.MavenPublicationName.apply(project.getName());
+        String repositoryName = Constants.MavenRepositoryName.apply(project.getName());
 
         if (hasMavenPublishPlugin) {
-            PublicationContainer publicationContainer = project.getExtensions().getByType(DefaultPublishingExtension.class).getPublications();
-            List<DefaultMavenPublication> mavenPublications = publicationContainer.stream()
+            DefaultPublishingExtension publishingExtension = project.getExtensions().getByType(DefaultPublishingExtension.class);
+
+            List<DefaultMavenPublication> mavenPublications = publishingExtension.getPublications().stream()
                     .filter(publication -> publication instanceof DefaultMavenPublication)
                     .map(publication -> (DefaultMavenPublication) publication)
                     .collect(Collectors.toList());
@@ -79,9 +81,21 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
                     publicationName = publicationName + System.currentTimeMillis();
                 }
             }
+
+            List<DefaultMavenArtifactRepository> mavenArtifactRepositories = publishingExtension.getRepositories().stream()
+                    .filter(repository -> repository instanceof DefaultMavenArtifactRepository)
+                    .map(repository -> (DefaultMavenArtifactRepository) repository)
+                    .collect(Collectors.toList());
+
+            for (DefaultMavenArtifactRepository repository : mavenArtifactRepositories) {
+                while (repository.getName().equals(repositoryName)) {
+                    repositoryName = repositoryName + System.currentTimeMillis();
+                }
+            }
+
         }
 
-        return new DefaultPublicationObject(publicationName, appropriateTasks);
+        return new DefaultPublishingObject(repositoryName, publicationName, appropriateTasks);
     }
 
 }

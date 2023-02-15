@@ -15,6 +15,7 @@ public class PersistentInfo {
     private final File persistentFile;
     private final SerializableProperty serializableProperty;
     private boolean validModel;
+    private boolean dependencyTypeChanged;
     private boolean dirty;
 
     public PersistentInfo(Property dependencyProperty, Dependency dependency) {
@@ -26,6 +27,10 @@ public class PersistentInfo {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean hasDependencyTypeChanged() {
+        return dependencyTypeChanged;
     }
 
     public Dependency getDependency() {
@@ -73,6 +78,10 @@ public class PersistentInfo {
 
         if (persistentProperty.projectProbe != null && persistentProperty.projectProbe.versionUID == DefaultLocalGitDependencyInfoModel.serialVersionUID) {
             validModel = true;
+        }
+
+        if (persistentProperty.dependencyType != this.getDependency().getDependencyType()) {
+            dependencyTypeChanged = true;
         }
     }
 

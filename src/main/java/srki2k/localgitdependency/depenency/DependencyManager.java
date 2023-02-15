@@ -99,6 +99,17 @@ public class DependencyManager {
         project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
     }
 
+    private void addMavenLocalJarsAsDependencies(Dependency dependency) {
+        // TODO: 15/02/2023 only add needed repos  
+
+        Project project = Instances.getProject();
+        project.getRepositories().add(project.getRepositories().maven(mavenArtifactRepository -> {
+            mavenArtifactRepository.setName(dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getRepositoryName());
+            mavenArtifactRepository.setUrl(Constants.defaultMavenLocalFolderUrl.apply(dependency.getMavenLocalFolder()));
+        }));
+        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
+    }
+
     public void addBuiltDependencies() {
         for (Dependency dependency : dependencies) {
             switch (dependency.getDependencyType()) {
@@ -107,6 +118,9 @@ public class DependencyManager {
                     break;
                 case MavenLocal:
                     addMavenJarsAsDependencies(dependency);
+                    break;
+                case MavenFileLocal:
+                    addMavenLocalJarsAsDependencies(dependency);
             }
         }
     }

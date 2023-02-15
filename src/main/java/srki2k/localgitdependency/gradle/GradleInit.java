@@ -2,6 +2,7 @@ package srki2k.localgitdependency.gradle;
 
 import srki2k.localgitdependency.Constants;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -147,7 +148,7 @@ public class GradleInit {
         }
     }
 
-    public void setPublications(Consumer<List<Publication>> Publication) {
+    public void setPublishing(Consumer<List<Publication>> Publication) {
         List<Publication> publications = new ArrayList<>();
         Publication.accept(publications);
 
@@ -157,21 +158,35 @@ public class GradleInit {
             appendLine(3, String.format("%s(MavenPublication) {", publication.publicationName));
             appendLine(4, "from components.java");
             if (publication.tasks != null) {
-                for (Task task:publication.tasks) {
+                for (Task task : publication.tasks) {
                     appendLine(4, String.format("artifact %s", task.name));
                 }
             }
             appendLine(3, "}");
         }
         appendLine(2, "}");
+
+        appendLine(2, "repositories {");
+        appendLine(3, "maven {");
+        for (Publication publication : publications) {
+            appendLine(4, String.format("name '%s'", publication.repositoryName));
+            appendLine(4, String.format("url \"file://%s\"", publication.mavenLocalFolder.getAbsolutePath().replace("\\", "\\\\")));
+        }
+        appendLine(3, "}");
+        appendLine(2, "}");
+
         appendLine(1, "}");
     }
 
     static class Publication {
+        private final String repositoryName;
+        private final File mavenLocalFolder;
         private final String publicationName;
         private final List<Task> tasks;
 
-        public Publication(String publicationName, List<Task> tasks) {
+        public Publication(String repositoryName, File mavenLocalFolder, String publicationName, List<Task> tasks) {
+            this.repositoryName = repositoryName;
+            this.mavenLocalFolder = mavenLocalFolder;
             this.publicationName = publicationName;
             this.tasks = tasks;
         }

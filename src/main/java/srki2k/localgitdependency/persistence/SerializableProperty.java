@@ -1,7 +1,8 @@
 package srki2k.localgitdependency.persistence;
 
+import srki2k.localgitdependency.depenency.Dependency;
 import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import srki2k.localgitdependency.injection.model.PublicationObject;
+import srki2k.localgitdependency.injection.model.PublishingObject;
 import srki2k.localgitdependency.injection.model.TaskObject;
 import srki2k.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
 
@@ -11,6 +12,7 @@ import java.util.List;
 public class SerializableProperty {
     String workingDirSHA1;
     String initFileSHA1;
+    Dependency.DependencyType dependencyType;
     DependencyInfoModelSerializable projectProbe;
 
     public static class DependencyInfoModelSerializable {
@@ -82,15 +84,21 @@ public class SerializableProperty {
     }
 
     public static class PublicationObjectSerializable {
+        private final String repositoryName;
         private final String publicationName;
         private final List<TaskObjectSerializable> tasks = new ArrayList<>();
 
-        public PublicationObjectSerializable(PublicationObject publicationObject) {
-            this.publicationName = publicationObject.getPublicationName();
-            publicationObject.getTasks()
+        public PublicationObjectSerializable(PublishingObject publishingObject) {
+            this.repositoryName = publishingObject.getRepositoryName();
+            this.publicationName = publishingObject.getPublicationName();
+            publishingObject.getTasks()
                     .forEach(taskObject -> {
                         tasks.add(new TaskObjectSerializable(taskObject));
                     });
+        }
+
+        public String getRepositoryName() {
+            return repositoryName;
         }
 
         public String getPublicationName() {

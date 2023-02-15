@@ -1,21 +1,28 @@
 package srki2k.localgitdependency.injection.model.imp;
 
 import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import srki2k.localgitdependency.injection.model.PublicationObject;
+import srki2k.localgitdependency.injection.model.PublishingObject;
 import srki2k.localgitdependency.injection.model.TaskObject;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DefaultPublicationObject implements PublicationObject, Serializable {
+public class DefaultPublishingObject implements PublishingObject, Serializable {
     public static long serialVersionUID = LocalGitDependencyInfoModel.serialVersionUID;
+    private final String repositoryName;
     private final String publicationName;
     private final List<DefaultTaskObject> tasks;
 
-    public DefaultPublicationObject(String publicationName, List<DefaultTaskObject> tasks) {
+    public DefaultPublishingObject(String repositoryName, String publicationName, List<DefaultTaskObject> tasks) {
+        this.repositoryName = repositoryName;
         this.publicationName = publicationName;
         this.tasks = tasks;
+    }
+
+    @Override
+    public String getRepositoryName() {
+        return repositoryName;
     }
 
     @Override

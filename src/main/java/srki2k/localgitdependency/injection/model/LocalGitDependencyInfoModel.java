@@ -10,5 +10,5 @@ public interface LocalGitDependencyInfoModel {
     boolean hasJavaPlugin();
     boolean hasMavenPublishPlugin();
     List<TaskObject> getAppropriateTasks();
-    PublicationObject getAppropriatePublication();
+    PublishingObject getAppropriatePublication();
 }
