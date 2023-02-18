@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Constants {
-    public final static String PROJECT_VERSION = "@PROJECTVERSION@";
+    public static String PROJECT_VERSION = "@PROJECTVERSION@";
     public final static String EXTENSION_NAME = "LocalGitDependency";
     public final static String LOCAL_GIT_DEPENDENCY_EXTENSION = "localGitDependency";
     public final static String UNDO_LOCAL_GIT_CHANGES = "undoLocalGitChanges";
@@ -49,7 +49,7 @@ public class Constants {
         return new File(file, "/!mavenProjectLocal");
     };
     public static final BiFunction<File, String, File> MavenProjectDependencyLocal = (file, name) -> {
-        File maven = new File(file, "/!mavenProjectLocal" + "/" + name);
+        File maven = new File(file, "/!mavenProjectDependencyLocal" + "/" + name);
         if (!maven.exists()) {
             if (!maven.mkdirs()) {
                 throw new RuntimeException(String.format("Unable to create directory %s", maven.getAbsolutePath()));
@@ -86,4 +86,10 @@ public class Constants {
     public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
 
     public static final BiFunction<File, String, File> concatFile = File::new;
+
+
+    public static final String RepositoryMavenProjectLocal = "MavenProjectLocal";
+    public static final Function<String, String> RepositoryFlatDir = name -> name + "FlatDir";
+    public static final Function<String, String> RepositoryMavenProjectDependencyLocal = name -> name + "Repo";
+
 }

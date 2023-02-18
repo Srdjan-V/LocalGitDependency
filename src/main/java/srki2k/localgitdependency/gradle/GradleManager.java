@@ -116,6 +116,7 @@ public class GradleManager {
     }
 
     private void createDependencyInitScript(Dependency dependency) {
+        // TODO: 18/02/2023 work on this
         SerializableProperty.DependencyInfoModelSerializable model = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel();
         int[] gradleVersion = Arrays.stream(model.getProjectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
 

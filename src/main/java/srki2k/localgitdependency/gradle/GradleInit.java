@@ -170,7 +170,8 @@ public class GradleInit {
         appendLine(3, "maven {");
         for (Publication publication : publications) {
             appendLine(4, String.format("name '%s'", publication.repositoryName));
-            appendLine(4, String.format("url \"file://%s\"", publication.mavenLocalFolder.getAbsolutePath().replace("\\", "\\\\")));
+            if (publication.mavenLocalFolder != null)
+                appendLine(4, String.format("url \"file://%s\"", publication.mavenLocalFolder.getAbsolutePath().replace("\\", "\\\\")));
         }
         appendLine(3, "}");
         appendLine(2, "}");

@@ -25,7 +25,7 @@ public class GitInfo {
     public GitInfo(Property dependencyProperty, Dependency dependency) {
         this.dependency = dependency;
         this.url = dependencyProperty.getUrl();
-        this.commit = dependencyProperty.getCommit() == null ? DEFAULT_REMOTE_NAME + "/" + MASTER : dependencyProperty.getCommit();
+        this.commit = dependencyProperty.getCommit() == null ? DEFAULT_REMOTE_NAME + "/" + MASTER : dependencyProperty.getCommit(); // TODO: 18/02/2023 improve
         this.dir = Constants.concatFile.apply(dependencyProperty.getDir(), dependency.getName());
         this.keepGitUpdated = dependencyProperty.getKeepGitUpdated();
     }

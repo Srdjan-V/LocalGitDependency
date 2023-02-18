@@ -58,7 +58,7 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
             }
         }
 
-        defaultTaskObjectList.add(new DefaultTaskObject(sourceTaskName, "source"));
+        defaultTaskObjectList.add(new DefaultTaskObject(sourceTaskName, "sources"));
         defaultTaskObjectList.add(new DefaultTaskObject(javaDocTaskName, "javadoc"));
         return defaultTaskObjectList;
     }

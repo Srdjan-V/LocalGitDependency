@@ -30,11 +30,21 @@ public class DependencyManager {
     }
 
     public void addBuiltDependencies() {
-        Project project = Instances.getProject();
-        if (dependencies.stream().anyMatch(dependency -> dependency.getDependencyType() == Dependency.Type.MavenProjectLocal)) {
-            addRepositoryMavenProjectLocal(project);
+        boolean addRepositoryMavenProjectLocal = false;
+        boolean addRepositoryMavenLocal = false;
+        for (Dependency dependency : dependencies) {
+            switch (dependency.getDependencyType()) {
+                case MavenProjectLocal:
+                    addRepositoryMavenProjectLocal = true;
+                    break;
+                case MavenLocal:
+                    addRepositoryMavenLocal = true;
+            }
         }
 
+        Project project = Instances.getProject();
+        if (addRepositoryMavenProjectLocal) addRepositoryMavenProjectLocal(project);
+        if (addRepositoryMavenLocal) addRepositoryMavenLocal(project);
 
         for (Dependency dependency : dependencies) {
             switch (dependency.getDependencyType()) {
@@ -61,11 +71,15 @@ public class DependencyManager {
         File mavenRepo = Constants.MavenProjectLocal.apply(Instances.getPropertyManager().getGlobalProperty().getMavenFolder());
         Logger.warn("Adding MavenProjectLocal repository at {}", mavenRepo.getAbsolutePath());
         project.getRepositories().add(project.getRepositories().maven(mavenArtifactRepository -> {
-            mavenArtifactRepository.setName("MavenProjectLocal");
+            mavenArtifactRepository.setName(Constants.RepositoryMavenProjectLocal);
             mavenArtifactRepository.setUrl(mavenRepo);
         }));
     }
 
+    private void addRepositoryMavenLocal(Project project) {
+        Logger.warn("Adding MavenLocal repository");
+        project.getRepositories().add(project.getRepositories().mavenLocal());
+    }
 
     private void addMavenJarsAsDependencies(Dependency dependency, Project project) {
         Logger.warn("Adding Dependency {}, from MavenLocal", dependency.getName());
@@ -87,7 +101,7 @@ public class DependencyManager {
         Logger.warn("Adding Dependency {}, from ProjectDependencyLocal at {}", dependency.getName(), mavenRepo);
 
         project.getRepositories().add(project.getRepositories().maven(mavenArtifactRepository -> {
-            mavenArtifactRepository.setName(dependency.getName() + "Repo");
+            mavenArtifactRepository.setName(Constants.RepositoryMavenProjectDependencyLocal.apply(dependency.getName()));
             mavenArtifactRepository.setUrl(mavenRepo);
         }));
 
@@ -103,7 +117,7 @@ public class DependencyManager {
         }
 
         project.getRepositories().add(project.getRepositories().flatDir(flatDir -> {
-            flatDir.setName(dependency.getName() + "FlatDir");
+            flatDir.setName(Constants.RepositoryFlatDir.apply(dependency.getName()));
             flatDir.dir(libs);
         }));
         project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());

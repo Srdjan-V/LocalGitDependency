@@ -17,7 +17,6 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getPluginManager().apply("java");
-        project.getRepositories().add(project.getRepositories().mavenLocal());
 
         Instances.setProject(project);// TODO: 18/02/2023 make multiProject compatible? 
         Instances.setDependencyManager(new DependencyManager());
