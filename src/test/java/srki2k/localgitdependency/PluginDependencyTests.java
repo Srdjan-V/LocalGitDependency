@@ -17,9 +17,14 @@ public class PluginDependencyTests {
     List<GitWrapper> gitWrappers = new ArrayList<>();
 
     {
+        //gradle 7.5
         gitWrappers.add(new GitWrapper(
                 "TweakedLib",
                 "https://github.com/Srdjan-V/TweakedLib.git"));
+        //gradle 4.10
+        gitWrappers.add(new GitWrapper(
+                "GroovyScriptFG2",
+                "https://github.com/CleanroomMC/GroovyScript.git"));
     }
 
     @Test
@@ -27,7 +32,7 @@ public class PluginDependencyTests {
         for (GitWrapper gitWrapper : gitWrappers) {
             ProjectInstance.createProject();
 
-            TestWrapper testWrapper = new TestWrapper(gitWrapper.getName() + "TestMavenLocal", Instances.getSettingsExtension().MavenLocal());
+            TestWrapper testWrapper = new TestWrapper(gitWrapper.getName() + "MavenLocal", Instances.getSettingsExtension().MavenLocal());
             Closure<Property.Builder> closure = builderClosure(testWrapper);
             Instances.getSettingsExtension().add(gitWrapper.getGitUrl(), closure);
 
@@ -42,7 +47,7 @@ public class PluginDependencyTests {
         for (GitWrapper gitWrapper : gitWrappers) {
             ProjectInstance.createProject();
 
-            TestWrapper testWrapper = new TestWrapper(gitWrapper.getName() + "TestMavenProjectLocal", Instances.getSettingsExtension().MavenProjectLocal());
+            TestWrapper testWrapper = new TestWrapper(gitWrapper.getName() + "MavenProjectLocal", Instances.getSettingsExtension().MavenProjectLocal());
             Closure<Property.Builder> closure = builderClosure(testWrapper);
             Instances.getSettingsExtension().add(gitWrapper.getGitUrl(), closure);
 
