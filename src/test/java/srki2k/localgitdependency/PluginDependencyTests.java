@@ -9,79 +9,100 @@ import org.junit.jupiter.api.Test;
 import srki2k.localgitdependency.depenency.Dependency;
 import srki2k.localgitdependency.property.Property;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PluginDependencyTests {
+
+    List<GitWrapper> gitWrappers = new ArrayList<>();
+
+    {
+        gitWrappers.add(new GitWrapper(
+                "TweakedLib",
+                "https://github.com/Srdjan-V/TweakedLib.git"));
+    }
 
     @Test
     void TestMavenLocal() {
-        ProjectInstance.createProject();
+        for (GitWrapper gitWrapper : gitWrappers) {
+            ProjectInstance.createProject();
 
-        Wrapper wrapper = new Wrapper("TweakedLibTestMavenLocal", Instances.getSettingsExtension().MavenLocal());
-        Closure<Property.Builder> closure = builderClosure(wrapper);
-        Instances.getSettingsExtension().add("https://github.com/Srdjan-V/TweakedLib.git", closure);
+            TestWrapper testWrapper = new TestWrapper(gitWrapper.getName() + "TestMavenLocal", Instances.getSettingsExtension().MavenLocal());
+            Closure<Property.Builder> closure = builderClosure(testWrapper);
+            Instances.getSettingsExtension().add(gitWrapper.getGitUrl(), closure);
 
-        commonInit();
-        printData();
-        test(wrapper);
+            commonInit();
+            printData();
+            testWrapper.test();
+        }
     }
 
     @Test
     void TestMavenProjectLocal() {
-        ProjectInstance.createProject();
+        for (GitWrapper gitWrapper : gitWrappers) {
+            ProjectInstance.createProject();
 
-        Wrapper wrapper = new Wrapper("TweakedLibTestMavenProjectLocal", Instances.getSettingsExtension().MavenProjectLocal());
-        Closure<Property.Builder> closure = builderClosure(wrapper);
-        Instances.getSettingsExtension().add("https://github.com/Srdjan-V/TweakedLib.git", closure);
+            TestWrapper testWrapper = new TestWrapper(gitWrapper.getName() + "TestMavenProjectLocal", Instances.getSettingsExtension().MavenProjectLocal());
+            Closure<Property.Builder> closure = builderClosure(testWrapper);
+            Instances.getSettingsExtension().add(gitWrapper.getGitUrl(), closure);
 
-        commonInit();
-        printData();
-        test(wrapper);
+            commonInit();
+            printData();
+            testWrapper.test();
+        }
     }
 
     @Test
     void TestMavenProjectDependencyLocal() {
-        ProjectInstance.createProject();
+        for (GitWrapper gitWrapper : gitWrappers) {
+            ProjectInstance.createProject();
 
-        Wrapper wrapper = new Wrapper("TweakedLibMavenProjectDependencyLocal", Instances.getSettingsExtension().MavenProjectDependencyLocal());
-        Closure<Property.Builder> closure = builderClosure(wrapper);
-        Instances.getSettingsExtension().add("https://github.com/Srdjan-V/TweakedLib.git", closure);
+            TestWrapper testWrapper = new TestWrapper(gitWrapper.getName() + "MavenProjectDependencyLocal", Instances.getSettingsExtension().MavenProjectDependencyLocal());
+            Closure<Property.Builder> closure = builderClosure(testWrapper);
+            Instances.getSettingsExtension().add(gitWrapper.getGitUrl(), closure);
 
-        commonInit();
-        printData();
-        test(wrapper);
+            commonInit();
+            printData();
+            testWrapper.test();
+        }
     }
 
     @Test
     void TestJarFlatDir() {
-        ProjectInstance.createProject();
+        for (GitWrapper gitWrapper : gitWrappers) {
+            ProjectInstance.createProject();
 
-        Wrapper wrapper = new Wrapper("TweakedLibJarFlatDir", Instances.getSettingsExtension().JarFlatDir());
-        Closure<Property.Builder> closure = builderClosure(wrapper);
-        Instances.getSettingsExtension().add("https://github.com/Srdjan-V/TweakedLib.git", closure);
+            TestWrapper testWrapper = new TestWrapper(gitWrapper.getName() + "JarFlatDir", Instances.getSettingsExtension().JarFlatDir());
+            Closure<Property.Builder> closure = builderClosure(testWrapper);
+            Instances.getSettingsExtension().add(gitWrapper.getGitUrl(), closure);
 
-        commonInit();
-        printData();
-        test(wrapper);
+            commonInit();
+            printData();
+            testWrapper.test();
+        }
     }
 
     @Test
     void TestJar() {
-        ProjectInstance.createProject();
+        for (GitWrapper gitWrapper : gitWrappers) {
+            ProjectInstance.createProject();
 
-        Wrapper wrapper = new Wrapper("TweakedLibJar", Instances.getSettingsExtension().Jar());
-        Closure<Property.Builder> closure = builderClosure(wrapper);
-        Instances.getSettingsExtension().add("https://github.com/Srdjan-V/TweakedLib.git", closure);
+            TestWrapper testWrapper = new TestWrapper(gitWrapper.getName() + "Jar", Instances.getSettingsExtension().Jar());
+            Closure<Property.Builder> closure = builderClosure(testWrapper);
+            Instances.getSettingsExtension().add(gitWrapper.getGitUrl(), closure);
 
-        commonInit();
-        printData();
-        test(wrapper);
+            commonInit();
+            printData();
+            testWrapper.test();
+        }
     }
 
-    static Closure<Property.Builder> builderClosure(Wrapper wrapper) {
+    static Closure<Property.Builder> builderClosure(TestWrapper testWrapper) {
         return new Closure<Property.Builder>(null) {
             public Property.Builder doCall() {
                 Property.Builder builder = (Property.Builder) getDelegate();
-                builder.name(wrapper.getName());
-                builder.dependencyType(wrapper.getDependencyType());
+                builder.name(testWrapper.getName());
+                builder.dependencyType(testWrapper.getDependencyType());
                 return builder;
             }
         };
@@ -128,50 +149,11 @@ public class PluginDependencyTests {
                 });
     }
 
-    static void test(Wrapper wrapper) {
-        String repo;
-        switch (wrapper.getDependencyType()) {
-            case JarFlatDir:
-                repo = Constants.RepositoryFlatDir.apply(wrapper.getName());
-                break;
-            case MavenLocal:
-                repo = "MavenLocal";
-                break;
-            case MavenProjectDependencyLocal:
-                repo = Constants.RepositoryMavenProjectDependencyLocal.apply(wrapper.getName());
-                break;
-            case MavenProjectLocal:
-                repo = Constants.RepositoryMavenProjectLocal;
-                break;
-            default:
-                repo = null;
-        }
-
-        if (repo != null) {
-            final String finalRepo = repo;
-            long dependency = Instances.getProject().getRepositories().stream()
-                    .filter(d -> d.getName().equals(finalRepo)).count();
-
-            Assertions.assertEquals(1, dependency, () -> wrapper.getName() + " repository is not registered wih gradle");
-        }
-
-        long dependency;
-        if (wrapper.getDependencyType() == Dependency.Type.Jar) {
-            dependency = Instances.getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
-                    .getDependencies().size();
-        } else {
-            dependency = Instances.getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
-                    .getDependencies().stream().filter(d -> d.getName().equals(wrapper.name)).count();
-        }
-
-        Assertions.assertEquals(1, dependency, () -> wrapper.getName() + " dependency is not registered wih gradle");
-    }
-
-    static class Wrapper {
+    static class TestWrapper {
         private final String name;
         private final Dependency.Type dependencyType;
 
-        public Wrapper(String name, Dependency.Type dependencyType) {
+        public TestWrapper(String name, Dependency.Type dependencyType) {
             this.name = name;
             this.dependencyType = dependencyType;
         }
@@ -183,6 +165,62 @@ public class PluginDependencyTests {
         public Dependency.Type getDependencyType() {
             return dependencyType;
         }
+
+        public void test() {
+            String repo;
+            switch (getDependencyType()) {
+                case JarFlatDir:
+                    repo = Constants.RepositoryFlatDir.apply(getName());
+                    break;
+                case MavenLocal:
+                    repo = "MavenLocal";
+                    break;
+                case MavenProjectDependencyLocal:
+                    repo = Constants.RepositoryMavenProjectDependencyLocal.apply(getName());
+                    break;
+                case MavenProjectLocal:
+                    repo = Constants.RepositoryMavenProjectLocal;
+                    break;
+                default:
+                    repo = null;
+            }
+
+            if (repo != null) {
+                final String finalRepo = repo;
+                long dependency = Instances.getProject().getRepositories().stream()
+                        .filter(d -> d.getName().equals(finalRepo)).count();
+
+                Assertions.assertEquals(1, dependency, () -> getName() + " repository is not registered wih gradle");
+            }
+
+            long dependency;
+            if (getDependencyType() == Dependency.Type.Jar) {
+                dependency = Instances.getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
+                        .getDependencies().size();
+            } else {
+                dependency = Instances.getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
+                        .getDependencies().stream().filter(d -> d.getName().equals(getName())).count();
+            }
+
+            Assertions.assertEquals(1, dependency, () -> getName() + " dependency is not registered wih gradle");
+        }
     }
 
+    static class GitWrapper {
+        private final String name;
+        private final String gitUrl;
+
+        public GitWrapper(String name, String gitUrl) {
+            this.name = name;
+            this.gitUrl = gitUrl;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getGitUrl() {
+            return gitUrl;
+        }
+    }
 }
