@@ -1,6 +1,9 @@
 package srki2k.localgitdependency.depenency;
 
 import org.gradle.api.GradleException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.Instances;
 import srki2k.localgitdependency.git.GitInfo;
 import srki2k.localgitdependency.gradle.GradleInfo;
@@ -15,9 +18,9 @@ import java.util.regex.Pattern;
 public class Dependency {
     private final String name;
     private final String configurationName;
-    private final File mavenLocalFolder;
+    private final File mavenFolder;
     private final PersistentInfo persistentInfo;
-    private final DependencyType dependencyType;
+    private final Type dependencyType;
     private final GitInfo gitInfo;
     private final GradleInfo gradleInfo;
 
@@ -26,42 +29,62 @@ public class Dependency {
 
         this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
         this.configurationName = configurationName == null ? dependencyProperty.getDefaultConfiguration() : configurationName;
-        this.mavenLocalFolder = dependencyProperty.getMavenLocalFolder();
         this.dependencyType = dependencyProperty.getDependencyType();
+        switch (dependencyType) {
+            case MavenProjectLocal:
+                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyProperty.getMavenFolder());
+                break;
+
+            case MavenProjectDependencyLocal:
+                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyProperty.getMavenFolder(), name);
+                break;
+
+            default:
+                this.mavenFolder = null;
+        }
+
         this.gitInfo = new GitInfo(dependencyProperty, this);
         this.gradleInfo = new GradleInfo(dependencyProperty, this);
         this.persistentInfo = new PersistentInfo(dependencyProperty, this);
         validate();
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @NotNull
     public String getConfigurationName() {
         return configurationName;
     }
 
-    public File getMavenLocalFolder() {
-        return mavenLocalFolder;
+    @Nullable
+    public File getMavenFolder() {
+        return mavenFolder;
     }
 
+    @NotNull
     public GitInfo getGitInfo() {
         return gitInfo;
     }
 
+    @NotNull
     public GradleInfo getGradleInfo() {
         return gradleInfo;
     }
 
+    @NotNull
     public PersistentInfo getPersistentInfo() {
         return persistentInfo;
     }
 
-    public DependencyType getDependencyType() {
+    @NotNull
+    public Type getDependencyType() {
         return dependencyType;
     }
 
+    // TODO: 18/02/2023 add all of the parameters for validation
     private void validate() {
         StringBuilder errors = null;
 
@@ -111,11 +134,13 @@ public class Dependency {
     }
 
     //Type of the crated dependency
-    public enum DependencyType {
-        MavenLocal,
-        MavenFileLocal,
-        Jar
-
+    public enum Type {
+        MavenLocal, //default maven local publishing
+        MavenProjectLocal, //publishing to a maven inside the project file structure
+        MavenProjectDependencyLocal, //same as MavenFileLocal except that every project has its own maven local folder
+        JarFlatDir, //crates a flat dir repository at the build libs of the project
+        Jar //directly add jar dependencies to the project
+        // TODO: 18/02/2023 clean the build folder for the jar dependency, make it a task?
     }
 
 }

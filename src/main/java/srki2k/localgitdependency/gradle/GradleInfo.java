@@ -1,5 +1,6 @@
 package srki2k.localgitdependency.gradle;
 
+import org.jetbrains.annotations.NotNull;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.depenency.Dependency;
 import srki2k.localgitdependency.property.Property;
@@ -17,6 +18,7 @@ public class GradleInfo {
         this.initScript = Constants.persistentInitScript.apply(dependencyProperty.getPersistentFolder(), dependency.getName());
     }
 
+    @NotNull
     public Dependency getDependency() {
         return dependency;
     }
@@ -25,6 +27,7 @@ public class GradleInfo {
         return gradleProbeCashing;
     }
 
+    @NotNull
     public File getInitScript() {
         return initScript;
     }

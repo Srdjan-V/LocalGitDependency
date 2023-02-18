@@ -1,25 +1,38 @@
 package srki2k.localgitdependency.extentions;
 
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import srki2k.localgitdependency.Instances;
 import srki2k.localgitdependency.depenency.Dependency;
+import srki2k.localgitdependency.property.DefaultProperty;
+import srki2k.localgitdependency.property.Property;
 
 @SuppressWarnings("unused")
 public class SettingsExtension {
 
-    public Dependency.DependencyType getMavenFileLocal() {
-        return Dependency.DependencyType.MavenFileLocal;
+    public Dependency.Type MavenLocal() {
+        return Dependency.Type.MavenLocal;
     }
 
-    public Dependency.DependencyType getMavenLocal() {
-       return Dependency.DependencyType.MavenLocal;
+    public Dependency.Type MavenProjectLocal() {
+        return Dependency.Type.MavenProjectLocal;
     }
 
-    public Dependency.DependencyType getJar() {
-        return Dependency.DependencyType.Jar;
+    public Dependency.Type MavenProjectDependencyLocal() {
+        return Dependency.Type.MavenProjectDependencyLocal;
     }
 
-    public void configureGlobal(Closure<?> configureClosure) {
+    public Dependency.Type JarFlatDir() {
+       return Dependency.Type.JarFlatDir;
+    }
+
+    public Dependency.Type Jar() {
+        return Dependency.Type.Jar;
+    }
+
+    public void configureGlobal(
+            @DelegatesTo(value = DefaultProperty.Builder.class, strategy = Closure.DELEGATE_FIRST)
+            Closure<DefaultProperty.Builder> configureClosure) {
         Instances.getPropertyManager().globalProperty(configureClosure);
     }
 
@@ -27,7 +40,9 @@ public class SettingsExtension {
         add(null, dependencyURL, null);
     }
 
-    public void add(String dependencyURL, Closure<?> configureClosure) {
+    public void add(String dependencyURL,
+                    @DelegatesTo(value = Property.Builder.class, strategy = Closure.DELEGATE_FIRST)
+                    Closure<Property.Builder> configureClosure) {
         add(null, dependencyURL, configureClosure);
     }
 
@@ -35,7 +50,9 @@ public class SettingsExtension {
         add(configurationName, dependencyURL, null);
     }
 
-    public void add(String configurationName, String dependencyURL, Closure<?> configureClosure) {
+    public void add(String configurationName, String dependencyURL,
+                    @DelegatesTo(value = Property.Builder.class, strategy = Closure.DELEGATE_FIRST)
+                    Closure<Property.Builder> configureClosure) {
         Instances.getDependencyManager().registerDependency(configurationName, dependencyURL, configureClosure);
     }
 

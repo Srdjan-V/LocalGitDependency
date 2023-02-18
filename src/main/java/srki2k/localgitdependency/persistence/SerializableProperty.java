@@ -12,7 +12,7 @@ import java.util.List;
 public class SerializableProperty {
     String workingDirSHA1;
     String initFileSHA1;
-    Dependency.DependencyType dependencyType;
+    Dependency.Type dependencyType;
     DependencyInfoModelSerializable projectProbe;
 
     public static class DependencyInfoModelSerializable {

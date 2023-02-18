@@ -22,11 +22,11 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return persistentFolder;
     }
 
-    public File getMavenLocalFolder() {
-        return mavenLocalFolder;
+    public File getMavenFolder() {
+        return mavenFolder;
     }
 
-    public Dependency.DependencyType getDependencyType() {
+    public Dependency.Type getDependencyType() {
         return dependencyType;
     }
 

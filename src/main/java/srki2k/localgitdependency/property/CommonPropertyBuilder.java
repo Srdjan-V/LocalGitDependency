@@ -25,11 +25,11 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
         this.persistentFolder = initScript;
     }
 
-    public void mavenLocalFolder(File mavenLocalFolder) {
-        this.mavenLocalFolder = mavenLocalFolder;
+    public void mavenFolder(File mavenFolder) {
+        this.mavenFolder = mavenFolder;
     }
 
-    public void dependencyType(Dependency.DependencyType dependencyType) {
+    public void dependencyType(Dependency.Type dependencyType) {
         this.dependencyType = dependencyType;
     }
 

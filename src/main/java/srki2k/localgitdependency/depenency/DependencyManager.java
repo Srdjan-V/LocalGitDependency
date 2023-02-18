@@ -7,6 +7,7 @@ import srki2k.localgitdependency.Instances;
 import srki2k.localgitdependency.Logger;
 import srki2k.localgitdependency.property.Property;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,114 +17,126 @@ import java.util.stream.Stream;
 public class DependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
 
-    public void registerDependency(String configurationName, String dependencyURL, Closure<?> configureClosure) {
+    public void registerDependency(String configurationName, String dependencyURL, Closure<Property.Builder> configureClosure) {
         Property.Builder dependencyProperty = new Property.Builder(dependencyURL);
 
         if (configureClosure != null) {
             configureClosure.setDelegate(dependencyProperty);
+            configureClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
             configureClosure.call();
         }
 
         dependencies.add(new Dependency(configurationName, new Property(dependencyProperty)));
     }
 
-/*
-    // TODO: 06/02/2023  make a better implementation
-    public void buildDependencies(boolean explicitBuild) {
+    public void addBuiltDependencies() {
+        Project project = Instances.getProject();
+        if (dependencies.stream().anyMatch(dependency -> dependency.getDependencyType() == Dependency.Type.MavenProjectLocal)) {
+            addRepositoryMavenProjectLocal(project);
+        }
+
+
         for (Dependency dependency : dependencies) {
-            if (!dependency.getGitInfo().getDir().exists()) {
-                Logger.error("Dependency {} was not cloned, skipping build", dependency.getName());
-                continue;
+            switch (dependency.getDependencyType()) {
+                case MavenLocal:
+                    addMavenJarsAsDependencies(dependency, project);
+                    break;
+                case MavenProjectLocal:
+                    addMavenLocalJarsAsDependencies(dependency, project);
+                    break;
+                case MavenProjectDependencyLocal:
+                    addMavenProjectDependencyLocal(dependency, project);
+                    break;
+                case JarFlatDir:
+                    addJarsAsFlatDirDependencies(dependency, project);
+                    break;
+                case Jar:
+                    addJarsAsDependencies(dependency, project);
+                    break;
             }
-
-            if (explicitBuild || !dependency.getGradleInfo().isManualBuild()) {
-                try {
-                    Instances.getGradleManager().buildGradleProject(dependency);
-                } catch (Exception exception) {
-                    Logger.error("Exception thrown while building Dependency {}", dependency.getName());
-                    Logger.error("Exception {}", exception);
-                }
-                continue;
-            }
-
-
-*/
-/*            if (dependency.isManualBuild()) {
-                if (GitUtils.hasLocalChangesInDir(dependency.getDir())) {
-                    Logger.warn("Dependency {} has local changes but is not being automatically built", dependency.getName());
-                }
-            }*//*
-
         }
     }
-*/
 
-    private void addBuiltJarsAsDependencies(Dependency dependency) {
-        Path libs = Constants.buildDir.apply(dependency.getGitInfo().getDir()).toPath();
-
-        if (!Files.exists(libs)) {
-            Logger.error("Dependency {} was cloned, but no libs folder was found", dependency.getName());
-            return;
-        }
-
-        Object[] deeps;
-        try (Stream<Path> jars = Files.list(libs)) {
-            List<Object> list = new ArrayList<>();
-            jars.forEach(list::add);
-            deeps = new Object[list.size()];
-            for (int i = 0; i < list.size(); i++) {
-                deeps[i] = list.get(i);
-            }
-        } catch (IOException exception) {
-            Logger.error("Exception thrown while building Dependency {}", dependency.getName());
-            Logger.error("Exception {}", exception);
-            return;
-        }
-
-        if (deeps.length == 0) {
-            Logger.error("Dependency {} was cloned, but no libs where found", dependency.getName());
-            return;
-        } else {
-            Logger.warn("Adding the following Dependency {}, and its jars", dependency.getName());
-            Logger.warn(Arrays.toString(deeps));
-        }
-
-        Project project = Instances.getProject();
-        project.getDependencies().add(dependency.getConfigurationName(), project.getLayout().files(deeps));
+    private void addRepositoryMavenProjectLocal(Project project) {
+        File mavenRepo = Constants.MavenProjectLocal.apply(Instances.getPropertyManager().getGlobalProperty().getMavenFolder());
+        Logger.warn("Adding MavenProjectLocal repository at {}", mavenRepo.getAbsolutePath());
+        project.getRepositories().add(project.getRepositories().maven(mavenArtifactRepository -> {
+            mavenArtifactRepository.setName("MavenProjectLocal");
+            mavenArtifactRepository.setUrl(mavenRepo);
+        }));
     }
 
-    private void addMavenJarsAsDependencies(Dependency dependency) {
-        // TODO: 05/02/2023 add logging
 
-        Project project = Instances.getProject();
+    private void addMavenJarsAsDependencies(Dependency dependency, Project project) {
+        Logger.warn("Adding Dependency {}, from MavenLocal", dependency.getName());
         project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
     }
 
-    private void addMavenLocalJarsAsDependencies(Dependency dependency) {
-        // TODO: 15/02/2023 only add needed repos  
 
-        Project project = Instances.getProject();
+    private void addMavenLocalJarsAsDependencies(Dependency dependency, Project project) {
+        Logger.warn("Adding Dependency {}, from MavenProjectLocal", dependency.getName());
+        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
+    }
+
+    private void addMavenProjectDependencyLocal(Dependency dependency, Project project) {
+        if (dependency.getMavenFolder() == null) {
+            throw new RuntimeException(String.format("Dependency %s maven folder is null this ideally would not be possible", dependency.getName()));
+        }
+
+        String mavenRepo = dependency.getMavenFolder().getAbsolutePath();
+        Logger.warn("Adding Dependency {}, from ProjectDependencyLocal at {}", dependency.getName(), mavenRepo);
+
         project.getRepositories().add(project.getRepositories().maven(mavenArtifactRepository -> {
-            mavenArtifactRepository.setName(dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getRepositoryName());
-            mavenArtifactRepository.setUrl(Constants.defaultMavenLocalFolderUrl.apply(dependency.getMavenLocalFolder()));
+            mavenArtifactRepository.setName(dependency.getName() + "Repo");
+            mavenArtifactRepository.setUrl(mavenRepo);
+        }));
+
+        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
+    }
+
+    private void addJarsAsFlatDirDependencies(Dependency dependency, Project project) {
+        Path libs = Constants.buildDir.apply(dependency.getGitInfo().getDir()).toPath();
+
+        if (!Files.exists(libs)) {
+            Logger.error("Dependency {}, no libs folder was found", dependency.getName());
+            return;
+        }
+
+        project.getRepositories().add(project.getRepositories().flatDir(flatDir -> {
+            flatDir.setName(dependency.getName() + "FlatDir");
+            flatDir.dir(libs);
         }));
         project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
     }
 
-    public void addBuiltDependencies() {
-        for (Dependency dependency : dependencies) {
-            switch (dependency.getDependencyType()) {
-                case Jar:
-                    addBuiltJarsAsDependencies(dependency);
-                    break;
-                case MavenLocal:
-                    addMavenJarsAsDependencies(dependency);
-                    break;
-                case MavenFileLocal:
-                    addMavenLocalJarsAsDependencies(dependency);
-            }
+    private void addJarsAsDependencies(Dependency dependency, Project project) {
+        Path libs = Constants.buildDir.apply(dependency.getGitInfo().getDir()).toPath();
+
+        if (!Files.exists(libs)) {
+            Logger.error("Dependency {}, no libs folder was found", dependency.getName());
+            return;
         }
+
+        Object[] dependencies;
+        try (Stream<Path> jars = Files.list(libs)) {
+            dependencies = jars.toArray();
+        } catch (IOException exception) {
+            Logger.error("Exception thrown while building Dependency {}", dependency.getName());
+            Logger.error(exception.toString());
+            return;
+        }
+
+        if (dependencies.length == 0) {
+            Logger.error("Dependency {}, no libs where found", dependency.getName());
+            return;
+        } else {
+            Logger.warn("Adding the following Dependency {}, and its jars", dependency.getName());
+            Logger.warn(Arrays.toString(dependencies));
+        }
+
+        project.getDependencies().add(dependency.getConfigurationName(), project.getLayout().files(dependencies));
     }
+
 
     public Set<Dependency> getDependencies() {
         return dependencies;

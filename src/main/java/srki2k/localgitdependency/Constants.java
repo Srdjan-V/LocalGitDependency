@@ -38,7 +38,25 @@ public class Constants {
     public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!data");
     public static final Function<File, File> defaultLibsDir = file -> new File(file, "/libs");
 
-    public static final Function<File, File> defaultMavenLocalFolder = file -> new File(file, "/mavenLocal");
+    public static final Function<File, File> defaultMavenFolder = file -> new File(file, "/!maven");
+    public static final Function<File, File> MavenProjectLocal = file -> {
+        if (!file.exists()) {
+            if (!file.mkdirs()) {
+                throw new RuntimeException(String.format("Unable to create directory %s", file.getAbsolutePath()));
+            }
+        }
+
+        return new File(file, "/!mavenProjectLocal");
+    };
+    public static final BiFunction<File, String, File> MavenProjectDependencyLocal = (file, name) -> {
+        File maven = new File(file, "/!mavenProjectLocal" + "/" + name);
+        if (!maven.exists()) {
+            if (!maven.mkdirs()) {
+                throw new RuntimeException(String.format("Unable to create directory %s", maven.getAbsolutePath()));
+            }
+        }
+        return maven;
+    };
     public static final Function<File, File> defaultMavenLocalFolderUrl = file -> new File("file://", file.getAbsolutePath());
     public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> {
         File persistentInitScript = new File(persistentFolder, name + "/" + name + "Init.gradle");

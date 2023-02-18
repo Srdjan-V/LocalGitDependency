@@ -1,5 +1,7 @@
 package srki2k.localgitdependency.git;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.depenency.Dependency;
 import srki2k.localgitdependency.property.Property;
@@ -28,18 +30,22 @@ public class GitInfo {
         this.keepGitUpdated = dependencyProperty.getKeepGitUpdated();
     }
 
+    @NotNull
     public Dependency getDependency() {
         return dependency;
     }
 
+    @NotNull
     public String getUrl() {
         return url;
     }
 
+    @NotNull
     public String getCommit() {
         return commit;
     }
 
+    @NotNull
     public File getDir() {
         return dir;
     }
@@ -59,6 +65,7 @@ public class GitInfo {
         return gitExceptions != null && !gitExceptions.isEmpty();
     }
 
+    @Nullable
     public List<Exception> getGitExceptions() {
         return gitExceptions;
     }

@@ -12,7 +12,7 @@ public abstract class CommonPropertyFields {
     Boolean keepGitUpdated;
     File gitDir;
     File persistentFolder;
-    File mavenLocalFolder;
-    Dependency.DependencyType dependencyType;
+    File mavenFolder;
+    Dependency.Type dependencyType;
     Boolean gradleProbeCashing;
 }

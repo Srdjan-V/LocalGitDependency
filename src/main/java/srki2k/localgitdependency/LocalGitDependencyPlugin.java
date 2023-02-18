@@ -6,11 +6,11 @@ import org.gradle.api.Task;
 import srki2k.localgitdependency.depenency.DependencyManager;
 import srki2k.localgitdependency.extentions.SettingsExtension;
 import srki2k.localgitdependency.git.GitManager;
+import srki2k.localgitdependency.gradle.GradleManager;
 import srki2k.localgitdependency.persistence.PersistenceManager;
 import srki2k.localgitdependency.property.PropertyManager;
 import srki2k.localgitdependency.tasks.BuildGitDependencies;
 import srki2k.localgitdependency.tasks.UndoLocalGitChanges;
-import srki2k.localgitdependency.gradle.GradleManager;
 
 public class LocalGitDependencyPlugin implements Plugin<Project> {
 
@@ -19,7 +19,7 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
         project.getPluginManager().apply("java");
         project.getRepositories().add(project.getRepositories().mavenLocal());
 
-        Instances.setProject(project);
+        Instances.setProject(project);// TODO: 18/02/2023 make multiProject compatible? 
         Instances.setDependencyManager(new DependencyManager());
         Instances.setGradleManager(new GradleManager());
         Instances.setPropertyManager(new PropertyManager());

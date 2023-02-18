@@ -59,6 +59,7 @@ public class GradleManager {
             if (dependency.getGitInfo().hasRefreshed() || dependency.getPersistentInfo().hasDependencyTypeChanged()) {
                 switch (dependency.getDependencyType()) {
                     case Jar:
+                    case JarFlatDir:
                         buildGradleProject(dependency);
                         break;
 
@@ -68,12 +69,14 @@ public class GradleManager {
                                         dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName()));
                         break;
 
-                    case MavenFileLocal:
+                    case MavenProjectDependencyLocal:
+                    case MavenProjectLocal:
                         SerializableProperty.PublicationObjectSerializable publicationObjectSerializable = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject();
                         publishGradleProject(dependency,
                                 Constants.FilePublicationTaskName.apply(
                                         publicationObjectSerializable.getPublicationName(),
                                         publicationObjectSerializable.getRepositoryName()));
+                        break;
                 }
             }
         }
@@ -143,7 +146,7 @@ public class GradleManager {
 
         GradleInit.Publication taskPublication = new GradleInit.Publication(
                 dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getRepositoryName(),
-                dependency.getMavenLocalFolder(),
+                dependency.getMavenFolder(),
                 dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName(),
                 tasks);
 

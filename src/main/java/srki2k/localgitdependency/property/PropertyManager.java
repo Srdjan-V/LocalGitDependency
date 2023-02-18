@@ -19,8 +19,8 @@ public class PropertyManager {
         File defaultDir = Constants.defaultDir.get();
         builder.persistentFolder(Constants.defaultPersistentDir.apply(defaultDir));
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
-        builder.mavenLocalFolder(Constants.defaultMavenLocalFolder.apply(defaultDir));
-        builder.dependencyType(Dependency.DependencyType.MavenLocal);
+        builder.mavenFolder(Constants.defaultMavenFolder.apply(defaultDir));
+        builder.dependencyType(Dependency.Type.MavenLocal);
         builder.keepGitUpdated(true);
         builder.gradleProbeCashing(true);
 
@@ -42,22 +42,23 @@ public class PropertyManager {
             throw new GradleException(globalProperty.gitDir.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
         }
 
-        if (!globalProperty.mavenLocalFolder.exists()) {
-            globalProperty.mavenLocalFolder.mkdirs();
+        if (!globalProperty.mavenFolder.exists()) {
+            globalProperty.mavenFolder.mkdirs();
         } else if (!globalProperty.gitDir.isDirectory()) {
-            throw new GradleException(globalProperty.mavenLocalFolder.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
+            throw new GradleException(globalProperty.mavenFolder.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
         }
 
         createdEssentialDirectories = true;
     }
 
-    public void globalProperty(Closure<?> configureClosure) {
+    public void globalProperty(Closure<DefaultProperty.Builder> configureClosure) {
         if (configureClosure != null) {
             if (customGlobalProperty) {
                 throw new GradleException("you cant change the globalProperty once they are set");
             }
             DefaultProperty.Builder defaultProperty = new DefaultProperty.Builder();
             configureClosure.setDelegate(defaultProperty);
+            configureClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
             configureClosure.call();
             this.globalProperty = resolveProperty(new DefaultProperty(defaultProperty));
             customGlobalProperty = true;
