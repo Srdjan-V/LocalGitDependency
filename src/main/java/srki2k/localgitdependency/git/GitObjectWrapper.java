@@ -18,12 +18,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-// TODO: 10/02/2023 redo some parts of this class
 // Some code has been taken from
 // https://github.com/alexvasilkov/GradleGitDependenciesPlugin/blob/master/src/main/groovy/com/alexvasilkov/gradle/git/utils/GitUtils.groovy
 class GitObjectWrapper implements AutoCloseable, GitTasks {
@@ -31,7 +28,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
     private boolean gitExceptions;
     private Git git;
     private GitInfo gitInfo;
-    private List<File> changedFiles;
+    private String SHALocalChanges;
 
     GitObjectWrapper(GitInfo gitInfo) {
         this.gitInfo = gitInfo;
@@ -92,7 +89,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         String persistentWorkingDirSHA1 = gitInfo.getDependency().getPersistentInfo().getWorkingDirSHA1();
         String workingDirSHA1;
         if (hasLocalChanges()) {
-            workingDirSHA1 = createSHA1OfLocalChanges();
+            workingDirSHA1 = SHALocalChanges;
         } else {
             workingDirSHA1 = head();
         }
@@ -106,11 +103,11 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         if (persistentWorkingDirSHA1.equals(workingDirSHA1)) return;
         gitInfo.setRefreshed();
         gitInfo.getDependency().getPersistentInfo().setWorkingDirSHA1(workingDirSHA1);
+        Logger.info("Dependency {} has new local changes, marking dependency to be rebuild", gitInfo.getDependency().getName());
     }
 
-    private boolean hasLocalChanges() throws NoSuchFieldException, IllegalAccessException, GitAPIException {
-        if (changedFiles != null && changedFiles.isEmpty()) return false;
-        changedFiles = new ArrayList<>();
+    private boolean hasLocalChanges() throws NoSuchFieldException, IllegalAccessException, GitAPIException, IOException {
+        if (SHALocalChanges != null) return true;
 
         Status status = git.status().call();
         //Use reflection to skip the creation of unmodifiable sets
@@ -118,19 +115,57 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         diffField.setAccessible(true);
         IndexDiff diff = (IndexDiff) diffField.get(status);
 
-        addChanges(diff.getAdded());
-        addChanges(diff.getChanged());
-        addChanges(diff.getRemoved());
-        addChanges(diff.getUntracked());
-        addChanges(diff.getModified());
-        addChanges(diff.getMissing());
+        SHA1 sha1 = SHA1.newInstance();
+        byte[] buffer = new byte[4096];
+        boolean changes = false;
 
-        return !changedFiles.isEmpty();
+        if (!diff.getAdded().isEmpty()) {
+            changes = true;
+            createSHA1OfLocalChanges(sha1, buffer, diff.getAdded(), false);
+        }
+        if (!diff.getChanged().isEmpty()) {
+            changes = true;
+            createSHA1OfLocalChanges(sha1, buffer, diff.getChanged(), false);
+        }
+        if (!diff.getRemoved().isEmpty()) {
+            changes = true;
+            createSHA1OfLocalChanges(sha1, buffer, diff.getRemoved(), false);
+        }
+        if (!diff.getUntracked().isEmpty()) {
+            changes = true;
+            createSHA1OfLocalChanges(sha1, buffer, diff.getUntracked(), false);
+        }
+        if (!diff.getModified().isEmpty()) {
+            changes = true;
+            createSHA1OfLocalChanges(sha1, buffer, diff.getModified(), false);
+        }
+        if (!diff.getMissing().isEmpty()) {
+            changes = true;
+            createSHA1OfLocalChanges(sha1, buffer, diff.getMissing(), true);
+        }
+
+        if (changes) {
+            SHALocalChanges = sha1.toObjectId().getName();
+        }
+
+        return changes;
     }
 
-    private void addChanges(Set<String> set) {
-        for (String file : set) {
-            changedFiles.add(new File(gitInfo.getDir(), file));
+    private void createSHA1OfLocalChanges(SHA1 sha1, byte[] buffer, Set<String> stringSet, boolean missingFiles) throws IOException {
+        int read;
+
+        if (missingFiles) {
+            for (String file : stringSet) {
+                sha1.update(file.getBytes(StandardCharsets.UTF_8));
+            }
+        } else {
+            for (String file : stringSet) {
+                try (FileInputStream inputStream = new FileInputStream(new File(gitInfo.getDir(), file))) {
+                    while ((read = inputStream.read(buffer)) > 0) {
+                        sha1.update(buffer, 0, read);
+                    }
+                }
+            }
         }
     }
 
@@ -169,34 +204,16 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
     public void clearLocalChanges() {
         if (gitExceptions) return;
 
+        Logger.info("Dependency {}, clearing local changes and marking dependency to be rebuild", gitInfo.getDependency().getName());
         try {
             if (hasLocalChanges()) {
                 git.reset().setMode(ResetCommand.ResetType.HARD).call();
                 gitInfo.setRefreshed();
             }
         } catch (Exception e) {
+            Logger.error("Dependency {}, unable to clear local changes", gitInfo.getDependency().getName());
             gitExceptions(e);
         }
-    }
-
-    public String createSHA1OfLocalChanges() throws IOException {
-        SHA1 sha1 = SHA1.newInstance();
-        byte[] buffer = new byte[4096];
-        int read;
-
-        for (File file : changedFiles) {
-            // TODO: 13/02/2023 maybe implement a way to skip checking for existing files
-            if (file.exists()) {
-                try (FileInputStream inputStream = new FileInputStream(file)) {
-                    while ((read = inputStream.read(buffer)) > 0) {
-                        sha1.update(buffer, 0, read);
-                    }
-                }
-            } else {
-                sha1.update(file.getAbsolutePath().getBytes(StandardCharsets.UTF_8));
-            }
-        }
-        return ObjectId.fromRaw(sha1.digest()).getName();
     }
 
     @Override
