@@ -1,5 +1,6 @@
 package srki2k.localgitdependency.gradle;
 
+import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ModelBuilder;
@@ -7,13 +8,13 @@ import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import srki2k.localgitdependency.Constants;
 import srki2k.localgitdependency.Instances;
+import srki2k.localgitdependency.Logger;
 import srki2k.localgitdependency.depenency.Dependency;
 import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import srki2k.localgitdependency.persistence.SerializableProperty;
+import srki2k.localgitdependency.property.DefaultProperty;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
@@ -163,19 +164,49 @@ public class GradleManager {
 
 
     private void createMainInitScript() {
-        File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
+        DefaultProperty globalProperty = Instances.getPropertyManager().getGlobalProperty();
+        File mainInit = Constants.concatFile.apply(globalProperty.getPersistentFolder(), Constants.MAIN_INIT_SCRIPT_GRADLE);
+        if (mainInit.exists()) {
+            if (!mainInit.isFile()) {
+                throw new RuntimeException(String.format("This path: '%s' leads to a folder, it must be a file", mainInit.getAbsolutePath()));
+            }
 
-        // TODO: 07/02/2023 add a way to check file integrity 
-        if (!initScriptFolder.exists()) {
-            initScriptFolder.mkdirs();
+            if (globalProperty.isKeepInitScriptUpdated()) {
+                SHA1 sha1 = SHA1.newInstance();
+                byte[] buffer = new byte[4096];
+                int read;
+
+                try (FileInputStream inputStream = new FileInputStream(mainInit)) {
+                    while ((read = inputStream.read(buffer)) > 0) {
+                        sha1.update(buffer, 0, read);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException("Error while checking initScript file integrity", e);
+                }
+
+                final String fileInitScriptSHA = sha1.toObjectId().getName();
+                if (!fileInitScriptSHA.equals(Instances.getPersistenceManager().getInitScriptSHA())) {
+                    Logger.info("File {}, contains local changes, updating file", Constants.MAIN_INIT_SCRIPT_GRADLE);
+                    String initScript = GradleInit.createInitProbe();
+                    if (Instances.getPersistenceManager().getInitScriptSHA() == null) {
+                        sha1 = SHA1.newInstance();
+                        sha1.update(initScript.getBytes(StandardCharsets.UTF_8));
+                        Instances.getPersistenceManager().setInitScriptSHA(sha1.toObjectId().getName());
+                    }
+
+                    writeToFile(mainInit, initScript);
+                }
+            }
+        } else {
+            String initScript = GradleInit.createInitProbe();
+            if (Instances.getPersistenceManager().getInitScriptSHA() == null) {
+                SHA1 sha1 = SHA1.newInstance();
+                sha1.update(initScript.getBytes(StandardCharsets.UTF_8));
+                Instances.getPersistenceManager().setInitScriptSHA(sha1.toObjectId().getName());
+            }
+
+            writeToFile(mainInit, initScript);
         }
-
-        File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
-        if (mainInit.exists() && mainInit.isFile()) {
-            return;
-        }
-
-        writeToFile(mainInit, GradleInit.createInitProbe());
     }
 
     private void writeToFile(File file, String text) {

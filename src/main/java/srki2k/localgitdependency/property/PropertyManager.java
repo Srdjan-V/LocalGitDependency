@@ -22,6 +22,7 @@ public class PropertyManager {
         builder.mavenFolder(Constants.defaultMavenFolder.apply(defaultDir));
         builder.dependencyType(Dependency.Type.MavenLocal);
         builder.keepGitUpdated(true);
+        builder.keepInitScriptUpdated(true);
         builder.gradleProbeCashing(true);
 
         globalProperty = new DefaultProperty(builder);
@@ -60,7 +61,7 @@ public class PropertyManager {
             configureClosure.setDelegate(defaultProperty);
             configureClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
             configureClosure.call();
-            this.globalProperty = resolveProperty(new DefaultProperty(defaultProperty));
+            this.globalProperty = resolveGlobalProperty(new DefaultProperty(defaultProperty));
             customGlobalProperty = true;
         }
     }
@@ -71,21 +72,28 @@ public class PropertyManager {
     }
 
     //applies missing globalProperty from the defaultGlobalProperty
-    private DefaultProperty resolveProperty(DefaultProperty newGlobalProperty) {
-        DefaultProperty resolvedProperty = new DefaultProperty(null);
-        for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
-            try {
-                Object globalPropertyField = field.get(newGlobalProperty);
-                Object defaultGlobalPropertyField = field.get(globalProperty);
+    private DefaultProperty resolveGlobalProperty(DefaultProperty newGlobalProperty) {
+        DefaultProperty resolvedProperty = new DefaultProperty();
+        Class<?>[] classes = new Class[2];
+        classes[0] = CommonPropertyFields.class;
+        classes[1] = DefaultProperty.class;
 
-                if (globalPropertyField == null) {
-                    field.set(resolvedProperty, defaultGlobalPropertyField);
-                } else {
-                    field.set(resolvedProperty, globalPropertyField);
+        for (Class<?> clazz : classes) {
+            for (Field field : clazz.getDeclaredFields()) {
+                try {
+                    field.setAccessible(true);
+                    Object globalPropertyField = field.get(newGlobalProperty);
+                    Object defaultGlobalPropertyField = field.get(globalProperty);
+
+                    if (globalPropertyField == null) {
+                        field.set(resolvedProperty, defaultGlobalPropertyField);
+                    } else {
+                        field.set(resolvedProperty, globalPropertyField);
+                    }
+
+                } catch (Exception e) {
+                    throw new GradleException(String.format("Unexpected error while reflecting %s class", clazz), e);
                 }
-
-            } catch (Exception e) {
-                throw new GradleException("Unexpected error while reflecting CommonProperty class", e);
             }
         }
 
@@ -94,23 +102,27 @@ public class PropertyManager {
 
     //applies missing dependencyProperty from the globalProperty
     public void applyDefaultProperty(Property dependencyProperty) {
-        for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
+        Class<CommonPropertyFields> clazz = CommonPropertyFields.class;
+        for (Field field : clazz.getDeclaredFields()) {
             try {
+                field.setAccessible(true);
                 if (field.get(dependencyProperty) == null) {
                     field.set(dependencyProperty, field.get(globalProperty));
                 }
             } catch (Exception e) {
-                throw new GradleException("Unexpected error while reflecting CommonProperty class", e);
+                throw new GradleException(String.format("Unexpected error while reflecting %s class", clazz), e);
             }
         }
     }
 
     public static void instantiateCommonPropertyFieldsInstance(CommonPropertyFields object, CommonPropertyFields builder) {
-        for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
+        Class<CommonPropertyFields> clazz = CommonPropertyFields.class;
+        for (Field field : clazz.getDeclaredFields()) {
             try {
+                field.setAccessible(true);
                 field.set(object, field.get(builder));
             } catch (Exception e) {
-                throw new GradleException("Unexpected error while reflecting CommonPropertyFields class", e);
+                throw new GradleException(String.format("Unexpected error while reflecting %s class", clazz), e);
             }
         }
     }
