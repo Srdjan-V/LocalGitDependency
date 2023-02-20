@@ -14,7 +14,10 @@ import srki2k.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import srki2k.localgitdependency.persistence.SerializableProperty;
 import srki2k.localgitdependency.property.DefaultProperty;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
@@ -47,11 +50,7 @@ public class GradleManager {
                 probeProject(dependency);
             }
 
-/*            if (!dependency.getGradleInfo().isGradleProbeCashing()) {
-                createDependencyInitScript(dependency);
-            }*/ // TODO: 13/02/2023 fix 
-
-            createDependencyInitScript(dependency);
+            validateDependencyInitScript(dependency);
         }
     }
 
@@ -116,7 +115,40 @@ public class GradleManager {
         }
     }
 
-    private void createDependencyInitScript(Dependency dependency) {
+    private void validateDependencyInitScript(Dependency dependency) {
+        File initScript = dependency.getGradleInfo().getInitScript();
+        if (initScript.exists()) {
+            if (!initScript.isFile()) {
+                throw new RuntimeException(String.format("This path: '%s' leads to a folder, it must be a file", initScript.getAbsolutePath()));
+            }
+
+            if (dependency.getGradleInfo().isKeepDependencyInitScriptUpdated()) {
+                final String fileInitScriptSHA = generateShaForFile(initScript);
+                if (!fileInitScriptSHA.equals(dependency.getPersistentInfo().getInitFileSHA1())) {
+                    Logger.info("File {}, contains local changes, updating file", initScript);
+                    String dependencyInitScriptScript = createDependencyInitScript(dependency);
+                    if (dependency.getPersistentInfo().getInitFileSHA1() == null) {
+                        SHA1 sha1 = SHA1.newInstance();
+                        sha1.update(dependencyInitScriptScript.getBytes(StandardCharsets.UTF_8));
+                        dependency.getPersistentInfo().setInitFileSHA1SHA1(sha1.toObjectId().getName());
+                    }
+
+                    writeToFile(initScript, dependencyInitScriptScript);
+                }
+            }
+        } else {
+            String dependencyInitScriptScript = GradleInit.createInitProbe();
+            if (dependency.getPersistentInfo().getInitFileSHA1() == null) {
+                SHA1 sha1 = SHA1.newInstance();
+                sha1.update(dependencyInitScriptScript.getBytes(StandardCharsets.UTF_8));
+                dependency.getPersistentInfo().setInitFileSHA1SHA1(sha1.toObjectId().getName());
+            }
+
+            writeToFile(initScript, dependencyInitScriptScript);
+        }
+    }
+
+    private String createDependencyInitScript(Dependency dependency) {
         // TODO: 18/02/2023 work on this
         SerializableProperty.DependencyInfoModelSerializable model = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel();
         int[] gradleVersion = Arrays.stream(model.getProjectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
@@ -157,11 +189,8 @@ public class GradleManager {
             gradleInit.setTasks(t -> t.addAll(tasks));
             gradleInit.setPublishing(p -> p.add(taskPublication));
         };
-        initFile = GradleInit.crateInitProject(configuration);
-
-        writeToFile(dependency.getGradleInfo().getInitScript(), initFile);
+        return initFile = GradleInit.crateInitProject(configuration);
     }
-
 
     private void createMainInitScript() {
         DefaultProperty globalProperty = Instances.getPropertyManager().getGlobalProperty();
@@ -171,25 +200,13 @@ public class GradleManager {
                 throw new RuntimeException(String.format("This path: '%s' leads to a folder, it must be a file", mainInit.getAbsolutePath()));
             }
 
-            if (globalProperty.isKeepInitScriptUpdated()) {
-                SHA1 sha1 = SHA1.newInstance();
-                byte[] buffer = new byte[4096];
-                int read;
-
-                try (FileInputStream inputStream = new FileInputStream(mainInit)) {
-                    while ((read = inputStream.read(buffer)) > 0) {
-                        sha1.update(buffer, 0, read);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException("Error while checking initScript file integrity", e);
-                }
-
-                final String fileInitScriptSHA = sha1.toObjectId().getName();
+            if (globalProperty.getKeepMainInitScriptUpdated()) {
+                final String fileInitScriptSHA = generateShaForFile(mainInit);
                 if (!fileInitScriptSHA.equals(Instances.getPersistenceManager().getInitScriptSHA())) {
                     Logger.info("File {}, contains local changes, updating file", Constants.MAIN_INIT_SCRIPT_GRADLE);
                     String initScript = GradleInit.createInitProbe();
                     if (Instances.getPersistenceManager().getInitScriptSHA() == null) {
-                        sha1 = SHA1.newInstance();
+                        SHA1 sha1 = SHA1.newInstance();
                         sha1.update(initScript.getBytes(StandardCharsets.UTF_8));
                         Instances.getPersistenceManager().setInitScriptSHA(sha1.toObjectId().getName());
                     }
@@ -207,6 +224,22 @@ public class GradleManager {
 
             writeToFile(mainInit, initScript);
         }
+    }
+
+    private String generateShaForFile(File file) {
+        SHA1 sha1 = SHA1.newInstance();
+        byte[] buffer = new byte[4096];
+        int read;
+
+        try (FileInputStream inputStream = new FileInputStream(file)) {
+            while ((read = inputStream.read(buffer)) > 0) {
+                sha1.update(buffer, 0, read);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Error while checking %s file integrity", file.getName()), e);
+        }
+
+        return sha1.toObjectId().getName();
     }
 
     private void writeToFile(File file, String text) {

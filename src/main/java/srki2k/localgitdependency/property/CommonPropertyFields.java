@@ -10,9 +10,9 @@ public abstract class CommonPropertyFields {
 
     String defaultConfiguration;
     Boolean keepGitUpdated;
+    Boolean keepDependencyInitScriptUpdated;
     File gitDir;
     File persistentFolder;
     File mavenFolder;
     Dependency.Type dependencyType;
-    Boolean gradleProbeCashing;
 }

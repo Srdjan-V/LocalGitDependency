@@ -38,6 +38,8 @@ public class Property extends CommonPropertyGetters {
             this.name = name;
         }
 
+
+
         public void commit(String commit) {
             this.commit = commit;
         }

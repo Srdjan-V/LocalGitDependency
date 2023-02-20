@@ -2,26 +2,26 @@ package srki2k.localgitdependency.property;
 
 //Property's for global configuration
 public class DefaultProperty extends CommonPropertyGetters {
-    private final Boolean keepInitScriptUpdated;
+    private final Boolean keepMainInitScriptUpdated;
 
     public DefaultProperty(Builder builder) {
-        keepInitScriptUpdated = builder.keepInitScriptUpdated;
+        keepMainInitScriptUpdated = builder.keepMainInitScriptUpdated;
         PropertyManager.instantiateCommonPropertyFieldsInstance(this, builder);
     }
 
     public DefaultProperty() {
-        keepInitScriptUpdated = null;
+        keepMainInitScriptUpdated = null;
     }
 
-    public boolean isKeepInitScriptUpdated() {
-        return keepInitScriptUpdated;
+    public boolean getKeepMainInitScriptUpdated() {
+        return keepMainInitScriptUpdated;
     }
 
     public static class Builder extends CommonPropertyBuilder {
-        private Boolean keepInitScriptUpdated;
+        private Boolean keepMainInitScriptUpdated;
 
-        public void keepInitScriptUpdated(Boolean keepInitScriptUpdated) {
-            this.keepInitScriptUpdated = keepInitScriptUpdated;
+        public void keepMainInitScriptUpdated(Boolean keepMainInitScriptUpdated) {
+            this.keepMainInitScriptUpdated = keepMainInitScriptUpdated;
         }
     }
 }

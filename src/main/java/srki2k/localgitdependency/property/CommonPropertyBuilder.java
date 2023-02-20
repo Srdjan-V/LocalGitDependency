@@ -17,6 +17,10 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
         this.keepGitUpdated = keepGitUpdated;
     }
 
+    public void keepDependencyInitScriptUpdated(boolean keepDependencyInitScriptUpdated) {
+        this.keepDependencyInitScriptUpdated = keepDependencyInitScriptUpdated;
+    }
+
     public void gitDir(File dir) {
         this.gitDir = dir;
     }
@@ -31,10 +35,6 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
 
     public void dependencyType(Dependency.Type dependencyType) {
         this.dependencyType = dependencyType;
-    }
-
-    public void gradleProbeCashing(boolean gradleProbeCashing) {
-        this.gradleProbeCashing = gradleProbeCashing;
     }
 
 }

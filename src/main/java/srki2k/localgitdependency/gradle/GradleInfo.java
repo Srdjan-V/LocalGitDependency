@@ -9,12 +9,12 @@ import java.io.File;
 
 public class GradleInfo {
     private final Dependency dependency;
-    private final boolean gradleProbeCashing;
     private final File initScript;
+    private final boolean keepDependencyInitScriptUpdated;
 
     public GradleInfo(Property dependencyProperty, Dependency dependency) {
         this.dependency = dependency;
-        this.gradleProbeCashing = dependencyProperty.getGradleProbeCashing();
+        this.keepDependencyInitScriptUpdated = dependencyProperty.getKeepDependencyInitScriptUpdated();
         this.initScript = Constants.persistentInitScript.apply(dependencyProperty.getPersistentFolder(), dependency.getName());
     }
 
@@ -23,12 +23,12 @@ public class GradleInfo {
         return dependency;
     }
 
-    public boolean isGradleProbeCashing() {
-        return gradleProbeCashing;
-    }
-
     @NotNull
     public File getInitScript() {
         return initScript;
+    }
+
+    public boolean isKeepDependencyInitScriptUpdated() {
+        return keepDependencyInitScriptUpdated;
     }
 }
