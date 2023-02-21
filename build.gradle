@@ -28,19 +28,20 @@ tasks.named('test') {
 }
 
 gradlePlugin {
+
+
     plugins {
         localGitDependency {
-            id = 'srki2k.local-git-dependency'
-            implementationClass = 'srki2k.localgitdependency.LocalGitDependencyPlugin'
+            id = 'com.srdjanv.local-git-dependency'
+            implementationClass = 'com.srdjanv.localgitdependency.LocalGitDependencyPlugin'
         }
 
         modelInjection {
-            id = "srki2k.model-injection"
-            implementationClass = "srki2k.localgitdependency.injection.plugin.ModelInjectionPlugin"
+            id = "com.srdjanv.model-injection"
+            implementationClass = "com.srdjanv.localgitdependency.injection.plugin.ModelInjectionPlugin"
         }
 
     }
-   // automatedPublishing = false
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens
