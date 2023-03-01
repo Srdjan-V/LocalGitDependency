@@ -1,6 +1,7 @@
 package com.srdjanv.localgitdependency.property;
 
 import com.srdjanv.localgitdependency.depenency.Dependency;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
@@ -16,6 +17,11 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
 
     public File getDir() {
         return gitDir;
+    }
+
+    @Nullable
+    public File getJavaHomeDir() {
+        return javaHomeDir;
     }
 
     public File getPersistentFolder() {

@@ -12,6 +12,7 @@ public abstract class CommonPropertyFields {
     Boolean keepGitUpdated;
     Boolean keepDependencyInitScriptUpdated;
     File gitDir;
+    File javaHomeDir;
     File persistentFolder;
     File mavenFolder;
     Dependency.Type dependencyType;

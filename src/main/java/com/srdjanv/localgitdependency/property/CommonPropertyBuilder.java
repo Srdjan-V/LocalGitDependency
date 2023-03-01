@@ -24,7 +24,9 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
     public void gitDir(File dir) {
         this.gitDir = dir;
     }
-
+    public void javaHomeDir(File javaHomeDir) {
+        this.javaHomeDir = javaHomeDir;
+    }
     public void persistentFolder(File initScript) {
         this.persistentFolder = initScript;
     }
