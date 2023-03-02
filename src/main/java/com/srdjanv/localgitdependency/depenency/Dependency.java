@@ -28,7 +28,7 @@ public class Dependency {
         Instances.getPropertyManager().applyDefaultProperty(dependencyProperty);
 
         this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
-        this.configurationName = configurationName == null ? dependencyProperty.getDefaultConfiguration() : configurationName;
+        this.configurationName = configurationName == null ? dependencyProperty.getConfiguration() : configurationName;
         this.dependencyType = dependencyProperty.getDependencyType();
         switch (dependencyType) {
             case MavenProjectLocal:

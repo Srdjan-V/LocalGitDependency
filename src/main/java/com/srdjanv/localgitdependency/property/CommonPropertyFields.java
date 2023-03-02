@@ -8,7 +8,7 @@ public abstract class CommonPropertyFields {
     CommonPropertyFields() {
     }
 
-    String defaultConfiguration;
+    String configuration;
     Boolean keepGitUpdated;
     Boolean keepDependencyInitScriptUpdated;
     File gitDir;
@@ -16,4 +16,6 @@ public abstract class CommonPropertyFields {
     File persistentFolder;
     File mavenFolder;
     Dependency.Type dependencyType;
+    Boolean tryGeneratingSourceJar;
+    Boolean tryGeneratingJavaDocJar;
 }

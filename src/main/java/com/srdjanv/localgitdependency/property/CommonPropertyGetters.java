@@ -7,8 +7,8 @@ import java.io.File;
 
 public abstract class CommonPropertyGetters extends CommonPropertyFields {
 
-    public String getDefaultConfiguration() {
-        return defaultConfiguration;
+    public String getConfiguration() {
+        return configuration;
     }
 
     public Boolean getKeepGitUpdated() {
@@ -38,5 +38,13 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
 
     public Boolean getKeepDependencyInitScriptUpdated() {
         return keepDependencyInitScriptUpdated;
+    }
+
+    public Boolean getTryGeneratingSourceJar() {
+        return tryGeneratingSourceJar;
+    }
+
+    public Boolean getTryGeneratingJavaDocJar() {
+        return tryGeneratingJavaDocJar;
     }
 }

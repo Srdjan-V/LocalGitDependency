@@ -9,8 +9,8 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
     CommonPropertyBuilder() {
     }
 
-    public void defaultConfiguration(String defaultConfiguration) {
-        this.defaultConfiguration = defaultConfiguration;
+    public void configuration(String configuration) {
+        this.configuration = configuration;
     }
 
     public void keepGitUpdated(boolean keepGitUpdated) {
@@ -37,6 +37,14 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
 
     public void dependencyType(Dependency.Type dependencyType) {
         this.dependencyType = dependencyType;
+    }
+
+    public void tryGeneratingSourceJar(Boolean tryGeneratingSourceJar) {
+        this.tryGeneratingSourceJar = tryGeneratingSourceJar;
+    }
+
+    public void tryGeneratingJavaDocJar(Boolean tryGeneratingJavaDocJar) {
+        this.tryGeneratingJavaDocJar = tryGeneratingJavaDocJar;
     }
 
 }

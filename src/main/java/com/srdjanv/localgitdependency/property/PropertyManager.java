@@ -15,7 +15,7 @@ public class PropertyManager {
 
     {
         DefaultProperty.Builder builder = new DefaultProperty.Builder();
-        builder.defaultConfiguration(Constants.JAVA_IMPLEMENTATION);
+        builder.configuration(Constants.JAVA_IMPLEMENTATION);
         File defaultDir = Constants.defaultDir.get();
         builder.persistentFolder(Constants.defaultPersistentDir.apply(defaultDir));
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
@@ -24,6 +24,8 @@ public class PropertyManager {
         builder.keepGitUpdated(true);
         builder.keepMainInitScriptUpdated(true);
         builder.keepDependencyInitScriptUpdated(true);
+        builder.tryGeneratingSourceJar(true);
+        builder.tryGeneratingJavaDocJar(false);
 
         globalProperty = new DefaultProperty(builder);
     }
