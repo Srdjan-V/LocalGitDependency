@@ -86,11 +86,13 @@ public class PersistentInfo {
     }
 
     public void saveToPersistentFile() {
-        if (!dirty) return;
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (PrintWriter pw = new PrintWriter(persistentFile)) {
-            pw.write(gson.toJson(serializableProperty));
-        } catch (FileNotFoundException ignore) {
+        if (dirty) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            try (PrintWriter pw = new PrintWriter(persistentFile)) {
+                pw.write(gson.toJson(serializableProperty));
+            } catch (FileNotFoundException ignore) {
+            }
+            dirty = false;
         }
     }
 }

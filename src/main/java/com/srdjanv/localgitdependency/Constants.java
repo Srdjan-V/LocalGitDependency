@@ -17,7 +17,7 @@ public class Constants {
 
 
     public final static String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
-
+    public final static String MAIN_INIT_SCRIPT_JSON = "mainInitScript.json";
 
     public final static Function<String, String> MavenPublicationName = s -> "InitScriptPublicationForProject" + s;
     public final static Function<String, String> MavenRepositoryName = s -> "InitScriptRepositoryForProject" + s;
