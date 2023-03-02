@@ -18,7 +18,8 @@ public class GitManager {
         if (expressions) {
             List<List<Exception>> exceptionList = new ArrayList<>();
             for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
-                exceptionList.add(dependency.getGitInfo().getGitExceptions());
+                if (dependency.getGitInfo().hasGitExceptions())
+                    exceptionList.add(dependency.getGitInfo().getGitExceptions());
             }
             RuntimeException runtimeException = new RuntimeException("Exception(s) occurred while interacting with git");
             exceptionList.stream().flatMap(List::stream).forEach(runtimeException::addSuppressed);
@@ -27,14 +28,14 @@ public class GitManager {
     }
 
     public boolean initRepo(Dependency dependency) {
-        try(GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
+        try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
             gitObjectWrapper.setup();
             return gitObjectWrapper.hasGitExceptions();
         }
     }
 
     public boolean runRepoCommand(Dependency dependency, Consumer<GitTasks> task) {
-        try(GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
+        try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
             task.accept(gitObjectWrapper);
             return gitObjectWrapper.hasGitExceptions();
         }

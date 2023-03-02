@@ -57,28 +57,32 @@ public class GradleManager {
     public void buildDependencies() {
         for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
             if (dependency.getGitInfo().hasRefreshed() || dependency.getPersistentInfo().hasDependencyTypeChanged()) {
-                switch (dependency.getDependencyType()) {
-                    case Jar:
-                    case JarFlatDir:
-                        buildGradleProject(dependency);
-                        break;
-
-                    case MavenLocal:
-                        publishGradleProject(dependency,
-                                Constants.PublicationTaskName.apply(
-                                        dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName()));
-                        break;
-
-                    case MavenProjectDependencyLocal:
-                    case MavenProjectLocal:
-                        SerializableProperty.PublicationObjectSerializable publicationObjectSerializable = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject();
-                        publishGradleProject(dependency,
-                                Constants.FilePublicationTaskName.apply(
-                                        publicationObjectSerializable.getPublicationName(),
-                                        publicationObjectSerializable.getRepositoryName()));
-                        break;
-                }
+                buildDependency(dependency);
             }
+        }
+    }
+
+    public void buildDependency(Dependency dependency) {
+        switch (dependency.getDependencyType()) {
+            case Jar:
+            case JarFlatDir:
+                buildGradleProject(dependency);
+                break;
+
+            case MavenLocal:
+                publishGradleProject(dependency,
+                        Constants.PublicationTaskName.apply(
+                                dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName()));
+                break;
+
+            case MavenProjectDependencyLocal:
+            case MavenProjectLocal:
+                SerializableProperty.PublicationObjectSerializable publicationObjectSerializable = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject();
+                publishGradleProject(dependency,
+                        Constants.FilePublicationTaskName.apply(
+                                publicationObjectSerializable.getPublicationName(),
+                                publicationObjectSerializable.getRepositoryName()));
+                break;
         }
     }
 

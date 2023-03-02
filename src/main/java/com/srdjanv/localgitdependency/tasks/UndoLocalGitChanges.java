@@ -1,17 +1,19 @@
 package com.srdjanv.localgitdependency.tasks;
 
-import com.srdjanv.localgitdependency.depenency.Dependency;
+import com.srdjanv.localgitdependency.Logger;
 import com.srdjanv.localgitdependency.git.GitTasks;
-import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 import com.srdjanv.localgitdependency.Instances;
 
-public abstract class UndoLocalGitChanges extends DefaultTask {
-
+public abstract class UndoLocalGitChanges extends BaseDependencyTask {
     @TaskAction
-    public void task$PullDependencies() {
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
-            Instances.getGitManager().runRepoCommand(dependency, GitTasks::clearLocalChanges);
+    public void task$UndoLocalGitChanges() {
+        if (Instances.getGitManager().runRepoCommand(dependency, GitTasks::clearLocalChanges)) {
+            if (dependency.getGitInfo().hasGitExceptions()) {
+                dependency.getGitInfo().getGitExceptions().forEach(exception -> Logger.error(exception.getMessage()));
+            } else {
+                Logger.error("Unexpected error, gitManager reported git exceptions but gitInfo had non");
+            }
         }
     }
 }

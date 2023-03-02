@@ -6,6 +6,7 @@ import com.srdjanv.localgitdependency.git.GitManager;
 import com.srdjanv.localgitdependency.gradle.GradleManager;
 import com.srdjanv.localgitdependency.persistence.PersistenceManager;
 import com.srdjanv.localgitdependency.property.PropertyManager;
+import com.srdjanv.localgitdependency.tasks.TasksManager;
 import org.gradle.api.Project;
 
 public class Instances {
@@ -16,6 +17,7 @@ public class Instances {
     private static PropertyManager propertyManager;
     private static GitManager gitManager;
     private static PersistenceManager persistenceManager;
+    private static TasksManager tasksManager;
 
     public static Project getProject() {
         return project;
@@ -75,5 +77,13 @@ public class Instances {
 
     public static void setPersistenceManager(PersistenceManager persistenceManager) {
         Instances.persistenceManager = persistenceManager;
+    }
+
+    public static TasksManager getTasksManager() {
+        return tasksManager;
+    }
+
+    public static void setTasksManager(TasksManager tasksManager) {
+        Instances.tasksManager = tasksManager;
     }
 }

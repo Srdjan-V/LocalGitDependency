@@ -5,6 +5,7 @@ import com.srdjanv.localgitdependency.Instances;
 
 public class PersistenceManager {
 
+    // TODO: 02/03/2023 serialize this field 
     private String initScriptSHA;
 
     public String getInitScriptSHA() {
