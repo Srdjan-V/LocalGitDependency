@@ -58,7 +58,7 @@ public class Constants {
         }
         return maven;
     };
-    public static final Function<File, File> defaultMavenLocalFolderUrl = file -> new File("file://", file.getAbsolutePath());
+
     public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> {
         File persistentInitScript = new File(persistentFolder, name + "/" + name + "Init.gradle");
         if (!persistentInitScript.exists()) {

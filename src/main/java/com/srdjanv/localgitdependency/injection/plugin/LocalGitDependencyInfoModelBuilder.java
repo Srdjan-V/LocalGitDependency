@@ -5,14 +5,18 @@ import com.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoMode
 import com.srdjanv.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
 import com.srdjanv.localgitdependency.injection.model.imp.DefaultPublishingObject;
 import com.srdjanv.localgitdependency.injection.model.imp.DefaultTaskObject;
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.publish.internal.DefaultPublishingExtension;
 import org.gradle.api.publish.maven.internal.publication.DefaultMavenPublication;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.tooling.provider.model.ToolingModelBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,9 +36,34 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
         List<DefaultTaskObject> appropriateTasks = queueAppropriateTasks(project, hasJavaPlugin);
         DefaultPublishingObject defaultPublicationObject = queueAppropriateMavenPublications(project, appropriateTasks, hasMavenPublishPlugin);
 
+        JavaVersion javaVersion = null;
+        boolean canProjectUseWithSourcesJar = true;
+        boolean canProjectUseWithJavadocJar = true;
+        if (hasJavaPlugin) {
+            JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+            javaVersion = javaPluginExtension.getSourceCompatibility();
+
+            int[] gradleVersion = Arrays.stream(project.getGradle().getGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+            if (gradleVersion[0] >= 7 && gradleVersion[1] >= 1) {
+                SourceSet main = javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+                for (Task task : project.getTasks()) {
+                    if (task.getName().equals(main.getSourcesJarTaskName())) {
+                        canProjectUseWithSourcesJar = false;
+                    }
+
+                    if (task.getName().equals(main.getJavadocJarTaskName())) {
+                        canProjectUseWithJavadocJar = false;
+                    }
+                }
+            }
+        }
+
         return new DefaultLocalGitDependencyInfoModel(
                 project.getGroup() + ":" + project.getName() + ":" + project.getVersion(),
                 project.getGradle().getGradleVersion(),
+                javaVersion,
+                canProjectUseWithSourcesJar,
+                canProjectUseWithJavadocJar,
                 hasJavaPlugin,
                 hasMavenPublishPlugin,
                 appropriateTasks,

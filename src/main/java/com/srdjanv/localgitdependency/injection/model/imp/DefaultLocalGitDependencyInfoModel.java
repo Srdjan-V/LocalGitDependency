@@ -3,6 +3,7 @@ package com.srdjanv.localgitdependency.injection.model.imp;
 import com.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import com.srdjanv.localgitdependency.injection.model.PublishingObject;
 import com.srdjanv.localgitdependency.injection.model.TaskObject;
+import org.gradle.api.JavaVersion;
 
 import java.io.Serializable;
 import java.util.List;
@@ -12,6 +13,9 @@ public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInf
     public static long versionUID = serialVersionUID;
     private final String projectId;
     private final String projectGradleVersion;
+    private final JavaVersion javaVersion;
+    private final boolean canProjectUseWithSourcesJar;
+    private final boolean canProjectUseWithJavadocJar;
     private final boolean hasJavaPlugin;
     private final boolean hasMavenPublishPlugin;
     private final List<DefaultTaskObject> appropriateTasks;
@@ -19,10 +23,15 @@ public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInf
 
 
     public DefaultLocalGitDependencyInfoModel(
-            String projectId, String projectGradleVersion, boolean hasJavaPlugin,
-            boolean hasMavenPublishPlugin, List<DefaultTaskObject> appropriateTasks, DefaultPublishingObject defaultPublicationObject) {
+            String projectId, String projectGradleVersion, JavaVersion javaVersion,
+            boolean canProjectUseWithSourcesJar, boolean canProjectUseWithJavadocJar,
+            boolean hasJavaPlugin, boolean hasMavenPublishPlugin,
+            List<DefaultTaskObject> appropriateTasks, DefaultPublishingObject defaultPublicationObject) {
         this.projectId = projectId;
         this.projectGradleVersion = projectGradleVersion;
+        this.javaVersion = javaVersion;
+        this.canProjectUseWithSourcesJar = canProjectUseWithSourcesJar;
+        this.canProjectUseWithJavadocJar = canProjectUseWithJavadocJar;
         this.hasJavaPlugin = hasJavaPlugin;
         this.hasMavenPublishPlugin = hasMavenPublishPlugin;
         this.appropriateTasks = appropriateTasks;
@@ -37,6 +46,21 @@ public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInf
     @Override
     public String projectGradleVersion() {
         return projectGradleVersion;
+    }
+
+    @Override
+    public JavaVersion getProjectJavaVersion() {
+        return javaVersion;
+    }
+
+    @Override
+    public boolean canProjectUseWithSourcesJar() {
+        return canProjectUseWithSourcesJar;
+    }
+
+    @Override
+    public boolean canProjectUseWithJavadocJar() {
+        return canProjectUseWithJavadocJar;
     }
 
     @Override

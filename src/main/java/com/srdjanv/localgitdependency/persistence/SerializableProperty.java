@@ -5,6 +5,7 @@ import com.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoMode
 import com.srdjanv.localgitdependency.injection.model.PublishingObject;
 import com.srdjanv.localgitdependency.injection.model.TaskObject;
 import com.srdjanv.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
+import org.gradle.api.JavaVersion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,9 @@ public class SerializableProperty {
         public long versionUID = DefaultLocalGitDependencyInfoModel.serialVersionUID;
         private final String projectId;
         private final String projectGradleVersion;
+        private final JavaVersion javaVersion;
+        private final boolean canProjectUseWithSourcesJar;
+        private final boolean canProjectUseWithJavadocJar;
         private final boolean hasJavaPlugin;
         private final boolean hasMavenPublishPlugin;
         private final List<TaskObjectSerializable> appropriateTasks = new ArrayList<>();
@@ -27,6 +31,9 @@ public class SerializableProperty {
         public DependencyInfoModelSerializable(LocalGitDependencyInfoModel localGitDependencyInfoModel) {
             this.projectId = localGitDependencyInfoModel.getProjectId();
             this.projectGradleVersion = localGitDependencyInfoModel.projectGradleVersion();
+            this.javaVersion = localGitDependencyInfoModel.getProjectJavaVersion();
+            this.canProjectUseWithSourcesJar = localGitDependencyInfoModel.canProjectUseWithSourcesJar();
+            this.canProjectUseWithJavadocJar = localGitDependencyInfoModel.canProjectUseWithJavadocJar();
             this.hasJavaPlugin = localGitDependencyInfoModel.hasJavaPlugin();
             this.hasMavenPublishPlugin = localGitDependencyInfoModel.hasMavenPublishPlugin();
             localGitDependencyInfoModel.getAppropriateTasks()
@@ -46,6 +53,18 @@ public class SerializableProperty {
 
         public String getProjectGradleVersion() {
             return projectGradleVersion;
+        }
+
+        public JavaVersion getJavaVersion() {
+            return javaVersion;
+        }
+
+        public boolean isCanProjectUseWithSourcesJar() {
+            return canProjectUseWithSourcesJar;
+        }
+
+        public boolean isCanProjectUseWithJavadocJar() {
+            return canProjectUseWithJavadocJar;
         }
 
         public boolean isHasJavaPlugin() {

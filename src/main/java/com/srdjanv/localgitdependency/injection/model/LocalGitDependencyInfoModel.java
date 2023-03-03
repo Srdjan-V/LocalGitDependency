@@ -1,12 +1,17 @@
 package com.srdjanv.localgitdependency.injection.model;
 
+import org.gradle.api.JavaVersion;
+
 import java.util.List;
 
 @SuppressWarnings("unused")
-public interface LocalGitDependencyInfoModel { // TODO: 18/02/2023 add java version, withSourcesJar, withJavadocJar
+public interface LocalGitDependencyInfoModel {
     long serialVersionUID = 1L;
     String getProjectId();
     String projectGradleVersion();
+    JavaVersion getProjectJavaVersion();
+    boolean canProjectUseWithSourcesJar();
+    boolean canProjectUseWithJavadocJar();
     boolean hasJavaPlugin();
     boolean hasMavenPublishPlugin();
     List<TaskObject> getAppropriateTasks();
