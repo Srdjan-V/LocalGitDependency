@@ -133,11 +133,13 @@ public class GradleManager {
         if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
             Consumer<GradleInit> configuration = gradleInit -> {
                 gradleInit.setPlugins(plugins);
-                gradleInit.setJavaJars(javaJars -> {// TODO: 03/03/2023 fix conflict  when a task already exists
-                    if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {
+                gradleInit.setJavaJars(javaJars -> {
+                    if (dependency.getGradleInfo().isTryGeneratingSourceJar() &&
+                            dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().isCanProjectUseWithSourcesJar()) {
                         javaJars.add(GradleInit.JavaJars.sources());
                     }
-                    if (dependency.getGradleInfo().isTryGeneratingJavaDocJar()) {
+                    if (dependency.getGradleInfo().isTryGeneratingJavaDocJar() &&
+                            dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().isCanProjectUseWithJavadocJar()) {
                         javaJars.add(GradleInit.JavaJars.javadoc());
                     }
                 });
