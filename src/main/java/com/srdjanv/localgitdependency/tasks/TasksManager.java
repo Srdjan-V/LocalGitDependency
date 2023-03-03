@@ -12,12 +12,15 @@ public class TasksManager {
         for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
             UndoLocalGitChanges undoLocalGitChanges = createTask(Instances.getProject(), Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency.getName()), UndoLocalGitChanges.class);
             undoLocalGitChanges.setDependency(dependency);
+            undoLocalGitChanges.createDescription();
 
             BuildGitDependency buildGitDependency = createTask(Instances.getProject(), Constants.BUILD_GIT_DEPENDENCY.apply(dependency.getName()), BuildGitDependency.class);
             buildGitDependency.setDependency(dependency);
+            buildGitDependency.createDescription();
 
             PrintDependencyInfo printDependencyInfo = createTask(Instances.getProject(), Constants.PRINT_DEPENDENCY_INFO.apply(dependency.getName()), PrintDependencyInfo.class);
             printDependencyInfo.setDependency(dependency);
+            printDependencyInfo.createDescription();
         }
     }
 

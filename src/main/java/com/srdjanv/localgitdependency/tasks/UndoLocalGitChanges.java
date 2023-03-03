@@ -16,4 +16,9 @@ public abstract class UndoLocalGitChanges extends BaseDependencyTask {
             }
         }
     }
+
+    @Override
+    void createDescription() {
+        setDescription(String.format("This task will undo local git changes to files for this dependency: %s", dependency.getName()));
+    }
 }

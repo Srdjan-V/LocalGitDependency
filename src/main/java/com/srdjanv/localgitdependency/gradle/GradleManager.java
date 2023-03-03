@@ -136,7 +136,7 @@ public class GradleManager {
                     dependency.getPersistentInfo().setInitFileSHA1SHA1(sha1.toObjectId().getName());
 
                     if (!fileInitScriptSHA.equals(dependency.getPersistentInfo().getInitFileSHA1())) {
-                        Logger.info("File {}, contains local changes, updating file", Constants.MAIN_INIT_SCRIPT_GRADLE);
+                        Logger.info("File {}, contains local changes, updating file", initScript.getName());
                         writeToFile(initScript, dependencyInitScriptScript);
                     }
                 } else if (!fileInitScriptSHA.equals(dependency.getPersistentInfo().getInitFileSHA1())) {
@@ -176,7 +176,7 @@ public class GradleManager {
         if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
             Consumer<GradleInit> configuration = gradleInit -> {
                 gradleInit.setPlugins(plugins);
-                gradleInit.setJavaJars(javaJars -> {
+                gradleInit.setJavaJars(javaJars -> {// TODO: 03/03/2023 fix conflict  when a task already exists
                     if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {
                         javaJars.add(GradleInit.JavaJars.sources());
                     }

@@ -9,4 +9,8 @@ public abstract class BuildGitDependency extends BaseDependencyTask {
         Instances.getGradleManager().buildDependency(dependency);
     }
 
+    @Override
+    void createDescription() {
+        setDescription(String.format("This task will explicitly rebuild this dependency: %s", dependency.getName()));
+    }
 }

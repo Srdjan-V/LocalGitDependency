@@ -88,7 +88,7 @@ public class GradleInit {
 
         appendLine(1, "java {");
         for (JavaJars javaJar : javaJarsList) {
-            appendLine(1, javaJar.toString());
+            appendLine(2, javaJar.toString());
         }
         appendLine(1, "}");
     }

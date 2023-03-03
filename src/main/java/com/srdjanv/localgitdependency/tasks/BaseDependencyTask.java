@@ -10,4 +10,6 @@ abstract class BaseDependencyTask extends DefaultTask {
         this.dependency = dependency;
     }
 
+    abstract void createDescription();
+
 }

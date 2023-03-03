@@ -42,4 +42,8 @@ public abstract class PrintDependencyInfo extends BaseDependencyTask {
         Logger.info(stringBuilder.toString());
     }
 
+    @Override
+    void createDescription() {
+        setDescription(String.format("This task will print general information for this dependency: %s", dependency.getName()));
+    }
 }

@@ -87,6 +87,7 @@ public class PersistentInfo {
 
     public void saveToPersistentFile() {
         if (dirty) {
+            serializableProperty.dependencyType = this.getDependency().getDependencyType();
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             try (PrintWriter pw = new PrintWriter(persistentFile)) {
                 pw.write(gson.toJson(serializableProperty));
