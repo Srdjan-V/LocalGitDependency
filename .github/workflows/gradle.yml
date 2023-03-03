@@ -33,6 +33,7 @@ jobs:
           arguments: test
 
       - name: Upload build reports
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: build-reports-${{ matrix.os }}
