@@ -233,9 +233,18 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         Ref tag = git.getRepository().getRefDatabase().exactRef(Constants.R_TAGS + targetId);
 
         // Annotated tags need extra effort
-        Ref peeledTag = tag == null ? null : git.getRepository().getRefDatabase().peel(tag);
+        Ref peeledTag = null;
+        if (tag != null) {
+            peeledTag = git.getRepository().getRefDatabase().peel(tag);
+        }
 
-        ObjectId tagObjectId = peeledTag != null ? peeledTag.getPeeledObjectId() : tag != null ? tag.getObjectId() : null;
+        ObjectId tagObjectId = null;
+        if (peeledTag != null) {
+            tagObjectId = peeledTag.getPeeledObjectId();
+        }
+        if (tag != null && tagObjectId == null){
+            tagObjectId = tag.getObjectId();
+        }
 
         // Search for a remote
         if (tagObjectId == null) {

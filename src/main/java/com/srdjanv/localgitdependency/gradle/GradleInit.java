@@ -11,6 +11,7 @@ public class GradleInit {
     public static String createInitProbe() {
         GradleInit gradleInit = new GradleInit();
         gradleInit.appendLine(1, "repositories {");
+        gradleInit.appendLine(2, "gradlePluginPortal()");
         gradleInit.appendLine(2, "mavenCentral()");
         gradleInit.appendLine(2, "mavenLocal()");
         gradleInit.appendLine(1, "}");

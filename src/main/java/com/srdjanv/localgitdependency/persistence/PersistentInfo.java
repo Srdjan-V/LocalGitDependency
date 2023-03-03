@@ -50,7 +50,7 @@ public class PersistentInfo {
         return serializableProperty.initFileSHA1;
     }
 
-    public void setInitFileSHA1SHA1(String initFileSHA1) {
+    public void setInitFileSHA1(String initFileSHA1) {
         this.dirty = true;
         this.serializableProperty.initFileSHA1 = initFileSHA1;
     }
@@ -75,6 +75,7 @@ public class PersistentInfo {
         if (persistentProperty == null) return;
         this.serializableProperty.workingDirSHA1 = persistentProperty.workingDirSHA1;
         this.serializableProperty.projectProbe = persistentProperty.projectProbe;
+        this.serializableProperty.initFileSHA1 = persistentProperty.initFileSHA1;
 
         if (persistentProperty.projectProbe != null && persistentProperty.projectProbe.versionUID == DefaultLocalGitDependencyInfoModel.serialVersionUID) {
             validModel = true;

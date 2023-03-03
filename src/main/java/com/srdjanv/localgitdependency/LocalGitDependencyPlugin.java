@@ -63,7 +63,13 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
         Instances.setTasksManager(new TasksManager());
         Instances.setSettingsExtension(project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, SettingsExtension.class));
 
-        project.afterEvaluate(p -> taskRunners.forEach(AfterEvaluateTaskWrapper::runAndLog));
+        project.afterEvaluate(p -> {
+            long start = System.currentTimeMillis();
+            Logger.info("Starting {} tasks", Constants.EXTENSION_NAME);
+            taskRunners.forEach(AfterEvaluateTaskWrapper::runAndLog);
+            long spent = System.currentTimeMillis() - start;
+            Logger.info("Finished {} tasks in {} ms", Constants.EXTENSION_NAME, spent);
+        });
     }
 
     private static class AfterEvaluateTaskWrapper {

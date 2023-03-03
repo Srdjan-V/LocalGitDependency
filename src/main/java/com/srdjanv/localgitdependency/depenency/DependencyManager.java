@@ -69,7 +69,7 @@ public class DependencyManager {
 
     private void addRepositoryMavenProjectLocal(Project project) {
         File mavenRepo = Constants.MavenProjectLocal.apply(Instances.getPropertyManager().getGlobalProperty().getMavenFolder());
-        Logger.warn("Adding MavenProjectLocal repository at {}", mavenRepo.getAbsolutePath());
+        Logger.info("Adding MavenProjectLocal repository at {}", mavenRepo.getAbsolutePath());
         project.getRepositories().add(project.getRepositories().maven(mavenArtifactRepository -> {
             mavenArtifactRepository.setName(Constants.RepositoryMavenProjectLocal);
             mavenArtifactRepository.setUrl(mavenRepo);
@@ -77,18 +77,18 @@ public class DependencyManager {
     }
 
     private void addRepositoryMavenLocal(Project project) {
-        Logger.warn("Adding MavenLocal repository");
+        Logger.info("Adding MavenLocal repository");
         project.getRepositories().add(project.getRepositories().mavenLocal());
     }
 
     private void addMavenJarsAsDependencies(Dependency dependency, Project project) {
-        Logger.warn("Adding Dependency {}, from MavenLocal", dependency.getName());
+        Logger.info("Adding Dependency {}, from MavenLocal", dependency.getName());
         project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
     }
 
 
     private void addMavenLocalJarsAsDependencies(Dependency dependency, Project project) {
-        Logger.warn("Adding Dependency {}, from MavenProjectLocal", dependency.getName());
+        Logger.info("Adding Dependency {}, from MavenProjectLocal", dependency.getName());
         project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
     }
 
@@ -116,6 +116,7 @@ public class DependencyManager {
             return;
         }
 
+        Logger.info("Adding Dependency {}", dependency.getName());
         project.getRepositories().add(project.getRepositories().flatDir(flatDir -> {
             flatDir.setName(Constants.RepositoryFlatDir.apply(dependency.getName()));
             flatDir.dir(libs);
@@ -144,8 +145,8 @@ public class DependencyManager {
             Logger.error("Dependency {}, no libs where found", dependency.getName());
             return;
         } else {
-            Logger.warn("Adding the following Dependency {}, and its jars", dependency.getName());
-            Logger.warn(Arrays.toString(dependencies));
+            Logger.info("Adding Dependency {}, and its jars", dependency.getName());
+            Logger.info(Arrays.toString(dependencies));
         }
 
         project.getDependencies().add(dependency.getConfigurationName(), project.getLayout().files(dependencies));
