@@ -10,8 +10,11 @@ public class Constants {
     public static String PROJECT_VERSION = "@PROJECTVERSION@";
     public final static String EXTENSION_NAME = "LocalGitDependency";
     public final static String LOCAL_GIT_DEPENDENCY_EXTENSION = "localGitDependency";
+    public final static String UNDO_ALL_LOCAL_GIT_CHANGES = "!UndoAllLocalGitChanges";
     public final static Function<String, String> UNDO_LOCAL_GIT_CHANGES = s -> s + "-UndoLocalGitChanges";
+    public final static String BUILD_ALL_GIT_DEPENDENCIES = "!BuildAllGitDependencies";
     public final static Function<String, String> BUILD_GIT_DEPENDENCY = s -> s + "-BuildGitDependency";
+    public final static String PRINT_ALL_DEPENDENCIES_INFO = "!PrintAllDependenciesInfo";
     public final static Function<String, String> PRINT_DEPENDENCY_INFO = s -> s + "-PrintDependencyInfo";
     public final static String JAVA_IMPLEMENTATION = "implementation";
 

@@ -1,18 +1,15 @@
-package com.srdjanv.localgitdependency.tasks;
+package com.srdjanv.localgitdependency.tasks.printtasks;
 
 import com.srdjanv.localgitdependency.Logger;
 import com.srdjanv.localgitdependency.depenency.Dependency;
 import com.srdjanv.localgitdependency.git.GitInfo;
 import com.srdjanv.localgitdependency.gradle.GradleInfo;
 import com.srdjanv.localgitdependency.persistence.PersistentInfo;
-import org.gradle.api.tasks.TaskAction;
 
 import java.lang.reflect.Field;
 
-public abstract class PrintDependencyInfo extends BaseDependencyTask {
-
-    @TaskAction
-    public void task$PrintDependencyInfo() throws IllegalAccessException {
+public interface BasePrintInfoTask {
+    default void printInfo(Dependency dependency) throws IllegalAccessException {
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append("DependencyInfo:").append(System.lineSeparator());
@@ -42,8 +39,4 @@ public abstract class PrintDependencyInfo extends BaseDependencyTask {
         Logger.info(stringBuilder.toString());
     }
 
-    @Override
-    void createDescription() {
-        setDescription(String.format("This task will print general information for this dependency: %s", dependency.getName()));
-    }
 }
