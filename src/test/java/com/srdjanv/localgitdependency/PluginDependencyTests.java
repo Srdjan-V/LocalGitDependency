@@ -56,7 +56,7 @@ public class PluginDependencyTests {
 
     private Stream<DynamicTest> createTestStream(final Dependency.Type dependencyType) {
         return testWrappers.stream().
-                map(testWrapper -> DynamicTest.dynamicTest(testWrapper.getTestName(dependencyType.name()), () -> {
+                map(testWrapper -> DynamicTest.dynamicTest(testWrapper.setTestName(dependencyType.name()), () -> {
                     testWrapper.setDependencyType(dependencyType);
                     testWrapper.runTests();
                 }));
@@ -66,14 +66,16 @@ public class PluginDependencyTests {
         private final String dependencyName;
         private final String gitUrl;
         private Dependency.Type dependencyType;
+        private String testName;
 
         public TestWrapper(String dependencyName, String gitUrl) {
             this.dependencyName = dependencyName;
             this.gitUrl = gitUrl;
         }
 
-        public String getTestName(String testName) {
-            return dependencyName + testName;
+        public String setTestName(String testName) {
+            this.testName = dependencyName + testName;
+            return this.testName;
         }
 
         public void setDependencyType(Dependency.Type dependencyType) {
@@ -94,7 +96,7 @@ public class PluginDependencyTests {
             Closure<Property.Builder> propertyClosure = new Closure<Property.Builder>(null) {
                 public Property.Builder doCall() {
                     Property.Builder builder = (Property.Builder) getDelegate();
-                    builder.name(dependencyName);
+                    builder.name(testName);
                     builder.dependencyType(dependencyType);
                     return builder;
                 }
@@ -148,13 +150,13 @@ public class PluginDependencyTests {
             String repo;
             switch (dependencyType) {
                 case JarFlatDir:
-                    repo = Constants.RepositoryFlatDir.apply(dependencyName);
+                    repo = Constants.RepositoryFlatDir.apply(testName);
                     break;
                 case MavenLocal:
                     repo = "MavenLocal";
                     break;
                 case MavenProjectDependencyLocal:
-                    repo = Constants.RepositoryMavenProjectDependencyLocal.apply(dependencyName);
+                    repo = Constants.RepositoryMavenProjectDependencyLocal.apply(testName);
                     break;
                 case MavenProjectLocal:
                     repo = Constants.RepositoryMavenProjectLocal;
@@ -177,11 +179,11 @@ public class PluginDependencyTests {
                         .getDependencies().size();
             } else {
                 dependency = Instances.getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
-                        .getDependencies().stream().filter(d -> d.getName().equals(dependencyName)).count();
+                        .getDependencies().stream().filter(d -> d.getName().equals(testName)).count();
             }
 
             dependencyType = null;
-            Assertions.assertEquals(1, dependency, () -> dependencyName + " dependency is not registered wih gradle");
+            Assertions.assertEquals(1, dependency, () -> testName + " dependency is not registered wih gradle");
         }
     }
 }
