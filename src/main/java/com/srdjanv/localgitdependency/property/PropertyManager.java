@@ -35,7 +35,7 @@ public class PropertyManager {
         Constants.checkExistsAndMkdirs(globalProperty.mavenFolder);
     }
 
-    public void globalProperty(Closure<DefaultProperty.Builder> configureClosure) {
+    public void globalProperty(Closure<DefaultProperty.Builder> configureClosure) { // TODO: 04/03/2023 automatically configure file paths 
         if (configureClosure != null) {
             if (customGlobalProperty) {
                 throw new GradleException("you cant change the globalProperty once they are set");

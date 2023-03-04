@@ -28,7 +28,7 @@ public class GitInfo {
 
         if (dependencyProperty.getTargetType() == null) {
             targetType = TargetType.BRANCH;
-            target = DEFAULT_REMOTE_NAME + "/" + MASTER;
+            target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + MASTER;
         } else {
             switch (dependencyProperty.getTargetType()) {
                 case COMMIT:
@@ -43,11 +43,11 @@ public class GitInfo {
 
                 case BRANCH:
                     targetType = TargetType.BRANCH;
-                    target = DEFAULT_REMOTE_NAME + "/" + dependencyProperty.getTarget();
+                    target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + dependencyProperty.getTarget();
                     break;
 
                 default:
-                    throw new IllegalStateException("This state should not be possible");
+                    throw new IllegalStateException();
             }
         }
 
@@ -115,6 +115,6 @@ public class GitInfo {
     public enum TargetType {
         COMMIT,
         BRANCH,
-        TAG;
+        TAG
     }
 }

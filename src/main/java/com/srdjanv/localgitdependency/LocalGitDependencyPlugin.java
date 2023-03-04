@@ -89,10 +89,10 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
 
         public void runAndLog() {
             long start = System.currentTimeMillis();
-            Logger.info("{}: starting task {}", method.getDeclaringClass().getSimpleName(), method.getName());
+            Logger.info("{}: Starting task {}", method.getDeclaringClass().getSimpleName(), method.getName());
             task.run();
             long spent = System.currentTimeMillis() - start;
-            Logger.info("{}: finished task {} in {} ms", method.getDeclaringClass().getSimpleName(), method.getName(), spent);
+            Logger.info("{}: Finished task {} in {} ms", method.getDeclaringClass().getSimpleName(), method.getName(), spent);
         }
     }
 }

@@ -68,12 +68,12 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
 
             if (gitInfo.isKeepGitUpdated() && !isLocalCommit(targetCommit)) {
                 final String localCommit = head().substring(0, 7);
-                Logger.warn("Local version {} is not equal to target {} for {}", localCommit, targetCommit, gitInfo.getDir());
+                Logger.info("Local version {} is not equal to target {} for {}", localCommit, targetCommit, gitInfo.getDependency().getName());
 
                 if (hasLocalChanges()) {
                     gitInfo.addGitExceptions(new Exception(String.format("Git repo cannot be updated to %s, %s contains local changes. Commit or revert all changes manually.", targetCommit, gitInfo.getDir())));
                 } else {
-                    Logger.warn("Updating to version {} for {}", targetCommit, gitInfo.getDir());
+                    Logger.info("Updating to version {} for {}", targetCommit, gitInfo.getDependency().getName());
                     update();
                 }
             }
@@ -196,7 +196,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         gitInfo.setRefreshed();
 
         final long spent = System.currentTimeMillis() - start;
-        Logger.info("Update finished {} ms", spent);
+        Logger.info("Update finished in {} ms", spent);
     }
 
     @Override
@@ -265,7 +265,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
             }
 
             default:
-                throw new IllegalStateException("This state should not be possible");
+                throw new IllegalStateException();
         }
     }
 
