@@ -137,61 +137,80 @@ public class GradleManager {
         SerializableProperty.DependencyInfoModelSerializable model = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel();
         int[] gradleVersion = Arrays.stream(model.getProjectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
 
-        Consumer<List<GradleInit.Plugins>> plugins = pluginsList -> {
+        final Consumer<GradleInit> configuration;
+        if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
+            configuration = gradleInit -> gradleInit.setJavaJars(jars -> {
+                if (dependency.getGradleInfo().isTryGeneratingSourceJar() &&
+                        dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().isCanProjectUseWithSourcesJar()) {
+                    jars.add(GradleInit.JavaJars.sources());
+                }
+                if (dependency.getGradleInfo().isTryGeneratingJavaDocJar() &&
+                        dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().isCanProjectUseWithJavadocJar()) {
+                    jars.add(GradleInit.JavaJars.javadoc());
+                }
+            });
+        } else {
+            SerializableProperty.PublicationObjectSerializable publicationObject = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject();
+            List<GradleInit.Task> tasks = new ArrayList<>();
+            for (SerializableProperty.TaskObjectSerializable taskSerializable : publicationObject.getTasks()) {
+                switch (taskSerializable.getClassifier()) {
+                    case "sources":
+                        if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {
+                            tasks.add(new GradleInit.Task(taskSerializable.getName(), "sourceSets.main.allJava", taskSerializable.getClassifier(), true));
+                        }
+                        break;
+
+                    case "javadoc":
+                        if (dependency.getGradleInfo().isTryGeneratingJavaDocJar()) {
+                            tasks.add(new GradleInit.Task(taskSerializable.getName(), "sourceSets.main.allJava", taskSerializable.getClassifier(), true));
+                        }
+                }
+            }
+
+            configuration = gradleInit -> gradleInit.setTasks(t -> t.addAll(tasks));
+        }
+
+        switch (dependency.getDependencyType()) {
+            case MavenProjectDependencyLocal:
+            case MavenProjectLocal:
+            case MavenLocal:
+                return generateMavenInitScript(dependency, configuration);
+
+            case JarFlatDir:
+            case Jar:
+                return generateJarInitScript(configuration);
+
+            default:
+                throw new IllegalStateException();
+        }
+    }
+
+    private String generateMavenInitScript(Dependency dependency, Consumer<GradleInit> configuration) {
+        List<Consumer<GradleInit>> configurations = new ArrayList<>();
+        configurations.add(gradleInit -> gradleInit.setPlugins(pluginsList -> {
             pluginsList.add(GradleInit.Plugins.java());
             pluginsList.add(GradleInit.Plugins.mavenPublish());
-        };
+        }));
 
-        if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
-            Consumer<GradleInit> configuration = gradleInit -> {
-                gradleInit.setPlugins(plugins);
-                gradleInit.setJavaJars(javaJars -> {
-                    if (dependency.getGradleInfo().isTryGeneratingSourceJar() &&
-                            dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().isCanProjectUseWithSourcesJar()) {
-                        javaJars.add(GradleInit.JavaJars.sources());
-                    }
-                    if (dependency.getGradleInfo().isTryGeneratingJavaDocJar() &&
-                            dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().isCanProjectUseWithJavadocJar()) {
-                        javaJars.add(GradleInit.JavaJars.javadoc());
-                    }
-                });
-
-                gradleInit.setPublishing(taskPublication -> taskPublication.add(new GradleInit.Publication(
-                        dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getRepositoryName(),
-                        dependency.getMavenFolder(),
-                        dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName(),
-                        null)));
-            };
-            return GradleInit.crateInitProject(configuration);
-        }
-
-        SerializableProperty.PublicationObjectSerializable publicationObject = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject();
-        List<GradleInit.Task> tasks = new ArrayList<>();
-        for (SerializableProperty.TaskObjectSerializable taskSerializable : publicationObject.getTasks()) {
-            switch (taskSerializable.getClassifier()) {
-                case "sources":
-                    if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {
-                        tasks.add(new GradleInit.Task(taskSerializable.getName(), "sourceSets.main.allJava", taskSerializable.getClassifier()));
-                    }
-                    break;
-
-                case "javadoc":
-                    if (dependency.getGradleInfo().isTryGeneratingJavaDocJar()) {
-                        tasks.add(new GradleInit.Task(taskSerializable.getName(), "sourceSets.main.allJava", taskSerializable.getClassifier()));
-                    }
-            }
-        }
-
-        Consumer<GradleInit> configuration = gradleInit -> {
-            gradleInit.setPlugins(plugins);
-            gradleInit.setTasks(t -> t.addAll(tasks));
+        configurations.add(configuration);
+        configurations.add(gradleInit -> {
             gradleInit.setPublishing(p -> p.add(new GradleInit.Publication(
                     dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getRepositoryName(),
                     dependency.getMavenFolder(),
-                    dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName(),
-                    tasks)));
-        };
-        return GradleInit.crateInitProject(configuration);
+                    dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName())));
+        });
+
+        return GradleInit.crateInitProject(configurations);
+    }
+
+    private String generateJarInitScript(Consumer<GradleInit> configuration) {
+        List<Consumer<GradleInit>> configurations = new ArrayList<>();
+        configurations.add(gradleInit -> gradleInit.setPlugins(pluginsList -> {
+            pluginsList.add(GradleInit.Plugins.java());
+        }));
+        configurations.add(configuration);
+
+        return GradleInit.crateInitProject(configurations);
     }
 
     private void validateDependencyInitScript(Dependency dependency) {

@@ -22,20 +22,23 @@ public class GradleInit {
         gradleInit.appendLine(0, "}");
 
         gradleInit.appendLine(0, "rootProject {");
-        gradleInit.appendLine(1, Plugins.modelInjection().toString());
+        gradleInit.appendLine(1, Plugins.modelInjection());
 
         return gradleInit.render();
     }
 
     private final StringBuilder stringBuilder;
+    private List<Task> mavenTasks;
 
-    public static String crateInitProject(Consumer<GradleInit> gradle) {
-        return new GradleInit(gradle).render();
+
+    public static String crateInitProject(List<Consumer<GradleInit>> listGradle) {
+        return new GradleInit(listGradle).render();
     }
 
-    private GradleInit(Consumer<GradleInit> gradle) {
+    private GradleInit(List<Consumer<GradleInit>> listGradle) {
+        mavenTasks = new ArrayList<>();
         stringBuilder = new StringBuilder("rootProject {").append(System.lineSeparator());
-        gradle.accept(this);
+        listGradle.forEach(gradleInitConsumer -> gradleInitConsumer.accept(this));
     }
 
     private GradleInit() {
@@ -49,43 +52,42 @@ public class GradleInit {
         stringBuilder.append(string).append(System.lineSeparator());
     }
 
-    public void setPlugins(Consumer<List<Plugins>> plugins) {
-        List<Plugins> pluginsList = new ArrayList<>();
+    public void setPlugins(Consumer<List<String>> plugins) {
+        List<String> pluginsList = new ArrayList<>();
         plugins.accept(pluginsList);
 
-        for (Plugins plugin : pluginsList) {
-            appendLine(1, plugin.toString());
+        for (String plugin : pluginsList) {
+            appendLine(1, plugin);
         }
     }
 
     static class Plugins {
-        private final String plugin;
+        private static final String mavenPublish = "apply plugin: \"maven-publish\"";
+        private static final String java = "apply plugin: \"java\"";
+        private static final String modelInjection = "apply plugin: com.srdjanv.localgitdependency.injection.plugin.ModelInjectionPlugin";
 
-        private Plugins(String plugin) {
-            this.plugin = plugin;
+        private Plugins() {
         }
 
-        public static Plugins mavenPublish() {
-            return new Plugins("apply plugin: \"maven-publish\"");
+        public static String mavenPublish() {
+            return mavenPublish;
         }
 
-        public static Plugins java() {
-            return new Plugins("apply plugin: \"java\"");
+        public static String java() {
+            return java;
         }
 
-        public static Plugins modelInjection() {
-            return new Plugins("apply plugin: com.srdjanv.localgitdependency.injection.plugin.ModelInjectionPlugin");
+        public static String modelInjection() {
+            return modelInjection;
         }
 
-        @Override
-        public String toString() {
-            return plugin;
-        }
     }
 
     public void setJavaJars(Consumer<List<JavaJars>> javaJars) {
         List<JavaJars> javaJarsList = new ArrayList<>();
         javaJars.accept(javaJarsList);
+
+        if (javaJarsList.isEmpty()) return;
 
         appendLine(1, "java {");
         for (JavaJars javaJar : javaJarsList) {
@@ -119,7 +121,10 @@ public class GradleInit {
         List<Task> tasks = new ArrayList<>();
         Tasks.accept(tasks);
 
+        if (tasks.isEmpty()) return;
+
         for (Task task : tasks) {
+            if (task.mavenTask) mavenTasks.add(task);
             task.buildTask(this);
         }
 
@@ -134,11 +139,13 @@ public class GradleInit {
         private final String name;
         private final String sourceSets;
         private final String classifier;
+        private final boolean mavenTask;
 
-        public Task(String name, String sourceSets, String classifier) {
+        public Task(String name, String sourceSets, String classifier, boolean mavenTask) {
             this.name = name;
             this.sourceSets = sourceSets;
             this.classifier = classifier;
+            this.mavenTask = mavenTask;
         }
 
         public void buildTask(GradleInit gradleInit) {
@@ -153,15 +160,15 @@ public class GradleInit {
         List<Publication> publications = new ArrayList<>();
         Publication.accept(publications);
 
+        if (publications.isEmpty()) return;
+
         appendLine(1, "publishing {");
         appendLine(2, "publications {");
         for (Publication publication : publications) {
             appendLine(3, String.format("%s(MavenPublication) {", publication.publicationName));
             appendLine(4, "from components.java");
-            if (publication.tasks != null) {
-                for (Task task : publication.tasks) {
-                    appendLine(4, String.format("artifact %s", task.name));
-                }
+            for (Task task : mavenTasks) {
+                appendLine(4, String.format("artifact %s", task.name));
             }
             appendLine(3, "}");
         }
@@ -184,13 +191,11 @@ public class GradleInit {
         private final String repositoryName;
         private final File mavenLocalFolder;
         private final String publicationName;
-        private final List<Task> tasks;
 
-        public Publication(String repositoryName, File mavenLocalFolder, String publicationName, List<Task> tasks) {
+        public Publication(String repositoryName, File mavenLocalFolder, String publicationName) {
             this.repositoryName = repositoryName;
             this.mavenLocalFolder = mavenLocalFolder;
             this.publicationName = publicationName;
-            this.tasks = tasks;
         }
     }
 
