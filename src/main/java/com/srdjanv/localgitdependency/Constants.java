@@ -1,7 +1,8 @@
 package com.srdjanv.localgitdependency;
 
+import org.gradle.api.GradleException;
+
 import java.io.File;
-import java.io.IOException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -54,38 +55,32 @@ public class Constants {
     };
     public static final BiFunction<File, String, File> MavenProjectDependencyLocal = (file, name) -> {
         File maven = new File(file, "/!mavenProjectDependencyLocal" + "/" + name);
-        if (!maven.exists()) {
-            if (!maven.mkdirs()) {
-                throw new RuntimeException(String.format("Unable to create directory %s", maven.getAbsolutePath()));
-            }
-        }
+        checkExistsAndMkdirs(maven);
         return maven;
     };
 
     public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> {
         File persistentInitScript = new File(persistentFolder, name + "/" + name + "Init.gradle");
-        if (!persistentInitScript.exists()) {
-            persistentInitScript.getParentFile().mkdirs();
-            try {
-                persistentInitScript.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        checkExistsAndMkdirs(persistentInitScript.getParentFile());
         return persistentInitScript;
     };
     public static final BiFunction<File, String, File> persistentJsonFile = (persistentFolder, name) -> {
         File persistentJsonFile = new File(persistentFolder, name + "/" + name + ".json");
-        if (!persistentJsonFile.exists()) {
-            persistentJsonFile.getParentFile().mkdirs();
-            try {
-                persistentJsonFile.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        checkExistsAndMkdirs(persistentJsonFile.getParentFile());
         return persistentJsonFile;
     };
+
+    public static void checkExistsAndMkdirs(File file) {
+        if (file.exists()) {
+            if (!file.isDirectory()) {
+                throw new GradleException(String.format("%s is not a directory, delete the file and refresh gradle", file.getAbsolutePath()));
+            }
+            return;
+        }
+        if (!file.mkdirs()) {
+            throw new GradleException(String.format("Unable to create directory %s", file.getAbsolutePath()));
+        }
+    }
 
     public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
 

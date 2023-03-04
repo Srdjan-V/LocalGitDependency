@@ -22,6 +22,10 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
         taskRunners = new LinkedList<>();
         try {
             taskRunners.add(new AfterEvaluateTaskWrapper(
+                    () -> Instances.getPropertyManager().createEssentialDirectories(),
+                    PropertyManager.class.getDeclaredMethod("createEssentialDirectories")
+            ));
+            taskRunners.add(new AfterEvaluateTaskWrapper(
                     () -> Instances.getGitManager().initRepos(),
                     GitManager.class.getDeclaredMethod("initRepos")
             ));
@@ -63,13 +67,15 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
         Instances.setTasksManager(new TasksManager());
         Instances.setSettingsExtension(project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, SettingsExtension.class));
 
-        project.afterEvaluate(p -> {
-            long start = System.currentTimeMillis();
-            Logger.info("Starting {} tasks", Constants.EXTENSION_NAME);
-            taskRunners.forEach(AfterEvaluateTaskWrapper::runAndLog);
-            long spent = System.currentTimeMillis() - start;
-            Logger.info("Finished {} tasks in {} ms", Constants.EXTENSION_NAME, spent);
-        });
+        project.afterEvaluate(p -> startPlugin());
+    }
+
+    static void startPlugin() {
+        long start = System.currentTimeMillis();
+        Logger.info("Starting {} tasks", Constants.EXTENSION_NAME);
+        taskRunners.forEach(AfterEvaluateTaskWrapper::runAndLog);
+        long spent = System.currentTimeMillis() - start;
+        Logger.info("Finished {} tasks in {} ms", Constants.EXTENSION_NAME, spent);
     }
 
     private static class AfterEvaluateTaskWrapper {

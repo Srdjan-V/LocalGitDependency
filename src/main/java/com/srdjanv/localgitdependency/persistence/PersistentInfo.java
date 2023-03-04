@@ -71,6 +71,7 @@ public class PersistentInfo {
 
     private void loadFromJson() throws IOException {
         Gson gson = new GsonBuilder().create();
+        if (!persistentFile.exists()) return;
         SerializableProperty persistentProperty = gson.fromJson(new BufferedReader(new FileReader(persistentFile)), SerializableProperty.class);
         if (persistentProperty == null) return;
         this.serializableProperty.workingDirSHA1 = persistentProperty.workingDirSHA1;
@@ -92,7 +93,8 @@ public class PersistentInfo {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             try (PrintWriter pw = new PrintWriter(persistentFile)) {
                 pw.write(gson.toJson(serializableProperty));
-            } catch (FileNotFoundException ignore) {
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
             }
             dirty = false;
         }

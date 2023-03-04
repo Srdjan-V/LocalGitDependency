@@ -106,11 +106,7 @@ public class PluginDependencyTests {
         }
 
         private void initPluginTasks() {
-            Instances.getGitManager().initRepos();
-            Instances.getGradleManager().initGradleAPI();
-            Instances.getPersistenceManager().savePersistentData();
-            Instances.getGradleManager().buildDependencies();
-            Instances.getDependencyManager().addBuiltDependencies();
+            LocalGitDependencyPlugin.startPlugin();
         }
 
         private void printData() {

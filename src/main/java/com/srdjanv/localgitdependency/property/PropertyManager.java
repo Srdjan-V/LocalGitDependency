@@ -9,7 +9,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 
 public class PropertyManager {
-    private boolean createdEssentialDirectories;
     private boolean customGlobalProperty;
     private DefaultProperty globalProperty;
 
@@ -20,7 +19,7 @@ public class PropertyManager {
         builder.persistentFolder(Constants.defaultPersistentDir.apply(defaultDir));
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
         builder.mavenFolder(Constants.defaultMavenFolder.apply(defaultDir));
-        builder.dependencyType(Dependency.Type.MavenLocal);
+        builder.dependencyType(Dependency.Type.JarFlatDir);
         builder.keepGitUpdated(true);
         builder.keepMainInitScriptUpdated(true);
         builder.keepDependencyInitScriptUpdated(true);
@@ -30,28 +29,10 @@ public class PropertyManager {
         globalProperty = new DefaultProperty(builder);
     }
 
-    private void createEssentialDirectories() {
-        if (createdEssentialDirectories) return;
-
-        if (!globalProperty.persistentFolder.exists()) {
-            globalProperty.persistentFolder.mkdirs();
-        } else if (!globalProperty.persistentFolder.isDirectory()) {
-            throw new GradleException(globalProperty.persistentFolder.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
-        }
-
-        if (!globalProperty.gitDir.exists()) {
-            globalProperty.gitDir.mkdirs();
-        } else if (!globalProperty.gitDir.isDirectory()) {
-            throw new GradleException(globalProperty.gitDir.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
-        }
-
-        if (!globalProperty.mavenFolder.exists()) {
-            globalProperty.mavenFolder.mkdirs();
-        } else if (!globalProperty.gitDir.isDirectory()) {
-            throw new GradleException(globalProperty.mavenFolder.getAbsolutePath() + " is not a directory, delete the file and refresh gradle");
-        }
-
-        createdEssentialDirectories = true;
+    public void createEssentialDirectories() {
+        Constants.checkExistsAndMkdirs(globalProperty.persistentFolder);
+        Constants.checkExistsAndMkdirs(globalProperty.gitDir);
+        Constants.checkExistsAndMkdirs(globalProperty.mavenFolder);
     }
 
     public void globalProperty(Closure<DefaultProperty.Builder> configureClosure) {
@@ -69,7 +50,6 @@ public class PropertyManager {
     }
 
     public DefaultProperty getGlobalProperty() {
-        createEssentialDirectories();
         return globalProperty;
     }
 

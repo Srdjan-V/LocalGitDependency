@@ -20,20 +20,12 @@ public class PersistenceManager {
             if (mainInitJson.isDirectory()) {
                 throw new GradleException(Constants.MAIN_INIT_SCRIPT_JSON + " at " + mainInitJson.getAbsolutePath() + " can not be a directory");
             }
-        } else {
-            initScriptFolder.mkdirs();
             try {
-                mainInitJson.createNewFile();
+                Gson gson = new GsonBuilder().create();
+                initScriptSHA = gson.fromJson(new BufferedReader(new FileReader(mainInitJson)), String.class);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-
-        try {
-            Gson gson = new GsonBuilder().create();
-            initScriptSHA = gson.fromJson(new BufferedReader(new FileReader(mainInitJson)), String.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -54,7 +46,8 @@ public class PersistenceManager {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             try (PrintWriter pw = new PrintWriter(mainInitJson)) {
                 pw.write(gson.toJson(initScriptSHA));
-            } catch (FileNotFoundException ignore) {
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
             }
             dirty = false;
         }
