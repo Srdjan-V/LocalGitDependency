@@ -10,13 +10,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.jgit.lib.Constants.DEFAULT_REMOTE_NAME;
-import static org.eclipse.jgit.lib.Constants.MASTER;
+import static org.eclipse.jgit.lib.Constants.*;
 
 public class GitInfo {
     private final Dependency dependency;
     private final String url;
-    private final String commit;
+    private final String target;
+    private final TargetType targetType;
     private final File dir;
     private final boolean keepGitUpdated;
     private List<Exception> gitExceptions;
@@ -25,7 +25,32 @@ public class GitInfo {
     public GitInfo(Property dependencyProperty, Dependency dependency) {
         this.dependency = dependency;
         this.url = dependencyProperty.getUrl();
-        this.commit = dependencyProperty.getCommit() == null ? DEFAULT_REMOTE_NAME + "/" + MASTER : dependencyProperty.getCommit(); // TODO: 18/02/2023 improve
+
+        if (dependencyProperty.getTargetType() == null) {
+            targetType = TargetType.BRANCH;
+            target = DEFAULT_REMOTE_NAME + "/" + MASTER;
+        } else {
+            switch (dependencyProperty.getTargetType()) {
+                case COMMIT:
+                    targetType = dependencyProperty.getTargetType();
+                    target = dependencyProperty.getTarget();
+                    break;
+
+                case TAG:
+                    targetType = dependencyProperty.getTargetType();
+                    target = R_TAGS + dependencyProperty.getTarget();
+                    break;
+
+                case BRANCH:
+                    targetType = TargetType.BRANCH;
+                    target = DEFAULT_REMOTE_NAME + "/" + dependencyProperty.getTarget();
+                    break;
+
+                default:
+                    throw new IllegalStateException("This state should not be possible");
+            }
+        }
+
         this.dir = Constants.concatFile.apply(dependencyProperty.getDir(), dependency.getName());
         this.keepGitUpdated = dependencyProperty.getKeepGitUpdated();
     }
@@ -41,8 +66,12 @@ public class GitInfo {
     }
 
     @NotNull
-    public String getCommit() {
-        return commit;
+    public String getTarget() {
+        return target;
+    }
+
+    public TargetType getTargetType() {
+        return targetType;
     }
 
     @NotNull
@@ -57,6 +86,7 @@ public class GitInfo {
     public boolean hasRefreshed() {
         return refreshed;
     }
+
     public void setRefreshed() {
         refreshed = true;
     }
@@ -82,4 +112,9 @@ public class GitInfo {
         return o;
     }
 
+    public enum TargetType {
+        COMMIT,
+        BRANCH,
+        TAG;
+    }
 }

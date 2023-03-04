@@ -1,15 +1,18 @@
 package com.srdjanv.localgitdependency.property;
 
+import com.srdjanv.localgitdependency.git.GitInfo;
+
 //Property's that only a dependency can have
 public class Property extends CommonPropertyGetters {
     private final String url;
     private final String name;
-    private final String commit;
-
+    private final String target;
+    private final GitInfo.TargetType targetType;
     public Property(Builder builder) {
         url = builder.url;
         name = builder.name;
-        commit = builder.commit;
+        target = builder.target;
+        targetType = builder.targetType;
         PropertyManager.instantiateCommonPropertyFieldsInstance(this, builder);
     }
 
@@ -21,14 +24,19 @@ public class Property extends CommonPropertyGetters {
         return name;
     }
 
-    public String getCommit() {
-        return commit;
+    public String getTarget() {
+        return target;
+    }
+
+    public GitInfo.TargetType getTargetType() {
+        return targetType;
     }
 
     public static class Builder extends CommonPropertyBuilder {
         private final String url;
         private String name;
-        private String commit;
+        private String target;
+        private GitInfo.TargetType targetType;
 
         public Builder(String url) {
             this.url = url;
@@ -39,15 +47,18 @@ public class Property extends CommonPropertyGetters {
         }
 
         public void commit(String commit) {
-            this.commit = commit;
+            targetType = GitInfo.TargetType.COMMIT;
+            this.target = commit;
         }
 
         public void branch(String branch) {
-            this.commit = branch;
+            targetType = GitInfo.TargetType.BRANCH;
+            this.target = branch;
         }
 
         public void tag(String tag) {
-            this.commit = tag;
+            targetType = GitInfo.TargetType.TAG;
+            this.target = tag;
         }
     }
 }

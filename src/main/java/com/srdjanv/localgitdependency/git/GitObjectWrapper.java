@@ -64,8 +64,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
                 return;
             }
 
-            final String targetCommit = gitInfo.getCommit();
-
+            final String targetCommit = gitInfo.getTarget();
 
             if (gitInfo.isKeepGitUpdated() && !isLocalCommit(targetCommit)) {
                 final String localCommit = head().substring(0, 7);
@@ -171,7 +170,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
 
     private void cloneRepo() throws GitAPIException {
         long start = System.currentTimeMillis();
-        Logger.info("Clone started {} at version {}", gitInfo.getUrl(), gitInfo.getCommit());
+        Logger.info("Clone started {} at version {}", gitInfo.getUrl(), gitInfo.getTarget());
 
         git = Git.cloneRepository()
                 .setGitDir(com.srdjanv.localgitdependency.Constants.concatFile.apply(gitInfo.getDir(), Constants.DOT_GIT))
@@ -181,7 +180,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
                 .setNoCheckout(true)
                 .call();
 
-        git.checkout().setName(gitInfo.getCommit()).call();
+        git.checkout().setName(gitInfo.getTarget()).call();
         gitInfo.setRefreshed();
 
         long spent = System.currentTimeMillis() - start;
@@ -190,10 +189,10 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
 
     private void update() throws GitAPIException {
         final long start = System.currentTimeMillis();
-        Logger.info("Update started {} at version {}", gitInfo.getUrl(), gitInfo.getCommit());
+        Logger.info("Update started {} at version {}", gitInfo.getUrl(), gitInfo.getTarget());
 
         git.fetch().setTagOpt(TagOpt.FETCH_TAGS).call();
-        git.checkout().setName(gitInfo.getCommit()).call();
+        git.checkout().setName(gitInfo.getTarget()).call();
         gitInfo.setRefreshed();
 
         final long spent = System.currentTimeMillis() - start;
@@ -225,37 +224,49 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
     }
 
     private boolean isLocalCommit(String targetId) throws Exception {
-        // Checking if local commit is equal to (starts with) requested one.
         String headId = head();
-        if (headId.startsWith(targetId)) return true;
-
-        // If not then we should check if there is a tag with given name pointing to current head.
-        Ref tag = git.getRepository().getRefDatabase().exactRef(Constants.R_TAGS + targetId);
-
-        // Annotated tags need extra effort
-        Ref peeledTag = null;
-        if (tag != null) {
-            peeledTag = git.getRepository().getRefDatabase().peel(tag);
-        }
-
-        ObjectId tagObjectId = null;
-        if (peeledTag != null) {
-            tagObjectId = peeledTag.getPeeledObjectId();
-        }
-        if (tag != null && tagObjectId == null){
-            tagObjectId = tag.getObjectId();
-        }
-
-        // Search for a remote
-        if (tagObjectId == null) {
-            Ref remote = git.getRepository().getRefDatabase().exactRef(Constants.R_REMOTES + targetId);
-            if (remote != null) {
-                return Objects.equals(ObjectId.toString(remote.getObjectId()), headId);
+        switch (gitInfo.getTargetType()) {
+            case COMMIT: {
+                // Checking if local commit is equal to (starts with) requested one.
+                return headId.startsWith(targetId);
             }
-            throw new Exception("No remote nor any matching tags where found");
-        }
 
-        return Objects.equals(ObjectId.toString(tagObjectId), headId);
+            case TAG: {
+                Ref tag = git.getRepository().getRefDatabase().exactRef(targetId);
+
+                // Annotated tags need extra effort
+                Ref peeledTag = null;
+                if (tag != null) {
+                    peeledTag = git.getRepository().getRefDatabase().peel(tag);
+                }
+
+                ObjectId tagObjectId = null;
+                if (peeledTag != null) {
+                    tagObjectId = peeledTag.getPeeledObjectId();
+                }
+                if (tag != null && tagObjectId == null) {
+                    tagObjectId = tag.getObjectId();
+                }
+
+                if (tagObjectId == null) {
+                    throw new Exception(String.format("Was not able to locate tag with id %s", gitInfo.getTarget()));
+                }
+
+                return Objects.equals(ObjectId.toString(tagObjectId), headId);
+            }
+
+            case BRANCH: {
+                // Search for a remote
+                Ref remote = git.getRepository().getRefDatabase().exactRef(targetId);
+                if (remote != null) {
+                    return Objects.equals(ObjectId.toString(remote.getObjectId()), headId);
+                }
+                throw new Exception("No remote nor any matching tags where found");
+            }
+
+            default:
+                throw new IllegalStateException("This state should not be possible");
+        }
     }
 
     private String head() throws IOException {
