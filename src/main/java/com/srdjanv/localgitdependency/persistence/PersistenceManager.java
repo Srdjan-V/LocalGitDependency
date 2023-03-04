@@ -10,19 +10,22 @@ import org.gradle.api.GradleException;
 import java.io.*;
 
 public class PersistenceManager {
-    private String initScriptSHA;
+    private final SerializableProperty serializableProperty;
     private boolean dirty;
 
     public PersistenceManager() {
         File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
         File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_JSON);
+        serializableProperty = new SerializableProperty();
         if (mainInitJson.exists()) {
             if (mainInitJson.isDirectory()) {
                 throw new GradleException(Constants.MAIN_INIT_SCRIPT_JSON + " at " + mainInitJson.getAbsolutePath() + " can not be a directory");
             }
             try {
                 Gson gson = new GsonBuilder().create();
-                initScriptSHA = gson.fromJson(new BufferedReader(new FileReader(mainInitJson)), String.class);
+                SerializableProperty serializableProperty = gson.fromJson(new BufferedReader(new FileReader(mainInitJson)), SerializableProperty.class);
+                if (serializableProperty == null) return;
+                this.serializableProperty.mainInitSha1 = serializableProperty.mainInitSha1;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -30,11 +33,11 @@ public class PersistenceManager {
     }
 
     public String getInitScriptSHA() {
-        return initScriptSHA;
+        return serializableProperty.mainInitSha1;
     }
 
     public void setInitScriptSHA(String initScriptSHA) {
-        this.initScriptSHA = initScriptSHA;
+        this.serializableProperty.mainInitSha1 = initScriptSHA;
         this.dirty = true;
     }
 
@@ -45,7 +48,7 @@ public class PersistenceManager {
 
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             try (PrintWriter pw = new PrintWriter(mainInitJson)) {
-                pw.write(gson.toJson(initScriptSHA));
+                pw.write(gson.toJson(serializableProperty));
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -57,4 +60,7 @@ public class PersistenceManager {
         }
     }
 
+    private static class SerializableProperty {
+       private String mainInitSha1;
+    }
 }

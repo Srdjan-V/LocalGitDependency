@@ -184,7 +184,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         gitInfo.setRefreshed();
 
         long spent = System.currentTimeMillis() - start;
-        Logger.info("Clone finished {} ms", spent);
+        Logger.info("Clone finished in {} ms", spent);
     }
 
     private void update() throws GitAPIException {

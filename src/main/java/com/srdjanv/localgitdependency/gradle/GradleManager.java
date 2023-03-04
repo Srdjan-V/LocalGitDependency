@@ -37,7 +37,7 @@ public class GradleManager {
         if (gradleConnector == null) {
             gradleConnector = (DefaultGradleConnector) GradleConnector.newConnector();
             gradleConnector.searchUpwards(false);
-            gradleConnector.daemonMaxIdleTime(1, TimeUnit.MICROSECONDS);
+            gradleConnector.daemonMaxIdleTime(2, TimeUnit.MINUTES);
             gradleConnector.forProjectDirectory(dependency.getGitInfo().getDir());
             gradleConnectorCache.put(dependency.getGitInfo().getDir(), gradleConnector);
         }
@@ -64,6 +64,9 @@ public class GradleManager {
     }
 
     public void buildDependency(Dependency dependency) {
+        long start = System.currentTimeMillis();
+        Logger.info("Started building dependency: {}", dependency.getName());
+
         switch (dependency.getDependencyType()) {
             case Jar:
             case JarFlatDir:
@@ -85,9 +88,15 @@ public class GradleManager {
                                 publicationObjectSerializable.getRepositoryName()));
                 break;
         }
+
+        long spent = System.currentTimeMillis() - start;
+        Logger.info("Finished building in {} ms", spent);
     }
 
     private void probeProject(Dependency dependency) {
+        long start = System.currentTimeMillis();
+        Logger.info("Started probing dependency: {} for information", dependency.getName());
+
         File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
         File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
 
@@ -98,6 +107,9 @@ public class GradleManager {
             LocalGitDependencyInfoModel localGitDependencyInfoModel = customModelBuilder.get();
             dependency.getPersistentInfo().setDefaultLocalGitDependencyInfoModel(localGitDependencyInfoModel);
         }
+
+        long spent = System.currentTimeMillis() - start;
+        Logger.info("Probe finished in {} ms", spent);
     }
 
     private void buildGradleProject(Dependency dependency) {
