@@ -1,11 +1,11 @@
 package com.srdjanv.localgitdependency;
 
 import org.gradle.api.GradleException;
+import org.gradle.api.Project;
 
 import java.io.File;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class Constants {
     public static String PROJECT_VERSION = "@PROJECTVERSION@";
@@ -38,19 +38,14 @@ public class Constants {
     public final static Function<String, String> JarSourceTaskName = s -> "InitScriptSourceTaskForProject" + s;
     public final static Function<String, String> JarJavaDocTaskName = s -> "InitScriptJavaDocTaskForProject" + s;
 
-    public static final Supplier<File> defaultDir = () -> new File(Instances.getProject().getLayout().getProjectDirectory().getAsFile(), "/localGitDependency");
+    public static final Function<Project, File> defaultDir = (project) -> new File(project.getLayout().getProjectDirectory().getAsFile(), "/localGitDependency");
 
     public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!data");
     public static final Function<File, File> defaultLibsDir = file -> new File(file, "/libs");
 
     public static final Function<File, File> defaultMavenFolder = file -> new File(file, "/!maven");
     public static final Function<File, File> MavenProjectLocal = file -> {
-        if (!file.exists()) {
-            if (!file.mkdirs()) {
-                throw new RuntimeException(String.format("Unable to create directory %s", file.getAbsolutePath()));
-            }
-        }
-
+        checkExistsAndMkdirs(file);
         return new File(file, "/!mavenProjectLocal");
     };
     public static final BiFunction<File, String, File> MavenProjectDependencyLocal = (file, name) -> {
@@ -85,7 +80,6 @@ public class Constants {
     public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
 
     public static final BiFunction<File, String, File> concatFile = File::new;
-
 
     public static final String RepositoryMavenProjectLocal = "MavenProjectLocal";
     public static final Function<String, String> RepositoryFlatDir = name -> name + "FlatDir";

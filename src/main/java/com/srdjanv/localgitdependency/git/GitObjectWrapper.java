@@ -24,14 +24,16 @@ import java.util.Set;
 // Some code has been taken from
 // https://github.com/alexvasilkov/GradleGitDependenciesPlugin/blob/master/src/main/groovy/com/alexvasilkov/gradle/git/utils/GitUtils.groovy
 class GitObjectWrapper implements AutoCloseable, GitTasks {
+    private final Logger logger;
     private boolean cloned;
     private boolean gitExceptions;
     private Git git;
     private GitInfo gitInfo;
     private String SHALocalChanges;
 
-    GitObjectWrapper(GitInfo gitInfo) {
+    GitObjectWrapper(GitInfo gitInfo, Logger logger) {
         this.gitInfo = gitInfo;
+        this.logger = logger;
         try {
             git = Git.open(com.srdjanv.localgitdependency.Constants.concatFile.apply(gitInfo.getDir(), Constants.DOT_GIT));
         } catch (RepositoryNotFoundException initRepo) {
@@ -68,12 +70,12 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
 
             if (gitInfo.isKeepGitUpdated() && !isLocalCommit(targetCommit)) {
                 final String localCommit = head().substring(0, 7);
-                Logger.info("Local version {} is not equal to target {} for {}", localCommit, targetCommit, gitInfo.getDependency().getName());
+                logger.info("Local version {} is not equal to target {} for {}", localCommit, targetCommit, gitInfo.getDependency().getName());
 
                 if (hasLocalChanges()) {
                     gitInfo.addGitExceptions(new Exception(String.format("Git repo cannot be updated to %s, %s contains local changes. Commit or revert all changes manually.", targetCommit, gitInfo.getDir())));
                 } else {
-                    Logger.info("Updating to version {} for {}", targetCommit, gitInfo.getDependency().getName());
+                    logger.info("Updating to version {} for {}", targetCommit, gitInfo.getDependency().getName());
                     update();
                 }
             }
@@ -102,7 +104,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         if (persistentWorkingDirSHA1.equals(workingDirSHA1)) return;
         gitInfo.setRefreshed();
         gitInfo.getDependency().getPersistentInfo().setWorkingDirSHA1(workingDirSHA1);
-        Logger.info("Dependency {} has new local changes, marking dependency to be rebuild", gitInfo.getDependency().getName());
+        logger.info("Dependency {} has new local changes, marking dependency to be rebuild", gitInfo.getDependency().getName());
     }
 
     private boolean hasLocalChanges() throws NoSuchFieldException, IllegalAccessException, GitAPIException, IOException {
@@ -170,7 +172,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
 
     private void cloneRepo() throws GitAPIException {
         long start = System.currentTimeMillis();
-        Logger.info("Clone started {} at version {}", gitInfo.getUrl(), gitInfo.getTarget());
+        logger.info("Clone started {} at version {}", gitInfo.getUrl(), gitInfo.getTarget());
 
         git = Git.cloneRepository()
                 .setGitDir(com.srdjanv.localgitdependency.Constants.concatFile.apply(gitInfo.getDir(), Constants.DOT_GIT))
@@ -184,33 +186,33 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         gitInfo.setRefreshed();
 
         long spent = System.currentTimeMillis() - start;
-        Logger.info("Clone finished in {} ms", spent);
+        logger.info("Clone finished in {} ms", spent);
     }
 
     private void update() throws GitAPIException {
         final long start = System.currentTimeMillis();
-        Logger.info("Update started {} at version {}", gitInfo.getUrl(), gitInfo.getTarget());
+        logger.info("Update started {} at version {}", gitInfo.getUrl(), gitInfo.getTarget());
 
         git.fetch().setTagOpt(TagOpt.FETCH_TAGS).call();
         git.checkout().setName(gitInfo.getTarget()).call();
         gitInfo.setRefreshed();
 
         final long spent = System.currentTimeMillis() - start;
-        Logger.info("Update finished in {} ms", spent);
+        logger.info("Update finished in {} ms", spent);
     }
 
     @Override
     public void clearLocalChanges() {
         if (gitExceptions) return;
 
-        Logger.info("Dependency {}, clearing local changes and marking dependency to be rebuild", gitInfo.getDependency().getName());
+        logger.info("Dependency {}, clearing local changes and marking dependency to be rebuild", gitInfo.getDependency().getName());
         try {
             if (hasLocalChanges()) {
                 git.reset().setMode(ResetCommand.ResetType.HARD).call();
                 gitInfo.setRefreshed();
             }
         } catch (Exception e) {
-            Logger.error("Dependency {}, unable to clear local changes", gitInfo.getDependency().getName());
+            logger.error("Dependency {}, unable to clear local changes", gitInfo.getDependency().getName());
             gitExceptions(e);
         }
     }

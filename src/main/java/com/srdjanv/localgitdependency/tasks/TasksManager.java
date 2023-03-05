@@ -1,8 +1,9 @@
 package com.srdjanv.localgitdependency.tasks;
 
 import com.srdjanv.localgitdependency.Constants;
-import com.srdjanv.localgitdependency.Instances;
 import com.srdjanv.localgitdependency.depenency.Dependency;
+import com.srdjanv.localgitdependency.project.ManagerBase;
+import com.srdjanv.localgitdependency.project.ProjectBuilder;
 import com.srdjanv.localgitdependency.tasks.buildtasks.BuildAllGitDependencies;
 import com.srdjanv.localgitdependency.tasks.buildtasks.BuildGitDependency;
 import com.srdjanv.localgitdependency.tasks.printtasks.PrintAllDependenciesInfo;
@@ -12,21 +13,26 @@ import com.srdjanv.localgitdependency.tasks.undotasks.UndoLocalGitChanges;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 
-public class TasksManager {
+// TODO: 05/03/2023 fix tasks
+public class TasksManager extends ManagerBase {
+
+    public TasksManager(ProjectBuilder projectBuilder) {
+        super(projectBuilder);
+    }
 
     public void initTasks() {
-        createTask(Instances.getProject(), Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class);
-        createTask(Instances.getProject(), Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class);
-        createTask(Instances.getProject(), Constants.PRINT_ALL_DEPENDENCIES_INFO, PrintAllDependenciesInfo.class);
+        createTask(getProject(), Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class);
+        createTask(getProject(), Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class);
+        createTask(getProject(), Constants.PRINT_ALL_DEPENDENCIES_INFO, PrintAllDependenciesInfo.class);
 
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
-            UndoLocalGitChanges undoLocalGitChanges = createTask(Instances.getProject(), Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency.getName()), UndoLocalGitChanges.class);
+        for (Dependency dependency : getDependencyManager().getDependencies()) {
+            UndoLocalGitChanges undoLocalGitChanges = createTask(getProject(), Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency.getName()), UndoLocalGitChanges.class);
             undoLocalGitChanges.setDependency(dependency);
 
-            BuildGitDependency buildGitDependency = createTask(Instances.getProject(), Constants.BUILD_GIT_DEPENDENCY.apply(dependency.getName()), BuildGitDependency.class);
+            BuildGitDependency buildGitDependency = createTask(getProject(), Constants.BUILD_GIT_DEPENDENCY.apply(dependency.getName()), BuildGitDependency.class);
             buildGitDependency.setDependency(dependency);
 
-            PrintDependencyInfo printDependencyInfo = createTask(Instances.getProject(), Constants.PRINT_DEPENDENCY_INFO.apply(dependency.getName()), PrintDependencyInfo.class);
+            PrintDependencyInfo printDependencyInfo = createTask(getProject(), Constants.PRINT_DEPENDENCY_INFO.apply(dependency.getName()), PrintDependencyInfo.class);
             printDependencyInfo.setDependency(dependency);
         }
     }

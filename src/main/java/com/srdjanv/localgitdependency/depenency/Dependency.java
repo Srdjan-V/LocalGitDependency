@@ -6,7 +6,6 @@ import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.srdjanv.localgitdependency.Constants;
-import com.srdjanv.localgitdependency.Instances;
 import com.srdjanv.localgitdependency.persistence.PersistentInfo;
 import com.srdjanv.localgitdependency.property.Property;
 
@@ -25,8 +24,6 @@ public class Dependency {
     private final GradleInfo gradleInfo;
 
     public Dependency(String configurationName, Property dependencyProperty) {
-        Instances.getPropertyManager().applyDefaultProperty(dependencyProperty);
-
         this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
         this.configurationName = configurationName == null ? dependencyProperty.getConfiguration() : configurationName;
         this.dependencyType = dependencyProperty.getDependencyType();

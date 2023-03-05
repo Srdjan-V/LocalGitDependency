@@ -1,23 +1,28 @@
 package com.srdjanv.localgitdependency.git;
 
-import com.srdjanv.localgitdependency.Instances;
 import com.srdjanv.localgitdependency.depenency.Dependency;
+import com.srdjanv.localgitdependency.project.ManagerBase;
+import com.srdjanv.localgitdependency.project.ProjectBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class GitManager {
+public class GitManager extends ManagerBase {
+    public GitManager(ProjectBuilder projectBuilder) {
+        super(projectBuilder);
+    }
+
     public void initRepos() {
         boolean expressions = false;
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+        for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (initRepo(dependency)) {
                 expressions = true;
             }
         }
         if (expressions) {
             List<List<Exception>> exceptionList = new ArrayList<>();
-            for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+            for (Dependency dependency : getDependencyManager().getDependencies()) {
                 if (dependency.getGitInfo().hasGitExceptions())
                     exceptionList.add(dependency.getGitInfo().getGitExceptions());
             }
@@ -28,14 +33,14 @@ public class GitManager {
     }
 
     public boolean initRepo(Dependency dependency) {
-        try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
+        try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo(), getLogger())) {
             gitObjectWrapper.setup();
             return gitObjectWrapper.hasGitExceptions();
         }
     }
 
     public boolean runRepoCommand(Dependency dependency, Consumer<GitTasks> task) {
-        try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
+        try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo(), getLogger())) {
             task.accept(gitObjectWrapper);
             return gitObjectWrapper.hasGitExceptions();
         }

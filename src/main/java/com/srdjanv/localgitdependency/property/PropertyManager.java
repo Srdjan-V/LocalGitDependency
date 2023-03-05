@@ -2,20 +2,22 @@ package com.srdjanv.localgitdependency.property;
 
 import com.srdjanv.localgitdependency.Constants;
 import com.srdjanv.localgitdependency.depenency.Dependency;
+import com.srdjanv.localgitdependency.project.ManagerBase;
+import com.srdjanv.localgitdependency.project.ProjectBuilder;
 import groovy.lang.Closure;
 import org.gradle.api.GradleException;
 
 import java.io.File;
 import java.lang.reflect.Field;
 
-public class PropertyManager {
+public class PropertyManager extends ManagerBase {
     private boolean customGlobalProperty;
     private DefaultProperty globalProperty;
 
     {
         DefaultProperty.Builder builder = new DefaultProperty.Builder();
         builder.configuration(Constants.JAVA_IMPLEMENTATION);
-        File defaultDir = Constants.defaultDir.get();
+        File defaultDir = Constants.defaultDir.apply(getProject());
         builder.persistentFolder(Constants.defaultPersistentDir.apply(defaultDir));
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
         builder.mavenFolder(Constants.defaultMavenFolder.apply(defaultDir));
@@ -27,6 +29,10 @@ public class PropertyManager {
         builder.tryGeneratingJavaDocJar(false);
 
         globalProperty = new DefaultProperty(builder);
+    }
+
+    public PropertyManager(ProjectBuilder projectBuilder) {
+        super(projectBuilder);
     }
 
     public void globalProperty(Closure<DefaultProperty.Builder> configureClosure) {
@@ -55,7 +61,7 @@ public class PropertyManager {
     }
 
     private void configureFilePaths(DefaultProperty.Builder defaultProperty) {
-        File defaultDir = Constants.defaultDir.get();
+        File defaultDir = Constants.defaultDir.apply(getProject());
         for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
             try {
                 field.setAccessible(true);

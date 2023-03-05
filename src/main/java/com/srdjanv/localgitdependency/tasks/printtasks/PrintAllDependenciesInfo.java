@@ -1,6 +1,5 @@
 package com.srdjanv.localgitdependency.tasks.printtasks;
 
-import com.srdjanv.localgitdependency.Instances;
 import com.srdjanv.localgitdependency.depenency.Dependency;
 import com.srdjanv.localgitdependency.tasks.basetasks.BaseSingleTask;
 import org.gradle.api.tasks.TaskAction;
@@ -9,9 +8,9 @@ public abstract class PrintAllDependenciesInfo extends BaseSingleTask implements
 
     @TaskAction
     public void task$PrintAllDependenciesInfo() throws IllegalAccessException {
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+/*        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
             printInfo(dependency);
-        }
+        }*/
     }
 
     @Override

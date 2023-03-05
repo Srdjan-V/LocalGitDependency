@@ -1,6 +1,5 @@
 package com.srdjanv.localgitdependency.tasks.buildtasks;
 
-import com.srdjanv.localgitdependency.Instances;
 import com.srdjanv.localgitdependency.tasks.basetasks.BaseSingleTask;
 import org.gradle.api.tasks.TaskAction;
 
@@ -8,7 +7,7 @@ public abstract class BuildAllGitDependencies extends BaseSingleTask implements 
 
     @TaskAction
     public void task$BuildAllGitDependencies() {
-        Instances.getDependencyManager().getDependencies().forEach(this::buildGitDependency);
+        //Instances.getDependencyManager().getDependencies().forEach(this::buildGitDependency);
     }
 
     @Override

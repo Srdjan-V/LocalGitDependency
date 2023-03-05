@@ -6,7 +6,7 @@ import org.gradle.api.tasks.TaskAction;
 public abstract class BuildGitDependency extends BaseDynamicTask implements BaseBuildGitTask {
     @TaskAction
     public void task$BuildGitDependency() {
-        buildGitDependency(dependency);
+       // buildGitDependency(dependency);
     }
 
     @Override

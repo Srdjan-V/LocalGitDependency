@@ -36,7 +36,7 @@ public interface BasePrintInfoTask {
             stringBuilder.append(field.getName()).append(": ").append(fieldVal).append(System.lineSeparator());
         }
 
-        Logger.info(stringBuilder.toString());
+       // Logger.info(stringBuilder.toString());
     }
 
 }

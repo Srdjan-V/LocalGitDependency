@@ -3,18 +3,20 @@ package com.srdjanv.localgitdependency.persistence;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.srdjanv.localgitdependency.Constants;
-import com.srdjanv.localgitdependency.Instances;
 import com.srdjanv.localgitdependency.depenency.Dependency;
+import com.srdjanv.localgitdependency.project.ManagerBase;
+import com.srdjanv.localgitdependency.project.ProjectBuilder;
 import org.gradle.api.GradleException;
 
 import java.io.*;
 
-public class PersistenceManager {
+public class PersistenceManager extends ManagerBase {
     private final SerializableProperty serializableProperty;
     private boolean dirty;
 
-    public PersistenceManager() {
-        File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
+    public PersistenceManager(ProjectBuilder projectBuilder) {
+        super(projectBuilder);
+        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentFolder();
         File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_JSON);
         serializableProperty = new SerializableProperty();
         if (mainInitJson.exists()) {
@@ -43,7 +45,7 @@ public class PersistenceManager {
 
     public void savePersistentData() {
         if (dirty) {
-            File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
+            File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentFolder();
             File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_JSON);
 
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -55,7 +57,7 @@ public class PersistenceManager {
             dirty = false;
         }
 
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+        for (Dependency dependency : getDependencyManager().getDependencies()) {
             dependency.getPersistentInfo().saveToPersistentFile();
         }
     }
