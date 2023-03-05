@@ -23,10 +23,29 @@ public class PropertyManager {
         builder.keepGitUpdated(true);
         builder.keepMainInitScriptUpdated(true);
         builder.keepDependencyInitScriptUpdated(true);
-        builder.tryGeneratingSourceJar(true);
+        builder.tryGeneratingSourceJar(false);
         builder.tryGeneratingJavaDocJar(false);
 
         globalProperty = new DefaultProperty(builder);
+    }
+
+    public void globalProperty(Closure<DefaultProperty.Builder> configureClosure) {
+        if (configureClosure != null) {
+            if (customGlobalProperty) {
+                throw new GradleException("You can't change the globalProperty once they are set");
+            }
+            DefaultProperty.Builder defaultProperty = new DefaultProperty.Builder();
+            configureClosure.setDelegate(defaultProperty);
+            configureClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
+            configureClosure.call();
+            configureFilePaths(defaultProperty);
+            this.globalProperty = resolveGlobalProperty(new DefaultProperty(defaultProperty));
+            customGlobalProperty = true;
+        }
+    }
+
+    public DefaultProperty getGlobalProperty() {
+        return globalProperty;
     }
 
     public void createEssentialDirectories() {
@@ -35,22 +54,21 @@ public class PropertyManager {
         Constants.checkExistsAndMkdirs(globalProperty.mavenFolder);
     }
 
-    public void globalProperty(Closure<DefaultProperty.Builder> configureClosure) { // TODO: 04/03/2023 automatically configure file paths 
-        if (configureClosure != null) {
-            if (customGlobalProperty) {
-                throw new GradleException("you cant change the globalProperty once they are set");
-            }
-            DefaultProperty.Builder defaultProperty = new DefaultProperty.Builder();
-            configureClosure.setDelegate(defaultProperty);
-            configureClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
-            configureClosure.call();
-            this.globalProperty = resolveGlobalProperty(new DefaultProperty(defaultProperty));
-            customGlobalProperty = true;
-        }
-    }
+    private void configureFilePaths(DefaultProperty.Builder defaultProperty) {
+        File defaultDir = Constants.defaultDir.get();
+        for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
+            try {
+                field.setAccessible(true);
+                if (field.getType() == File.class) {
+                    File file = (File) field.get(defaultProperty);
 
-    public DefaultProperty getGlobalProperty() {
-        return globalProperty;
+                    if (file.isAbsolute()) continue;
+                    field.set(defaultProperty, new File(defaultDir, String.valueOf(file)).toPath().normalize().toFile());
+                }
+            } catch (Exception e) {
+                throw new GradleException(String.format("Unexpected error while reflecting %s class", CommonPropertyFields.class), e);
+            }
+        }
     }
 
     //applies missing globalProperty from the defaultGlobalProperty
