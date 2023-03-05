@@ -28,15 +28,24 @@ tasks.named('test') {
 }
 
 gradlePlugin {
-
+    website.set("https://github.com/Srdjan-V/LocalGitDependency")
+    vcsUrl.set("https://github.com/Srdjan-V/LocalGitDependency")
 
     plugins {
         localGitDependency {
+            displayName = "Local Git Dependency Plugin"
+            description = "Gradle plugin to clone projects with git and build them"
+            tags.set(listOf("git", "dependency"))
+
             id = 'com.srdjanv.local-git-dependency'
             implementationClass = 'com.srdjanv.localgitdependency.LocalGitDependencyPlugin'
         }
 
         modelInjection {
+            displayName = "Local Git Dependency Model Injection Plugin"
+            description = "Helpper plugin for local git dependency"
+            tags.set(listOf("model", "git", "dependency"))
+
             id = "com.srdjanv.model-injection"
             implementationClass = "com.srdjanv.localgitdependency.injection.plugin.ModelInjectionPlugin"
         }
