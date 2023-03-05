@@ -63,6 +63,8 @@ public class DependencyManager {
                 case Jar:
                     addJarsAsDependencies(dependency, project);
                     break;
+                default:
+                    throw new IllegalStateException();
             }
         }
     }
@@ -82,7 +84,7 @@ public class DependencyManager {
     }
 
     private void addMavenJarsAsDependencies(Dependency dependency, Project project) {
-        Logger.info("Adding Dependency {}, from MavenLocal", dependency.getName());
+        Logger.info("Adding Dependency: {}, from MavenLocal", dependency.getName());
         project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
     }
 
@@ -94,11 +96,11 @@ public class DependencyManager {
 
     private void addMavenProjectDependencyLocal(Dependency dependency, Project project) {
         if (dependency.getMavenFolder() == null) {
-            throw new RuntimeException(String.format("Dependency %s maven folder is null this ideally would not be possible", dependency.getName()));
+            throw new RuntimeException(String.format("Dependency: %s maven folder is null this ideally would not be possible", dependency.getName()));
         }
 
         String mavenRepo = dependency.getMavenFolder().getAbsolutePath();
-        Logger.warn("Adding Dependency {}, from ProjectDependencyLocal at {}", dependency.getName(), mavenRepo);
+        Logger.info("Adding Dependency: {}, from ProjectDependencyLocal at {}", dependency.getName(), mavenRepo);
 
         project.getRepositories().add(project.getRepositories().maven(mavenArtifactRepository -> {
             mavenArtifactRepository.setName(Constants.RepositoryMavenProjectDependencyLocal.apply(dependency.getName()));
@@ -112,11 +114,11 @@ public class DependencyManager {
         Path libs = Constants.buildDir.apply(dependency.getGitInfo().getDir()).toPath();
 
         if (!Files.exists(libs)) {
-            Logger.error("Dependency {}, no libs folder was found", dependency.getName());
+            Logger.error("Dependency: {}, no libs folder was found", dependency.getName());
             return;
         }
 
-        Logger.info("Adding Dependency {}", dependency.getName());
+        Logger.info("Adding FlatDir Dependency: {}", dependency.getName());
         project.getRepositories().add(project.getRepositories().flatDir(flatDir -> {
             flatDir.setName(Constants.RepositoryFlatDir.apply(dependency.getName()));
             flatDir.dir(libs);
@@ -136,16 +138,16 @@ public class DependencyManager {
         try (Stream<Path> jars = Files.list(libs)) {
             dependencies = jars.toArray();
         } catch (IOException exception) {
-            Logger.error("Exception thrown while building Dependency {}", dependency.getName());
+            Logger.error("Exception thrown while adding jar Dependency: {}", dependency.getName());
             Logger.error(exception.toString());
             return;
         }
 
         if (dependencies.length == 0) {
-            Logger.error("Dependency {}, no libs where found", dependency.getName());
+            Logger.error("Dependency: {}, no libs where found", dependency.getName());
             return;
         } else {
-            Logger.info("Adding Dependency {}, and its jars", dependency.getName());
+            Logger.info("Adding Jar Dependency: {}", dependency.getName());
             Logger.info(Arrays.toString(dependencies));
         }
 
