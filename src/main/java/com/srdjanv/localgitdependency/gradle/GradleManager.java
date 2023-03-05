@@ -26,20 +26,20 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class GradleManager {
-    private final Map<File, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
+    private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
 
     public void disconnectAllGradleConnectors() {
         gradleConnectorCache.values().forEach(DefaultGradleConnector::disconnect);
     }
 
     private DefaultGradleConnector getGradleConnector(Dependency dependency) {
-        DefaultGradleConnector gradleConnector = gradleConnectorCache.get(dependency.getGitInfo().getDir());
+        DefaultGradleConnector gradleConnector = gradleConnectorCache.get(dependency.getName());
         if (gradleConnector == null) {
             gradleConnector = (DefaultGradleConnector) GradleConnector.newConnector();
             gradleConnector.searchUpwards(false);
             gradleConnector.daemonMaxIdleTime(2, TimeUnit.MINUTES);
             gradleConnector.forProjectDirectory(dependency.getGitInfo().getDir());
-            gradleConnectorCache.put(dependency.getGitInfo().getDir(), gradleConnector);
+            gradleConnectorCache.put(dependency.getName(), gradleConnector);
         }
         return gradleConnector;
     }
@@ -70,11 +70,11 @@ public class GradleManager {
         switch (dependency.getDependencyType()) {
             case Jar:
             case JarFlatDir:
-                buildGradleProject(dependency);
+                buildGradleProject(dependency, "build");
                 break;
 
             case MavenLocal:
-                publishGradleProject(dependency,
+                buildGradleProject(dependency,
                         Constants.PublicationTaskName.apply(
                                 dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName()));
                 break;
@@ -82,11 +82,14 @@ public class GradleManager {
             case MavenProjectDependencyLocal:
             case MavenProjectLocal:
                 SerializableProperty.PublicationObjectSerializable publicationObjectSerializable = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject();
-                publishGradleProject(dependency,
+                buildGradleProject(dependency,
                         Constants.FilePublicationTaskName.apply(
                                 publicationObjectSerializable.getPublicationName(),
                                 publicationObjectSerializable.getRepositoryName()));
                 break;
+
+            default:
+                throw new IllegalStateException();
         }
 
         long spent = System.currentTimeMillis() - start;
@@ -112,21 +115,14 @@ public class GradleManager {
         Logger.info("Probe finished in {} ms", spent);
     }
 
-    private void buildGradleProject(Dependency dependency) {
+    private void buildGradleProject(Dependency dependency, String task) {
         DefaultGradleConnector connector = getGradleConnector(dependency);
         try (ProjectConnection connection = connector.connect()) {
             BuildLauncher build = connection.newBuild();
             build.withArguments("--init-script", dependency.getGradleInfo().getInitScript().getAbsolutePath());
-            build.forTasks("build");
-            build.run();
-        }
-    }
-
-    private void publishGradleProject(Dependency dependency, String task) {
-        DefaultGradleConnector connector = getGradleConnector(dependency);
-        try (ProjectConnection connection = connector.connect()) {
-            BuildLauncher build = connection.newBuild();
-            build.withArguments("--init-script", dependency.getGradleInfo().getInitScript().getAbsolutePath());
+            if (dependency.getGradleInfo().getJavaHome() != null) {
+                build.setJavaHome(dependency.getGradleInfo().getJavaHome());
+            }
             build.forTasks(task);
             build.run();
         }
