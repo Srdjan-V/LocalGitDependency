@@ -2,7 +2,7 @@ package com.srdjanv.localgitdependency.extentions;
 
 import com.srdjanv.localgitdependency.depenency.Dependency;
 import com.srdjanv.localgitdependency.project.ManagerBase;
-import com.srdjanv.localgitdependency.project.ProjectBuilder;
+import com.srdjanv.localgitdependency.project.ProjectInstances;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import com.srdjanv.localgitdependency.property.DefaultProperty;
@@ -10,8 +10,8 @@ import com.srdjanv.localgitdependency.property.Property;
 
 @SuppressWarnings("unused")
 public class SettingsExtension extends ManagerBase {
-    public SettingsExtension(ProjectBuilder projectBuilder) {
-        super(projectBuilder);
+    public SettingsExtension(ProjectInstances projectInstances) {
+        super(projectInstances);
     }
 
     public Dependency.Type MavenLocal() {

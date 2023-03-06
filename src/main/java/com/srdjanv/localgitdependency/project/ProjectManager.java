@@ -25,32 +25,47 @@ public class ProjectManager extends ManagerBase {
     public static ProjectManager getProject(Project project) {
         return projectProjectInstanceMap.get(project.getProjectDir());
     }
+
     public static void createProject(Project project) {
         new ProjectManager(project);
     }
 
     private ProjectManager(Project project) {
-        super(new ProjectBuilder(project));
+        super(new ProjectInstances(project));
+        this.managerConstructor();
+    }
 
-        project.getPluginManager().apply("java");
+    @Override
+    protected void managerConstructor() {
+        getProject().getPluginManager().apply("java");
 
-        ProjectManager projectManager = projectProjectInstanceMap.get(project.getProjectDir());
+        ProjectManager projectManager = projectProjectInstanceMap.get(getProject().getProjectDir());
         if (projectManager == null) {
-            projectProjectInstanceMap.put(project.getProjectDir(), this);
+            projectProjectInstanceMap.put(getProject().getProjectDir(), this);
         } else {
             projectManager.close();
-            projectProjectInstanceMap.put(project.getProjectDir(), this);
+            projectProjectInstanceMap.put(getProject().getProjectDir(), this);
         }
 
-        project.afterEvaluate(p -> startPlugin(projectProjectInstanceMap.get(p)));
+        getProject().afterEvaluate(p -> startPlugin(projectProjectInstanceMap.get(p.getProjectDir())));
     }
 
     public static void startPlugin(ProjectManager projectManager) {
-        long start = System.currentTimeMillis();
-        projectManager.getLogger().info("Starting {} tasks", Constants.EXTENSION_NAME);
-        PROJECT_RUNNERS.forEach(projectRunner -> projectRunner.runAndLog(projectManager));
-        long spent = System.currentTimeMillis() - start;
-        projectManager.getLogger().info("Finished {} tasks in {} ms", Constants.EXTENSION_NAME, spent);
+        try {
+            long start = System.currentTimeMillis();
+            projectManager.getLogger().info("Starting {} tasks", Constants.EXTENSION_NAME);
+            PROJECT_RUNNERS.forEach(projectRunner -> projectRunner.runAndLog(projectManager));
+            long spent = System.currentTimeMillis() - start;
+            projectManager.getLogger().info("Finished {} tasks in {} ms", Constants.EXTENSION_NAME, spent);
+        } catch (Throwable throwable) {
+            projectManager.close();
+            throw throwable;
+        }
+    }
+
+    public void close() {
+        if (getGradleManager() != null)
+            getGradleManager().disconnectAllGradleConnectors();
     }
 
     static {

@@ -3,7 +3,7 @@ package com.srdjanv.localgitdependency.tasks;
 import com.srdjanv.localgitdependency.Constants;
 import com.srdjanv.localgitdependency.depenency.Dependency;
 import com.srdjanv.localgitdependency.project.ManagerBase;
-import com.srdjanv.localgitdependency.project.ProjectBuilder;
+import com.srdjanv.localgitdependency.project.ProjectInstances;
 import com.srdjanv.localgitdependency.tasks.buildtasks.BuildAllGitDependencies;
 import com.srdjanv.localgitdependency.tasks.buildtasks.BuildGitDependency;
 import com.srdjanv.localgitdependency.tasks.printtasks.PrintAllDependenciesInfo;
@@ -16,8 +16,8 @@ import org.gradle.api.Task;
 // TODO: 05/03/2023 fix tasks
 public class TasksManager extends ManagerBase {
 
-    public TasksManager(ProjectBuilder projectBuilder) {
-        super(projectBuilder);
+    public TasksManager(ProjectInstances projectInstances) {
+        super(projectInstances);
     }
 
     public void initTasks() {

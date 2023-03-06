@@ -2,7 +2,7 @@ package com.srdjanv.localgitdependency.gradle;
 
 import com.srdjanv.localgitdependency.persistence.SerializableProperty;
 import com.srdjanv.localgitdependency.project.ManagerBase;
-import com.srdjanv.localgitdependency.project.ProjectBuilder;
+import com.srdjanv.localgitdependency.project.ProjectInstances;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
@@ -28,8 +28,8 @@ import java.util.function.Supplier;
 public class GradleManager extends ManagerBase {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
 
-    public GradleManager(ProjectBuilder projectBuilder) {
-        super(projectBuilder);
+    public GradleManager(ProjectInstances projectInstances) {
+        super(projectInstances);
     }
 
     public void disconnectAllGradleConnectors() {

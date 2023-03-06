@@ -2,15 +2,15 @@ package com.srdjanv.localgitdependency.git;
 
 import com.srdjanv.localgitdependency.depenency.Dependency;
 import com.srdjanv.localgitdependency.project.ManagerBase;
-import com.srdjanv.localgitdependency.project.ProjectBuilder;
+import com.srdjanv.localgitdependency.project.ProjectInstances;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class GitManager extends ManagerBase {
-    public GitManager(ProjectBuilder projectBuilder) {
-        super(projectBuilder);
+    public GitManager(ProjectInstances projectInstances) {
+        super(projectInstances);
     }
 
     public void initRepos() {

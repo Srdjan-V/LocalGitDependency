@@ -10,77 +10,49 @@ import com.srdjanv.localgitdependency.property.PropertyManager;
 import com.srdjanv.localgitdependency.tasks.TasksManager;
 import org.gradle.api.Project;
 
-public abstract class ManagerBase implements Managers, AutoCloseable {
-    private final Project project;
-    private final PropertyManager propertyManager;
-    private final DependencyManager dependencyManager;
-    private final GitManager gitManager;
-    private final GradleManager gradleManager;
-    private final PersistenceManager persistenceManager;
-    private final TasksManager tasksManager;
-    private final SettingsExtension settingsExtension;
-    private final Logger logger;
+public abstract class ManagerBase {
+    private final ProjectInstances projectInstances;
 
-    public ManagerBase(ProjectBuilder projectBuilder) {
-        this.project = projectBuilder.project;
-        this.propertyManager = projectBuilder.propertyManager;
-        this.dependencyManager = projectBuilder.dependencyManager;
-        this.gitManager = projectBuilder.gitManager;
-        this.gradleManager = projectBuilder.gradleManager;
-        this.persistenceManager = projectBuilder.persistenceManager;
-        this.tasksManager = projectBuilder.tasksManager;
-        this.settingsExtension = projectBuilder.settingsExtension;
-        this.logger = projectBuilder.logger;
+    public ManagerBase(ProjectInstances projectInstances) {
+        this.projectInstances = projectInstances;
     }
 
+    protected void managerConstructor(){}
 
-    @Override
     public Project getProject() {
-        return project;
+        return projectInstances.project;
     }
 
-    @Override
     public SettingsExtension getSettingsExtension() {
-        return settingsExtension;
+        return projectInstances.settingsExtension;
     }
 
-    @Override
     public DependencyManager getDependencyManager() {
-        return dependencyManager;
+        return projectInstances.dependencyManager;
     }
 
-    @Override
     public GradleManager getGradleManager() {
-        return gradleManager;
+        return projectInstances.gradleManager;
     }
 
-    @Override
     public PropertyManager getPropertyManager() {
-        return propertyManager;
+        return projectInstances.propertyManager;
     }
 
-    @Override
     public GitManager getGitManager() {
-        return gitManager;
+        return projectInstances.gitManager;
     }
 
-    @Override
     public PersistenceManager getPersistenceManager() {
-        return persistenceManager;
+        return projectInstances.persistenceManager;
     }
 
-    @Override
     public TasksManager getTasksManager() {
-        return tasksManager;
+        return projectInstances.tasksManager;
     }
 
-    @Override
     public Logger getLogger() {
-        return logger;
+        return projectInstances.logger;
     }
 
-    @Override
-    public void close() {
-        gradleManager.disconnectAllGradleConnectors();
-    }
 }

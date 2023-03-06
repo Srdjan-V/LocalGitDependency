@@ -2,7 +2,7 @@ package com.srdjanv.localgitdependency.depenency;
 
 import com.srdjanv.localgitdependency.Constants;
 import com.srdjanv.localgitdependency.project.ManagerBase;
-import com.srdjanv.localgitdependency.project.ProjectBuilder;
+import com.srdjanv.localgitdependency.project.ProjectInstances;
 import com.srdjanv.localgitdependency.property.Property;
 import groovy.lang.Closure;
 import org.gradle.api.Project;
@@ -17,8 +17,8 @@ import java.util.stream.Stream;
 public class DependencyManager extends ManagerBase {
     private final Set<Dependency> dependencies = new HashSet<>();
 
-    public DependencyManager(ProjectBuilder projectBuilder) {
-        super(projectBuilder);
+    public DependencyManager(ProjectInstances projectInstances) {
+        super(projectInstances);
     }
 
     public void registerDependency(String configurationName, String dependencyURL, Closure<Property.Builder> configureClosure) {

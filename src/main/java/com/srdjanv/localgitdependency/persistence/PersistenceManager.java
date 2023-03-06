@@ -5,17 +5,21 @@ import com.google.gson.GsonBuilder;
 import com.srdjanv.localgitdependency.Constants;
 import com.srdjanv.localgitdependency.depenency.Dependency;
 import com.srdjanv.localgitdependency.project.ManagerBase;
-import com.srdjanv.localgitdependency.project.ProjectBuilder;
+import com.srdjanv.localgitdependency.project.ProjectInstances;
 import org.gradle.api.GradleException;
 
 import java.io.*;
 
 public class PersistenceManager extends ManagerBase {
-    private final SerializableProperty serializableProperty;
+    private SerializableProperty serializableProperty;
     private boolean dirty;
 
-    public PersistenceManager(ProjectBuilder projectBuilder) {
-        super(projectBuilder);
+    public PersistenceManager(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    public void managerConstructor() {
         File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentFolder();
         File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_JSON);
         serializableProperty = new SerializableProperty();

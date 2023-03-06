@@ -11,7 +11,9 @@ import com.srdjanv.localgitdependency.property.PropertyManager;
 import com.srdjanv.localgitdependency.tasks.TasksManager;
 import org.gradle.api.Project;
 
-public class ProjectBuilder {
+import java.lang.reflect.Field;
+
+public class ProjectInstances {
     final Project project;
     final PropertyManager propertyManager;
     final DependencyManager dependencyManager;
@@ -22,7 +24,7 @@ public class ProjectBuilder {
     final SettingsExtension settingsExtension;
     final Logger logger;
 
-    public ProjectBuilder(Project project) {
+    public ProjectInstances(Project project) {
         this.project = project;
 
         settingsExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, SettingsExtension.class, this);
@@ -33,6 +35,20 @@ public class ProjectBuilder {
         persistenceManager = new PersistenceManager(this);
         tasksManager = new TasksManager(this);
         logger = new Logger(this);
+        constructMangers();
+    }
+
+    private void constructMangers() {
+        for (Field field : ProjectInstances.class.getDeclaredFields()) {
+            if (field.getType().getSuperclass() == ManagerBase.class) {
+                try {
+                    ManagerBase managerBase = (ManagerBase) field.get(this);
+                    managerBase.managerConstructor();
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
 }

@@ -1,14 +1,18 @@
 package com.srdjanv.localgitdependency;
 
 import com.srdjanv.localgitdependency.project.ManagerBase;
-import com.srdjanv.localgitdependency.project.ProjectBuilder;
+import com.srdjanv.localgitdependency.project.ProjectInstances;
 
 // TODO: 05/03/2023 implement this in a better way
 public class Logger extends ManagerBase {
-    private final org.gradle.api.logging.Logger logger = getProject().getLogger();
+    private org.gradle.api.logging.Logger logger;
+    public Logger(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
 
-    public Logger(ProjectBuilder projectBuilder) {
-        super(projectBuilder);
+    @Override
+    protected void managerConstructor() {
+        logger = getProject().getLogger();
     }
 
     public void info(String info, Object... args) {

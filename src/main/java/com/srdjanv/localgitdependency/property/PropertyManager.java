@@ -3,7 +3,7 @@ package com.srdjanv.localgitdependency.property;
 import com.srdjanv.localgitdependency.Constants;
 import com.srdjanv.localgitdependency.depenency.Dependency;
 import com.srdjanv.localgitdependency.project.ManagerBase;
-import com.srdjanv.localgitdependency.project.ProjectBuilder;
+import com.srdjanv.localgitdependency.project.ProjectInstances;
 import groovy.lang.Closure;
 import org.gradle.api.GradleException;
 
@@ -14,7 +14,12 @@ public class PropertyManager extends ManagerBase {
     private boolean customGlobalProperty;
     private DefaultProperty globalProperty;
 
-    {
+    public PropertyManager(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    protected void managerConstructor() {
         DefaultProperty.Builder builder = new DefaultProperty.Builder();
         builder.configuration(Constants.JAVA_IMPLEMENTATION);
         File defaultDir = Constants.defaultDir.apply(getProject());
@@ -29,10 +34,6 @@ public class PropertyManager extends ManagerBase {
         builder.tryGeneratingJavaDocJar(false);
 
         globalProperty = new DefaultProperty(builder);
-    }
-
-    public PropertyManager(ProjectBuilder projectBuilder) {
-        super(projectBuilder);
     }
 
     public void globalProperty(Closure<DefaultProperty.Builder> configureClosure) {
