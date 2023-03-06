@@ -48,10 +48,6 @@ public class Instances {
     }
 
     public static void setGradleManager(GradleManager gradleManager) {
-        if (Instances.gradleManager != null) {
-            Instances.gradleManager.disconnectAllGradleConnectors();
-        }
-
         Instances.gradleManager = gradleManager;
     }
 

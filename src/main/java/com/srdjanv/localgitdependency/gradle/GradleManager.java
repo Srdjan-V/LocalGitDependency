@@ -28,10 +28,6 @@ import java.util.function.Supplier;
 public class GradleManager {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
 
-    public void disconnectAllGradleConnectors() {
-        gradleConnectorCache.values().forEach(DefaultGradleConnector::disconnect);
-    }
-
     private DefaultGradleConnector getGradleConnector(Dependency dependency) {
         DefaultGradleConnector gradleConnector = gradleConnectorCache.get(dependency.getName());
         if (gradleConnector == null) {
