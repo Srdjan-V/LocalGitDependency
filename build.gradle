@@ -38,8 +38,8 @@ gradlePlugin {
             description = "Gradle plugin to clone projects with git and build them"
             tags.set(["git", "dependency"])
 
-            id = "com.srdjanv.local-git-dependency"
-            implementationClass = "com.srdjanv.localgitdependency.LocalGitDependencyPlugin"
+            id = "io.github.srdjanv.local-git-dependency"
+            implementationClass = "io.github.srdjanv.localgitdependency.LocalGitDependencyPlugin"
         }
 
         modelInjection {
@@ -47,8 +47,8 @@ gradlePlugin {
             description = "Helper plugin for local git dependency"
             tags.set(["model", "git", "dependency"])
 
-            id = "com.srdjanv.model-injection"
-            implementationClass = "com.srdjanv.localgitdependency.injection.plugin.ModelInjectionPlugin"
+            id = "io.github.srdjanv.model-injection"
+            implementationClass = "io.github.srdjanv.localgitdependency.injection.plugin.ModelInjectionPlugin"
         }
 
     }

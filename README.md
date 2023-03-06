@@ -13,7 +13,7 @@ You can add this plugin to your top-level build script using the following confi
 
 ```groovy
 plugins {
-    id "com.srdjanv.local-git-dependency" version "$version"
+    id "io.github.srdjanv.local-git-dependency" version "$version"
 }
 ```
 
@@ -29,11 +29,11 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.srdjanv.local-git-dependency:$version"
+        classpath "io.github.srdjanv.local-git-dependency:$version"
     }
 }
 
-apply plugin: "com.srdjanv.local-git-dependency"
+apply plugin: "io.github.srdjanv.local-git-dependency"
 ```
 
 ### Technical Explanation  ###
@@ -43,24 +43,24 @@ configuration.
 
 The global configuration constants properties that will configure some aspects of the plugin, thous aspect can be found
 in the inner Builder class
-of [DefaultProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/com/srdjanv/localgitdependency/property/DefaultProperty.java).
+of [DefaultProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/DefaultProperty.java).
 With the global configuration you can also configure default dependency properties(They will get overwritten by the dependency configuration),
 thous properties can be found in this
-class [CommonProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/com/srdjanv/localgitdependency/property/CommonPropertyBuilder.java),
+class [CommonProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/CommonPropertyBuilder.java),
 they get shared with the dependency.
 
 The dependency properties can be found in the inner Builder class
-of [Property](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/com/srdjanv/localgitdependency/property/Property.java#L28), and in
-[CommonProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/com/srdjanv/localgitdependency/property/CommonPropertyBuilder.java)
+of [Property](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/Property.java#L28), and in
+[CommonProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/CommonPropertyBuilder.java)
 
 I will not provide a descriptions for every existing property,
 since everything you see can change and some parts probably will.
 
 You can also specify how the build dependency will be added to the
-project, [available dependency types](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/com/srdjanv/localgitdependency/depenency/Dependency.java#L137)
+project, [available dependency types](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/depenency/Dependency.java#L137)
 
 The plugin also has default properties, they are located in this
-instance [globalProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/com/srdjanv/localgitdependency/property/PropertyManager.java)
+instance [globalProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/PropertyManager.java)
 
 ### Limitations  ###
 
@@ -121,3 +121,14 @@ localGitDependency {
 }
 ```
 
+You can change the directories that he plugin uses, the paths can be absolute or relative
+
+```
+localGitDependency {
+    configureGlobal {
+        gitDir "./yourGitDir"
+        persistentFolder new File("./yourPersistentFolder")
+        mavenFolder "/rootMaven"
+    }
+}
+```
