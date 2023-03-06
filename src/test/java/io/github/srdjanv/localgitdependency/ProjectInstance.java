@@ -31,7 +31,7 @@ public class ProjectInstance {
         project.setVersion(properties.getProperty("version"));
         Constants.PROJECT_VERSION = properties.getProperty("version");
         project.setGroup(properties.getProperty("group"));
-        project.getPluginManager().apply("io/github.srdjanv.local-git-dependency");
+        project.getPluginManager().apply("io.github.srdjanv.local-git-dependency");
         project.getPluginManager().apply("java");
     }
 }
