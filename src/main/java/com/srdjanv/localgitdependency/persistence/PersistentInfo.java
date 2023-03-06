@@ -5,10 +5,10 @@ import com.google.gson.GsonBuilder;
 import com.srdjanv.localgitdependency.Constants;
 import com.srdjanv.localgitdependency.depenency.Dependency;
 import com.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import com.srdjanv.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
 import com.srdjanv.localgitdependency.property.Property;
 
 import java.io.*;
+import java.util.Objects;
 
 public class PersistentInfo {
     private final Dependency dependency;
@@ -78,7 +78,7 @@ public class PersistentInfo {
         this.serializableProperty.projectProbe = persistentProperty.projectProbe;
         this.serializableProperty.initFileSHA1 = persistentProperty.initFileSHA1;
 
-        if (persistentProperty.projectProbe != null && persistentProperty.projectProbe.versionUID == DefaultLocalGitDependencyInfoModel.serialVersionUID) {
+        if (persistentProperty.projectProbe != null && Objects.equals(persistentProperty.projectProbe.version, Constants.PROJECT_VERSION)) {
             validModel = true;
         }
 

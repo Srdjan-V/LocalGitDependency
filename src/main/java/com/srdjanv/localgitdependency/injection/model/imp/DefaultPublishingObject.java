@@ -1,6 +1,5 @@
 package com.srdjanv.localgitdependency.injection.model.imp;
 
-import com.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import com.srdjanv.localgitdependency.injection.model.PublishingObject;
 import com.srdjanv.localgitdependency.injection.model.TaskObject;
 
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DefaultPublishingObject implements PublishingObject, Serializable {
-    public static long serialVersionUID = LocalGitDependencyInfoModel.serialVersionUID;
     private final String repositoryName;
     private final String publicationName;
     private final List<DefaultTaskObject> tasks;

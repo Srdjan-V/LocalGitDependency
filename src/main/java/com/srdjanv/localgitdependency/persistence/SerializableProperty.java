@@ -1,10 +1,10 @@
 package com.srdjanv.localgitdependency.persistence;
 
+import com.srdjanv.localgitdependency.Constants;
 import com.srdjanv.localgitdependency.depenency.Dependency;
 import com.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import com.srdjanv.localgitdependency.injection.model.PublishingObject;
 import com.srdjanv.localgitdependency.injection.model.TaskObject;
-import com.srdjanv.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
 import org.gradle.api.JavaVersion;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class SerializableProperty {
     DependencyInfoModelSerializable projectProbe;
 
     public static class DependencyInfoModelSerializable {
-        public long versionUID = DefaultLocalGitDependencyInfoModel.serialVersionUID;
+        public String version = Constants.PROJECT_VERSION;
         private final String projectId;
         private final String projectGradleVersion;
         private final JavaVersion javaVersion;
@@ -43,8 +43,8 @@ public class SerializableProperty {
             this.publicationObject = new PublicationObjectSerializable(localGitDependencyInfoModel.getAppropriatePublication());
         }
 
-        public long getVersionUID() {
-            return versionUID;
+        public String getVersion() {
+            return version;
         }
 
         public String getProjectId() {

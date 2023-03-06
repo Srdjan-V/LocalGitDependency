@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInfoModel, Serializable {
-    public static long versionUID = serialVersionUID;
     private final String projectId;
     private final String projectGradleVersion;
     private final JavaVersion javaVersion;

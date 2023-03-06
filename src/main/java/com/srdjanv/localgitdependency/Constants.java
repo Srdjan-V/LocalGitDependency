@@ -45,12 +45,7 @@ public class Constants {
 
     public static final Function<File, File> defaultMavenFolder = file -> new File(file, "/!maven");
     public static final Function<File, File> MavenProjectLocal = file -> {
-        if (!file.exists()) {
-            if (!file.mkdirs()) {
-                throw new RuntimeException(String.format("Unable to create directory %s", file.getAbsolutePath()));
-            }
-        }
-
+        checkExistsAndMkdirs(file);
         return new File(file, "/!mavenProjectLocal");
     };
     public static final BiFunction<File, String, File> MavenProjectDependencyLocal = (file, name) -> {
