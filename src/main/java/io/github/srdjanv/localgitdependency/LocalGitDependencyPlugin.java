@@ -70,7 +70,7 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
         project.afterEvaluate(p -> startPlugin());
     }
 
-    static void startPlugin() {
+    public static void startPlugin() {
         long start = System.currentTimeMillis();
         Logger.info("Starting {} tasks", Constants.EXTENSION_NAME);
         taskRunners.forEach(AfterEvaluateTaskWrapper::runAndLog);
