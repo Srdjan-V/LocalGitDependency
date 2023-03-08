@@ -83,13 +83,14 @@ public class PersistentInfo {
         }
 
         if (persistentProperty.dependencyType != this.getDependency().getDependencyType()) {
+            serializableProperty.dependencyType = this.getDependency().getDependencyType();
             dependencyTypeChanged = true;
+            dirty = true;
         }
     }
 
     public void saveToPersistentFile() {
         if (dirty) {
-            serializableProperty.dependencyType = this.getDependency().getDependencyType();
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             try (PrintWriter pw = new PrintWriter(persistentFile)) {
                 pw.write(gson.toJson(serializableProperty));
