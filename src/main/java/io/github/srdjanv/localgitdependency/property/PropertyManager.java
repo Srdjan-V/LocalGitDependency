@@ -62,7 +62,7 @@ public class PropertyManager {
                 if (field.getType() == File.class) {
                     File file = (File) field.get(defaultProperty);
 
-                    if (file.isAbsolute()) continue;
+                    if (file == null || file.isAbsolute()) continue;
                     field.set(defaultProperty, new File(defaultDir, String.valueOf(file)).toPath().normalize().toFile());
                 }
             } catch (Exception e) {
