@@ -1,62 +1,16 @@
-package io.github.srdjanv.localgitdependency;
+package io.github.srdjanv.localgitdependency.util;
 
-import io.github.srdjanv.localgitdependency.dependency.DependencyRegistry;
-import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
+import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.Instances;
+import io.github.srdjanv.localgitdependency.util.dep.DependencyWrapper;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-public class PluginDependencyTests {
-
-    @TestFactory
-    Stream<DynamicTest> TestMavenLocal() {
-        return createTestStream(Dependency.Type.MavenLocal);
-    }
-
-    @TestFactory
-    Stream<DynamicTest> TestMavenProjectLocal() {
-        return createTestStream(Dependency.Type.MavenProjectLocal);
-    }
-
-    @TestFactory
-    Stream<DynamicTest> TestMavenProjectDependencyLocal() {
-        return createTestStream(Dependency.Type.MavenProjectDependencyLocal);
-    }
-
-    @TestFactory
-    Stream<DynamicTest> TestJarFlatDir() {
-        return createTestStream(Dependency.Type.JarFlatDir);
-    }
-
-    @TestFactory
-    Stream<DynamicTest> TestJar() {
-        return createTestStream(Dependency.Type.Jar);
-    }
-
-    private Stream<DynamicTest> createTestStream(final Dependency.Type dependencyType) {
-        List<DependencyWrapper> dependencyWrappers = DependencyRegistry.getTestDependencies();
-
-        dependencyWrappers.forEach(dependencyWrapper -> {
-            dependencyWrapper.setTestName(dependencyType.name());
-            dependencyWrapper.setDependencyClosure(builder -> builder.dependencyType(dependencyType));
-            dependencyWrapper.setTest(test -> {
-                printData();
-                assertTest(dependencyWrapper);
-            });
-        });
-
-        return dependencyWrappers.stream().
-                map(testWrapper -> DynamicTest.dynamicTest(testWrapper.getTestName(), testWrapper::startPluginAndRunTests));
-    }
-
-    public static void printData() {
+public class TestUtil {
+    public static void printProjectDependencyData() {
         Project project = Instances.getProject();
 
         if (!project.getRepositories().isEmpty()) {
@@ -89,7 +43,7 @@ public class PluginDependencyTests {
                 });
     }
 
-    public static void assertTest(DependencyWrapper dependencyWrapper) {
+    public static void testRegisteredProjectDependencies(DependencyWrapper dependencyWrapper) {
         String repo;
         switch (dependencyWrapper.getDependency().getDependencyType()) {
             case JarFlatDir:

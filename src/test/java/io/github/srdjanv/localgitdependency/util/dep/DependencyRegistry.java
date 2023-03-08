@@ -1,4 +1,4 @@
-package io.github.srdjanv.localgitdependency.dependency;
+package io.github.srdjanv.localgitdependency.util.dep;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +19,10 @@ public class DependencyRegistry {
 
     public static List<DependencyWrapper> getTestDependencies() {
         return registry.stream().map(DependencyWrapper::new).collect(Collectors.toList());
+    }
+
+    public static DependencyWrapper getFirstTestDependency() {
+        return new DependencyWrapper(registry.get(0));
     }
 
     final String dependencyName;

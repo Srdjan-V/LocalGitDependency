@@ -13,7 +13,6 @@ public class ProjectInstance {
 
     public static void createProject() {
         File projectDir = new File(".", "test/project/");
-        new File(projectDir, "run").mkdirs();
         File homeDir = new File(".", "test/gradle_home/");
 
         Project project = ProjectBuilder.builder()

@@ -1,4 +1,4 @@
-package io.github.srdjanv.localgitdependency.dependency;
+package io.github.srdjanv.localgitdependency.util.dep;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Instances;
@@ -12,20 +12,23 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class DependencyWrapper {
-
     private final String dependencyName;
     private final String gitUrl;
     private String testName;
+    private State state;
     private Consumer<DependencyWrapper> test;
     private Closure<DefaultProperty.Builder> globalClosure;
     private Closure<Property.Builder> dependencyClosure;
-
     private Dependency dependencyReference;
 
-
-    public DependencyWrapper(DependencyRegistry registry) {
+    DependencyWrapper(DependencyRegistry registry) {
+        state = State.Starting;
         this.dependencyName = registry.dependencyName;
         this.gitUrl = registry.gitUrl;
+    }
+
+    public State getState() {
+        return state;
     }
 
     public String getDependencyName() {
@@ -33,7 +36,14 @@ public class DependencyWrapper {
     }
 
     public Dependency getDependency() {
-        return dependencyReference;
+        switch (state) {
+            case OnlyDependencyRegistered:
+            case Complete:
+                return dependencyReference;
+
+            default:
+                throw new IllegalStateException();
+        }
     }
 
     public void setGlobalClosure(Consumer<DefaultProperty.Builder> globalClosure) {
@@ -87,7 +97,19 @@ public class DependencyWrapper {
         LocalGitDependencyPlugin.startPlugin();
     }
 
+    public void startDSLPluginAndRunTests() {
+        setState(State.OnlyDependencyRegistered);
+        checkDependencyState();
+        ProjectInstance.createProject();
+
+        setGlobalConfiguration();
+        registerDepToExtension();
+
+        test.accept(this);
+    }
+
     public void startPluginAndRunTests() {
+        setState(State.Complete);
         checkDependencyState();
         ProjectInstance.createProject();
 
@@ -108,6 +130,20 @@ public class DependencyWrapper {
                 }
             };
         }
+    }
+
+
+    private void setState(State state) {
+        if (this.state != State.Starting) {
+            throw new IllegalStateException();
+        }
+        this.state = state;
+    }
+
+    public enum State {
+        Complete,
+        OnlyDependencyRegistered,
+        Starting
     }
 
 }
