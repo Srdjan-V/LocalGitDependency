@@ -14,11 +14,11 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
         this.configuration = configuration;
     }
 
-    public void keepGitUpdated(boolean keepGitUpdated) {
+    public void keepGitUpdated(Boolean keepGitUpdated) {
         this.keepGitUpdated = keepGitUpdated;
     }
 
-    public void keepDependencyInitScriptUpdated(boolean keepDependencyInitScriptUpdated) {
+    public void keepDependencyInitScriptUpdated(Boolean keepDependencyInitScriptUpdated) {
         this.keepDependencyInitScriptUpdated = keepDependencyInitScriptUpdated;
     }
 
