@@ -4,7 +4,9 @@ import io.github.srdjanv.localgitdependency.git.GitInfo;
 
 import java.util.List;
 
-//Property's that only a dependency can have
+/**
+ * Property's that only a dependency can have
+ */
 public class Property extends CommonPropertyGetters {
     private final String url;
     private final String name;
@@ -61,6 +63,8 @@ public class Property extends CommonPropertyGetters {
 
         /**
          * Sets the name of the dependency, it will also be used as the directory name
+         *
+         * @param name Dependency name
          */
         public void name(String name) {
             this.name = name;
@@ -85,6 +89,7 @@ public class Property extends CommonPropertyGetters {
          * This is used to filter out what jars will get added as dependencies.
          * This is only used for the Jar Dependency
          *
+         * @param generatedJars Targeted jars
          * @see io.github.srdjanv.localgitdependency.depenency.Dependency.Type
          */
         public void generatedJarsToAdd(List<String> generatedJars) {
@@ -93,6 +98,8 @@ public class Property extends CommonPropertyGetters {
 
         /**
          * If the dependency is generating artifacts with a different name then the project id set the artifacts to be added.
+         *
+         * @param generatedArtifactNames Targeted artifacts
          */
         public void generatedArtifactNames(List<String> generatedArtifactNames) {
             this.generatedArtifactNames = generatedArtifactNames;

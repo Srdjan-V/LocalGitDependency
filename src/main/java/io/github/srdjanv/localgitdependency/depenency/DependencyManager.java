@@ -173,8 +173,9 @@ public class DependencyManager {
     private void addDependencies(Project project, Dependency dependency) {
         List<String> artifacts = dependency.getGeneratedArtifactNames();
         if (artifacts != null) {
+            String[] projectID = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId().split(":");
             for (String artifact : artifacts) {
-                project.getDependencies().add(dependency.getConfigurationName(), artifact);
+                project.getDependencies().add(dependency.getConfigurationName(), projectID[0] + ":" + artifact + ":" + projectID[2]);
             }
             return;
         }
