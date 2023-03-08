@@ -1,16 +1,17 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
+import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.Instances;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
-import io.github.srdjanv.localgitdependency.Instances;
+import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
+import io.github.srdjanv.localgitdependency.property.Property;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
-import io.github.srdjanv.localgitdependency.property.Property;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,17 +19,21 @@ import java.util.regex.Pattern;
 public class Dependency {
     private final String name;
     private final String configurationName;
-    private final File mavenFolder;
-    private final PersistentInfo persistentInfo;
+    private final List<String> generatedJarsToAdd;
+    private final List<String> generatedArtifactNames;
     private final Type dependencyType;
+    private final File mavenFolder;
     private final GitInfo gitInfo;
     private final GradleInfo gradleInfo;
+    private final PersistentInfo persistentInfo;
 
     public Dependency(String configurationName, Property dependencyProperty) {
         Instances.getPropertyManager().applyDefaultProperty(dependencyProperty);
 
         this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
         this.configurationName = configurationName == null ? dependencyProperty.getConfiguration() : configurationName;
+        this.generatedJarsToAdd = dependencyProperty.getGeneratedJarsToAdd();
+        this.generatedArtifactNames = dependencyProperty.getGeneratedArtifactNames();
         this.dependencyType = dependencyProperty.getDependencyType();
         switch (dependencyType) {
             case MavenProjectLocal:
@@ -60,6 +65,21 @@ public class Dependency {
     }
 
     @Nullable
+    public List<String> getGeneratedJarsToAdd() {
+        return generatedJarsToAdd;
+    }
+
+    @Nullable
+    public List<String> getGeneratedArtifactNames() {
+        return generatedArtifactNames;
+    }
+
+    @NotNull
+    public Type getDependencyType() {
+        return dependencyType;
+    }
+
+    @Nullable
     public File getMavenFolder() {
         return mavenFolder;
     }
@@ -77,11 +97,6 @@ public class Dependency {
     @NotNull
     public PersistentInfo getPersistentInfo() {
         return persistentInfo;
-    }
-
-    @NotNull
-    public Type getDependencyType() {
-        return dependencyType;
     }
 
     // TODO: 18/02/2023 add all of the parameters for validation

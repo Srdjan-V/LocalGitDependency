@@ -85,13 +85,13 @@ public class DependencyManager {
 
     private void addMavenJarsAsDependencies(Dependency dependency, Project project) {
         Logger.info("Adding Dependency: {}, from MavenLocal", dependency.getName());
-        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
+        addDependencies(project, dependency);
     }
 
 
     private void addMavenLocalJarsAsDependencies(Dependency dependency, Project project) {
         Logger.info("Adding Dependency {}, from MavenProjectLocal", dependency.getName());
-        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
+        addDependencies(project, dependency);
     }
 
     private void addMavenProjectDependencyLocal(Dependency dependency, Project project) {
@@ -107,7 +107,7 @@ public class DependencyManager {
             mavenArtifactRepository.setUrl(mavenRepo);
         }));
 
-        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
+        addDependencies(project, dependency);
     }
 
     private void addJarsAsFlatDirDependencies(Dependency dependency, Project project) {
@@ -123,7 +123,7 @@ public class DependencyManager {
             flatDir.setName(Constants.RepositoryFlatDir.apply(dependency.getName()));
             flatDir.dir(libs);
         }));
-        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
+        addDependencies(project, dependency);
     }
 
     private void addJarsAsDependencies(Dependency dependency, Project project) {
@@ -136,7 +136,23 @@ public class DependencyManager {
 
         Object[] dependencies;
         try (Stream<Path> jars = Files.list(libs)) {
-            dependencies = jars.toArray();
+            List<String> targetedJars = dependency.getGeneratedJarsToAdd();
+            if (targetedJars != null) {
+                List<Path> validJars = new ArrayList<>();
+                jars.forEach(jar -> {
+                    for (String jarName : targetedJars) {
+                        if (jar.getFileName().toString().contains(jarName)) {
+                            validJars.add(jar);
+                        }
+                    }
+                });
+                dependencies = new Object[validJars.size()];
+                for (int i = 0; i < validJars.size(); i++) {
+                    dependencies[i] = validJars.get(i);
+                }
+            } else {
+                dependencies = jars.toArray();
+            }
         } catch (IOException exception) {
             Logger.error("Exception thrown while adding jar Dependency: {}", dependency.getName());
             Logger.error(exception.toString());
@@ -154,6 +170,16 @@ public class DependencyManager {
         project.getDependencies().add(dependency.getConfigurationName(), project.getLayout().files(dependencies));
     }
 
+    private void addDependencies(Project project, Dependency dependency) {
+        List<String> artifacts = dependency.getGeneratedArtifactNames();
+        if (artifacts != null) {
+            for (String artifact : artifacts) {
+                project.getDependencies().add(dependency.getConfigurationName(), artifact);
+            }
+            return;
+        }
+        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
+    }
 
     public Set<Dependency> getDependencies() {
         return dependencies;
