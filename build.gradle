@@ -73,3 +73,54 @@ publishing {
         }
     }
 }
+
+def publishPluginsChecks = tasks.register("publishPluginsChecks") {
+    doLast {
+        def currentBranch = ("git rev-parse --abbrev-ref HEAD").execute().inputStream.readLines().get(0)
+        if (currentBranch != "master") {
+            throw new RuntimeException("You can't publish to the gradle plugin portal if not on the master branch")
+        }
+
+        def projectVersion = project.version.toString().split("\\.")
+        if (projectVersion.length != 3) {
+            throw new RuntimeException("The project version must be composed of 3 numbers")
+        }
+
+        def versionTagArray = new ArrayList<Integer>()
+        for (final def versionString in projectVersion) {
+            try {
+                versionTagArray.add(Integer.valueOf(versionString))
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Inappropriate character in project version string", e)
+            }
+        }
+
+        def gitVersionTagArray = new ArrayList<Integer>()
+        def gitStringTag = ("git describe --tags --abbrev=0").execute().inputStream.readLines().get(0)
+        for (versionString in gitStringTag.substring(1, gitStringTag.length()).trim().split("\\.")) {
+            gitVersionTagArray.add(Integer.valueOf(versionString))
+        }
+
+        def invalid = true
+        def iterator = 0
+        for (final def versionString in projectVersion) {
+            if (versionTagArray.get(iterator) > gitVersionTagArray.get(iterator)) {
+                invalid = false
+                break
+            }
+            iterator++
+        }
+
+        if (invalid) {
+            throw new RuntimeException("Current project version is the same or lower then the latest tag")
+        }
+
+        project.logger.lifecycle('Pushing tag {}', project.version)
+        ("git tag v${project.version}").execute()
+        ("git push --tags").execute()
+    }
+}
+
+tasks.getByName("publishPlugins").configure {
+    dependsOn publishPluginsChecks
+}
