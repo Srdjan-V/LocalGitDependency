@@ -5,7 +5,7 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.tasks.basetasks.BaseSingleTask;
 import org.gradle.api.tasks.TaskAction;
 
-public abstract class PrintAllDependenciesInfo extends BaseSingleTask implements BasePrintInfoTask {
+public class PrintAllDependenciesInfo extends BaseSingleTask implements BasePrintInfoTask {
 
     @TaskAction
     public void task$PrintAllDependenciesInfo() throws IllegalAccessException {

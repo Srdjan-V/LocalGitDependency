@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.tasks.printtasks;
 import io.github.srdjanv.localgitdependency.tasks.basetasks.BaseDynamicTask;
 import org.gradle.api.tasks.TaskAction;
 
-public abstract class PrintDependencyInfo extends BaseDynamicTask implements BasePrintInfoTask {
+public class PrintDependencyInfo extends BaseDynamicTask implements BasePrintInfoTask {
 
     @TaskAction
     public void task$PrintDependencyInfo() throws IllegalAccessException {

@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.tasks.undotasks;
 import io.github.srdjanv.localgitdependency.tasks.basetasks.BaseDynamicTask;
 import org.gradle.api.tasks.TaskAction;
 
-public abstract class UndoLocalGitChanges extends BaseDynamicTask implements BaseUndoLocalChangesTask {
+public class UndoLocalGitChanges extends BaseDynamicTask implements BaseUndoLocalChangesTask {
     @TaskAction
     public void task$UndoLocalGitChanges() {
         clearChanges(dependency);
