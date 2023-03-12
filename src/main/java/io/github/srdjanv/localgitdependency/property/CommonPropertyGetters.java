@@ -47,4 +47,8 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
     public Boolean getTryGeneratingJavaDocJar() {
         return tryGeneratingJavaDocJar;
     }
+
+    public Boolean getAddDependencySourcesToProject() {
+        return addDependencySourcesToProject;
+    }
 }

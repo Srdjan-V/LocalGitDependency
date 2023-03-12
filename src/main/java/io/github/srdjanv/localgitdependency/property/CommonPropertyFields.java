@@ -18,4 +18,5 @@ public abstract class CommonPropertyFields {
     Dependency.Type dependencyType;
     Boolean tryGeneratingSourceJar;
     Boolean tryGeneratingJavaDocJar;
+    Boolean addDependencySourcesToProject;
 }

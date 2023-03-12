@@ -25,6 +25,7 @@ public class PropertyManager {
         builder.keepDependencyInitScriptUpdated(true);
         builder.tryGeneratingSourceJar(false);
         builder.tryGeneratingJavaDocJar(false);
+        builder.addDependencySourcesToProject(true);
 
         globalProperty = new DefaultProperty(builder);
     }

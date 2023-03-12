@@ -145,4 +145,34 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
         this.tryGeneratingJavaDocJar = tryGeneratingJavaDocJar;
     }
 
+    /**
+     * If the cloned dependencies source sets should be added to the main project.
+     *
+     * @param addDependencySourcesToProject if it should add the source sets
+     */
+    public void addDependencySourcesToProject(Boolean addDependencySourcesToProject) {
+        this.addDependencySourcesToProject = addDependencySourcesToProject;
+    }
+
+    /**
+     * If the built dependencies should be added as dependencies.
+     * You can manually add the dependency manually
+     *
+     * @see org.gradle.api.artifacts.dsl.DependencyHandler
+     * @param registerDependencyToProject if it should register the dependency
+     */
+    public void registerDependencyToProject(Boolean registerDependencyToProject) {
+
+    }
+
+    /**
+     * If the built dependencies should be added as dependencies.
+     * You can manually add the dependency manually
+     *
+     * @see org.gradle.api.artifacts.dsl.DependencyHandler
+     * @param transitive if it should register the dependency
+     */
+    public void transitive(Boolean transitive ) {
+
+    }
 }
