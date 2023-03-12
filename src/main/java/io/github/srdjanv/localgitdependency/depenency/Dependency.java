@@ -21,6 +21,7 @@ public class Dependency {
     private final String configurationName;
     private final List<String> generatedJarsToAdd;
     private final List<String> generatedArtifactNames;
+    private final boolean addDependencySourcesToProject;
     private final Type dependencyType;
     private final File mavenFolder;
     private final GitInfo gitInfo;
@@ -34,6 +35,7 @@ public class Dependency {
         this.configurationName = configurationName == null ? dependencyProperty.getConfiguration() : configurationName;
         this.generatedJarsToAdd = dependencyProperty.getGeneratedJarsToAdd();
         this.generatedArtifactNames = dependencyProperty.getGeneratedArtifactNames();
+        this.addDependencySourcesToProject = dependencyProperty.getAddDependencySourcesToProject();
         this.dependencyType = dependencyProperty.getDependencyType();
         switch (dependencyType) {
             case MavenProjectLocal:
@@ -72,6 +74,10 @@ public class Dependency {
     @Nullable
     public List<String> getGeneratedArtifactNames() {
         return generatedArtifactNames;
+    }
+
+    public boolean isAddDependencySourcesToProject() {
+        return addDependencySourcesToProject;
     }
 
     @NotNull

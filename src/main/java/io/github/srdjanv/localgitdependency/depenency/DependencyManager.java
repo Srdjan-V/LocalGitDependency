@@ -2,10 +2,12 @@ package io.github.srdjanv.localgitdependency.depenency;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.Logger;
+import io.github.srdjanv.localgitdependency.persistence.SerializableProperty;
 import io.github.srdjanv.localgitdependency.property.Property;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Instances;
 import org.gradle.api.Project;
+import org.gradle.api.plugins.JavaPluginExtension;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,8 +47,10 @@ public class DependencyManager {
         Project project = Instances.getProject();
         if (addRepositoryMavenProjectLocal) addRepositoryMavenProjectLocal(project);
         if (addRepositoryMavenLocal) addRepositoryMavenLocal(project);
+        JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
 
         for (Dependency dependency : dependencies) {
+            addSourceSets(javaPluginExtension, dependency);
             switch (dependency.getDependencyType()) {
                 case MavenLocal:
                     addMavenJarsAsDependencies(dependency, project);
@@ -173,13 +177,24 @@ public class DependencyManager {
     private void addDependencies(Project project, Dependency dependency) {
         List<String> artifacts = dependency.getGeneratedArtifactNames();
         if (artifacts != null) {
-            String[] projectID = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId().split(":");
+            String[] projectID = dependency.getPersistentInfo().getProbeData().getProjectId().split(":");
             for (String artifact : artifacts) {
                 project.getDependencies().add(dependency.getConfigurationName(), projectID[0] + ":" + artifact + ":" + projectID[2]);
             }
             return;
         }
-        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getProjectId());
+        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getProbeData().getProjectId());
+    }
+
+    private void addSourceSets(JavaPluginExtension javaPluginExtension, Dependency dependency) {
+        if (!dependency.isAddDependencySourcesToProject()) return;
+        Logger.info("Dependency: {} adding sourceSets", dependency.getName());
+
+        for (SerializableProperty.SourceSetSerializable source : dependency.getPersistentInfo().getProbeData().getSources()) {
+            javaPluginExtension.getSourceSets().register(dependency.getName() + source.getName(), sourceSet -> {
+                sourceSet.java(dependencySet -> dependencySet.srcDir(source.getSources()));
+            });
+        }
     }
 
     public Set<Dependency> getDependencies() {
