@@ -4,6 +4,7 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.PublishingObject;
+import io.github.srdjanv.localgitdependency.injection.model.SourceSet;
 import io.github.srdjanv.localgitdependency.injection.model.TaskObject;
 import org.gradle.api.JavaVersion;
 
@@ -16,7 +17,7 @@ public class SerializableProperty {
     Dependency.Type dependencyType;
     DependencyInfoModelSerializable projectProbe;
 
-    public static class DependencyInfoModelSerializable {
+    public static class DependencyInfoModelSerializable implements LocalGitDependencyInfoModel {
         public String version = Constants.PROJECT_VERSION;
         private final String projectId;
         private final String projectGradleVersion;
@@ -26,6 +27,7 @@ public class SerializableProperty {
         private final boolean hasJavaPlugin;
         private final boolean hasMavenPublishPlugin;
         private final List<TaskObjectSerializable> appropriateTasks = new ArrayList<>();
+        private final List<SourceSetSerializable> defaultSourceSets = new ArrayList<>();
         private final PublicationObjectSerializable publicationObject;
 
         public DependencyInfoModelSerializable(LocalGitDependencyInfoModel localGitDependencyInfoModel) {
@@ -36,55 +38,68 @@ public class SerializableProperty {
             this.canProjectUseWithJavadocJar = localGitDependencyInfoModel.canProjectUseWithJavadocJar();
             this.hasJavaPlugin = localGitDependencyInfoModel.hasJavaPlugin();
             this.hasMavenPublishPlugin = localGitDependencyInfoModel.hasMavenPublishPlugin();
-            localGitDependencyInfoModel.getAppropriateTasks()
-                    .forEach(taskObject -> {
-                        appropriateTasks.add(new TaskObjectSerializable(taskObject));
-                    });
+            for (TaskObject appropriateTask : localGitDependencyInfoModel.getAppropriateTasks()) {
+                appropriateTasks.add(new TaskObjectSerializable(appropriateTask));
+            }
             this.publicationObject = new PublicationObjectSerializable(localGitDependencyInfoModel.getAppropriatePublication());
+            for (SourceSet source : localGitDependencyInfoModel.getSources()) {
+                defaultSourceSets.add(new SourceSetSerializable(source));
+            }
         }
 
-        public String getVersion() {
-            return version;
-        }
+        @Override
 
         public String getProjectId() {
             return projectId;
         }
 
-        public String getProjectGradleVersion() {
+        @Override
+        public String projectGradleVersion() {
             return projectGradleVersion;
         }
 
-        public JavaVersion getJavaVersion() {
+        @Override
+        public JavaVersion getProjectJavaVersion() {
             return javaVersion;
         }
 
-        public boolean isCanProjectUseWithSourcesJar() {
+        @Override
+        public boolean canProjectUseWithSourcesJar() {
             return canProjectUseWithSourcesJar;
         }
 
-        public boolean isCanProjectUseWithJavadocJar() {
+        @Override
+        public boolean canProjectUseWithJavadocJar() {
             return canProjectUseWithJavadocJar;
         }
 
-        public boolean isHasJavaPlugin() {
+        @Override
+        public boolean hasJavaPlugin() {
             return hasJavaPlugin;
         }
 
-        public boolean isHasMavenPublishPlugin() {
+        @Override
+        public boolean hasMavenPublishPlugin() {
             return hasMavenPublishPlugin;
         }
 
+        @Override
         public List<TaskObjectSerializable> getAppropriateTasks() {
             return appropriateTasks;
         }
 
-        public PublicationObjectSerializable getPublicationObject() {
+        @Override
+        public PublicationObjectSerializable getAppropriatePublication() {
             return publicationObject;
+        }
+
+        @Override
+        public List<SourceSetSerializable> getSources() {
+            return defaultSourceSets;
         }
     }
 
-    public static class TaskObjectSerializable {
+    public static class TaskObjectSerializable implements TaskObject {
         private final String name;
         private final String classifier;
 
@@ -102,7 +117,28 @@ public class SerializableProperty {
         }
     }
 
-    public static class PublicationObjectSerializable {
+    public static class SourceSetSerializable implements SourceSet {
+        private final String name;
+        private final List<String> sources;
+
+        public SourceSetSerializable(SourceSet sourceSet) {
+            this.name = sourceSet.getName();
+            this.sources = sourceSet.getSources();
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public List<String> getSources() {
+            return sources;
+        }
+
+    }
+
+    public static class PublicationObjectSerializable implements PublishingObject {
         private final String repositoryName;
         private final String publicationName;
         private final List<TaskObjectSerializable> tasks = new ArrayList<>();

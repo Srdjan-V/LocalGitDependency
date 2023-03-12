@@ -59,11 +59,11 @@ public class PersistentInfo {
         return validModel;
     }
 
-    public SerializableProperty.DependencyInfoModelSerializable getDefaultLocalGitDependencyInfoModel() {
+    public SerializableProperty.DependencyInfoModelSerializable getProbeData() {
         return serializableProperty.projectProbe;
     }
 
-    public void setDefaultLocalGitDependencyInfoModel(LocalGitDependencyInfoModel defaultLocalGitDependencyInfoModel) {
+    public void setProbeData(LocalGitDependencyInfoModel defaultLocalGitDependencyInfoModel) {
         this.dirty = true;
         this.validModel = true;
         this.serializableProperty.projectProbe = new SerializableProperty.DependencyInfoModelSerializable(defaultLocalGitDependencyInfoModel);
