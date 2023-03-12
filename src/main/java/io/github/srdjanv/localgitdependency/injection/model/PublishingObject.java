@@ -5,5 +5,5 @@ import java.util.List;
 public interface PublishingObject {
     String getRepositoryName();
     String getPublicationName();
-    List<TaskObject> getTasks();
+    List<? extends TaskObject> getTasks();
 }

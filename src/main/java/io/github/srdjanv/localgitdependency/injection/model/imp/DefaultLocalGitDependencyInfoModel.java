@@ -2,6 +2,7 @@ package io.github.srdjanv.localgitdependency.injection.model.imp;
 
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.PublishingObject;
+import io.github.srdjanv.localgitdependency.injection.model.SourceSet;
 import io.github.srdjanv.localgitdependency.injection.model.TaskObject;
 import org.gradle.api.JavaVersion;
 
@@ -19,13 +20,14 @@ public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInf
     private final boolean hasMavenPublishPlugin;
     private final List<DefaultTaskObject> appropriateTasks;
     private final DefaultPublishingObject publicationObject;
-
+    private final List<DefaultSourceSet> defaultSourceSet;
 
     public DefaultLocalGitDependencyInfoModel(
             String projectId, String projectGradleVersion, JavaVersion javaVersion,
             boolean canProjectUseWithSourcesJar, boolean canProjectUseWithJavadocJar,
             boolean hasJavaPlugin, boolean hasMavenPublishPlugin,
-            List<DefaultTaskObject> appropriateTasks, DefaultPublishingObject defaultPublicationObject) {
+            List<DefaultTaskObject> appropriateTasks, DefaultPublishingObject defaultPublicationObject,
+            List<DefaultSourceSet> defaultSourceSet) {
         this.projectId = projectId;
         this.projectGradleVersion = projectGradleVersion;
         this.javaVersion = javaVersion;
@@ -35,6 +37,7 @@ public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInf
         this.hasMavenPublishPlugin = hasMavenPublishPlugin;
         this.appropriateTasks = appropriateTasks;
         this.publicationObject = defaultPublicationObject;
+        this.defaultSourceSet = defaultSourceSet;
     }
 
     @Override
@@ -80,5 +83,10 @@ public class DefaultLocalGitDependencyInfoModel implements LocalGitDependencyInf
     @Override
     public PublishingObject getAppropriatePublication() {
         return publicationObject;
+    }
+
+    @Override
+    public List<SourceSet> getSources() {
+        return defaultSourceSet.stream().map(defaultTaskObject -> (SourceSet) defaultTaskObject).collect(Collectors.toList());
     }
 }
