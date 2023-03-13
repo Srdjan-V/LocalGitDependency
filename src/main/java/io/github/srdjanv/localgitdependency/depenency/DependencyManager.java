@@ -1,13 +1,13 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
+import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.Instances;
 import io.github.srdjanv.localgitdependency.Logger;
 import io.github.srdjanv.localgitdependency.persistence.SerializableProperty;
 import io.github.srdjanv.localgitdependency.property.Property;
-import groovy.lang.Closure;
-import io.github.srdjanv.localgitdependency.Instances;
 import org.gradle.api.Project;
-import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,10 +47,16 @@ public class DependencyManager {
         Project project = Instances.getProject();
         if (addRepositoryMavenProjectLocal) addRepositoryMavenProjectLocal(project);
         if (addRepositoryMavenLocal) addRepositoryMavenLocal(project);
-        JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+        SourceSetContainer sourceSetContainer = project.getExtensions().getByType(SourceSetContainer.class);
 
         for (Dependency dependency : dependencies) {
-            addSourceSets(javaPluginExtension, dependency);
+            if (!dependency.isRegisterDependencyToProject()) {
+                Logger.info("Skipping dependency registration for {}", dependency.getName());
+                continue;
+            }
+            if (dependency.isAddDependencySourcesToProject()) {
+                addSourceSets(sourceSetContainer, dependency);
+            }
             switch (dependency.getDependencyType()) {
                 case MavenLocal:
                     addMavenJarsAsDependencies(dependency, project);
@@ -179,19 +185,22 @@ public class DependencyManager {
         if (artifacts != null) {
             String[] projectID = dependency.getPersistentInfo().getProbeData().getProjectId().split(":");
             for (String artifact : artifacts) {
-                project.getDependencies().add(dependency.getConfigurationName(), projectID[0] + ":" + artifact + ":" + projectID[2]);
+                if (artifact.contains(":")) {
+                    project.getDependencies().add(dependency.getConfigurationName(), artifact, dependency.getConfigureClosure());
+                } else {
+                    project.getDependencies().add(dependency.getConfigurationName(), projectID[0] + ":" + artifact + ":" + projectID[2], dependency.getConfigureClosure());
+                }
             }
             return;
         }
-        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getProbeData().getProjectId());
+        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getProbeData().getProjectId(), dependency.getConfigureClosure());
     }
 
-    private void addSourceSets(JavaPluginExtension javaPluginExtension, Dependency dependency) {
-        if (!dependency.isAddDependencySourcesToProject()) return;
+    private void addSourceSets(SourceSetContainer sourceSetContainer, Dependency dependency) {
         Logger.info("Dependency: {} adding sourceSets", dependency.getName());
 
         for (SerializableProperty.SourceSetSerializable source : dependency.getPersistentInfo().getProbeData().getSources()) {
-            javaPluginExtension.getSourceSets().register(dependency.getName() + source.getName(), sourceSet -> {
+            sourceSetContainer.register(dependency.getName() + source.getName(), sourceSet -> {
                 sourceSet.java(dependencySet -> dependencySet.srcDir(source.getSources()));
             });
         }

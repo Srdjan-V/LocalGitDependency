@@ -1,5 +1,6 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
+import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.Instances;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
@@ -22,6 +23,8 @@ public class Dependency {
     private final List<String> generatedJarsToAdd;
     private final List<String> generatedArtifactNames;
     private final boolean addDependencySourcesToProject;
+    private final boolean registerDependencyToProject;
+    private final Closure<?> configureClosure;// TODO: 12/03/2023 discard object after dependency registration
     private final Type dependencyType;
     private final File mavenFolder;
     private final GitInfo gitInfo;
@@ -36,6 +39,8 @@ public class Dependency {
         this.generatedJarsToAdd = dependencyProperty.getGeneratedJarsToAdd();
         this.generatedArtifactNames = dependencyProperty.getGeneratedArtifactNames();
         this.addDependencySourcesToProject = dependencyProperty.getAddDependencySourcesToProject();
+        this.registerDependencyToProject = dependencyProperty.getRegisterDependencyToProject();
+        this.configureClosure = dependencyProperty.getConfigureClosure();
         this.dependencyType = dependencyProperty.getDependencyType();
         switch (dependencyType) {
             case MavenProjectLocal:
@@ -78,6 +83,15 @@ public class Dependency {
 
     public boolean isAddDependencySourcesToProject() {
         return addDependencySourcesToProject;
+    }
+
+    public boolean isRegisterDependencyToProject() {
+        return registerDependencyToProject;
+    }
+
+    @Nullable
+    public Closure<?> getConfigureClosure() {
+        return configureClosure;
     }
 
     @NotNull

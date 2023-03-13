@@ -51,4 +51,8 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
     public Boolean getAddDependencySourcesToProject() {
         return addDependencySourcesToProject;
     }
+
+    public Boolean getRegisterDependencyToProject() {
+        return registerDependencyToProject;
+    }
 }

@@ -19,4 +19,5 @@ public abstract class CommonPropertyFields {
     Boolean tryGeneratingSourceJar;
     Boolean tryGeneratingJavaDocJar;
     Boolean addDependencySourcesToProject;
+    Boolean registerDependencyToProject;
 }

@@ -1,5 +1,6 @@
 package io.github.srdjanv.localgitdependency.property;
 
+import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class Property extends CommonPropertyGetters {
     private final GitInfo.TargetType targetType;
     private final List<String> generatedJarsToAdd;
     private final List<String> generatedArtifactNames;
+    private final Closure<?> configureClosure;
 
     public Property(Builder builder) {
         url = builder.url;
@@ -22,6 +24,7 @@ public class Property extends CommonPropertyGetters {
         targetType = builder.targetType;
         generatedJarsToAdd = builder.generatedJarsToAdd;
         generatedArtifactNames = builder.generatedArtifactNames;
+        configureClosure = builder.configureClosure;
         PropertyManager.instantiateCommonPropertyFieldsInstance(this, builder);
     }
 
@@ -49,6 +52,10 @@ public class Property extends CommonPropertyGetters {
         return generatedArtifactNames;
     }
 
+    public Closure<?> getConfigureClosure() {
+        return configureClosure;
+    }
+
     public static class Builder extends CommonPropertyBuilder {
         private final String url;
         private String name;
@@ -56,6 +63,7 @@ public class Property extends CommonPropertyGetters {
         private GitInfo.TargetType targetType;
         private List<String> generatedJarsToAdd;
         private List<String> generatedArtifactNames;
+        private Closure<?> configureClosure;
 
         public Builder(String url) {
             this.url = url;
@@ -103,6 +111,16 @@ public class Property extends CommonPropertyGetters {
          */
         public void generatedArtifactNames(List<String> generatedArtifactNames) {
             this.generatedArtifactNames = generatedArtifactNames;
+        }
+
+        /**
+         * Custom configuration for the dependency, this closure will be passed to the DependencyHandler
+         *
+         * @param configureClosure the closure to use to configure the dependency
+         * @see org.gradle.api.artifacts.dsl.DependencyHandler
+         */
+        public void configure(@SuppressWarnings("rawtypes") Closure configureClosure) {
+            this.configureClosure = configureClosure;
         }
 
     }
