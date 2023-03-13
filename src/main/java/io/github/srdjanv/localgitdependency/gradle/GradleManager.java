@@ -28,6 +28,11 @@ import java.util.function.Supplier;
 public class GradleManager {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
 
+    private void cleanCache() {
+        Logger.info("Clearing gradle connector cache");
+        gradleConnectorCache.clear();
+    }
+
     private DefaultGradleConnector getGradleConnector(Dependency dependency) {
         DefaultGradleConnector gradleConnector = gradleConnectorCache.get(dependency.getName());
         if (gradleConnector == null) {
@@ -57,6 +62,7 @@ public class GradleManager {
                 buildDependency(dependency);
             }
         }
+        cleanCache();
     }
 
     public void buildDependency(Dependency dependency) {
