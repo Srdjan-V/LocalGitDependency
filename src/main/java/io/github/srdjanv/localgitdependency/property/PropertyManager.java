@@ -22,6 +22,8 @@ public class PropertyManager {
         builder.dependencyType(Dependency.Type.JarFlatDir);
         builder.keepGitUpdated(true);
         builder.keepMainInitScriptUpdated(true);
+        builder.generateDefaultGradleTasks(true);
+        builder.generateGradleTasks(true);
         builder.keepDependencyInitScriptUpdated(true);
         builder.tryGeneratingSourceJar(false);
         builder.tryGeneratingJavaDocJar(false);

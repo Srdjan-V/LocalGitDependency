@@ -47,7 +47,7 @@ public class GradleInit {
 
     private void appendLine(int indent, String string) {
         for (int i = 0; i < indent; i++) {
-            stringBuilder.append("    ");
+            stringBuilder.append(Constants.TAB_INDENT);
         }
         stringBuilder.append(string).append(System.lineSeparator());
     }

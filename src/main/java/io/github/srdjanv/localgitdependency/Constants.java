@@ -18,6 +18,7 @@ public class Constants {
     public final static String PRINT_ALL_DEPENDENCIES_INFO = "!PrintAllDependenciesInfo";
     public final static Function<String, String> PRINT_DEPENDENCY_INFO = s -> s + "-PrintDependencyInfo";
     public final static String JAVA_IMPLEMENTATION = "implementation";
+    public final static String TAB_INDENT = "    ";
 
 
     public final static String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";

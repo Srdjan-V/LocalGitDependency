@@ -1,7 +1,8 @@
 package io.github.srdjanv.localgitdependency.tasks.basetasks;
 
-public abstract class BaseSingleTask extends BaseTask {
+import org.gradle.api.DefaultTask;
+
+public abstract class BaseSingleTask extends DefaultTask {
     public BaseSingleTask() {
-        createDescription();
     }
 }

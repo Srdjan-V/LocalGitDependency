@@ -6,13 +6,12 @@ import org.gradle.api.tasks.TaskAction;
 
 public class BuildAllGitDependencies extends BaseSingleTask implements BaseBuildGitTask {
 
+    public BuildAllGitDependencies() {
+        setDescription("This task will explicitly rebuild all dependencies");
+    }
+
     @TaskAction
     public void task$BuildAllGitDependencies() {
         Instances.getDependencyManager().getDependencies().forEach(this::buildGitDependency);
-    }
-
-    @Override
-    protected void createDescription() {
-        setDescription("This task will explicitly rebuild all dependencies");
     }
 }

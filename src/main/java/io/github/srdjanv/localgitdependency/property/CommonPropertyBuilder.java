@@ -164,4 +164,15 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
     public void registerDependencyToProject(Boolean registerDependencyToProject) {
         this.registerDependencyToProject = registerDependencyToProject;
     }
+
+    /**
+     * Custom tasks can be generated for this dependency
+     *
+     * @see org.gradle.api.artifacts.dsl.DependencyHandler
+     * @param generateGradleTasks if it should create custom tasks
+     */
+    public void generateGradleTasks(Boolean generateGradleTasks) {
+        this.generateGradleTasks = generateGradleTasks;
+    }
+
 }

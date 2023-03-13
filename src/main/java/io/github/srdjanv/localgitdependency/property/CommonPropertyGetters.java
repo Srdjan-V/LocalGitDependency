@@ -55,4 +55,8 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
     public Boolean getRegisterDependencyToProject() {
         return registerDependencyToProject;
     }
+
+    public Boolean getGenerateGradleTasks() {
+        return generateGradleTasks;
+    }
 }

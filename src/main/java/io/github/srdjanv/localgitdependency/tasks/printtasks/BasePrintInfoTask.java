@@ -1,5 +1,7 @@
 package io.github.srdjanv.localgitdependency.tasks.printtasks;
 
+import groovy.lang.Closure;
+import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.Logger;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
@@ -16,7 +18,9 @@ public interface BasePrintInfoTask {
         for (Field field : Dependency.class.getDeclaredFields()) {
             field.setAccessible(true);
             Object fieldVal = field.get(dependency);
-            if (fieldVal instanceof GitInfo || fieldVal instanceof GradleInfo || fieldVal instanceof PersistentInfo) continue;
+            if (fieldVal instanceof GitInfo || fieldVal instanceof GradleInfo ||
+                    fieldVal instanceof PersistentInfo || fieldVal instanceof Closure) continue;
+            stringBuilder.append(Constants.TAB_INDENT);
             stringBuilder.append(field.getName()).append(": ").append(fieldVal).append(System.lineSeparator());
         }
 
@@ -25,6 +29,7 @@ public interface BasePrintInfoTask {
             field.setAccessible(true);
             Object fieldVal = field.get(dependency.getGitInfo());
             if (fieldVal instanceof Dependency) continue;
+            stringBuilder.append(Constants.TAB_INDENT);
             stringBuilder.append(field.getName()).append(": ").append(fieldVal).append(System.lineSeparator());
         }
 
@@ -33,6 +38,7 @@ public interface BasePrintInfoTask {
             field.setAccessible(true);
             Object fieldVal = field.get(dependency.getGradleInfo());
             if (fieldVal instanceof Dependency) continue;
+            stringBuilder.append(Constants.TAB_INDENT);
             stringBuilder.append(field.getName()).append(": ").append(fieldVal).append(System.lineSeparator());
         }
 

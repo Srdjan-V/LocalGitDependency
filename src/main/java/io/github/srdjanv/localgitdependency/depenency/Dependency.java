@@ -24,6 +24,7 @@ public class Dependency {
     private final List<String> generatedArtifactNames;
     private final boolean addDependencySourcesToProject;
     private final boolean registerDependencyToProject;
+    private final boolean generateGradleTasks;
     private final Closure<?> configureClosure;// TODO: 12/03/2023 discard object after dependency registration
     private final Type dependencyType;
     private final File mavenFolder;
@@ -40,6 +41,7 @@ public class Dependency {
         this.generatedArtifactNames = dependencyProperty.getGeneratedArtifactNames();
         this.addDependencySourcesToProject = dependencyProperty.getAddDependencySourcesToProject();
         this.registerDependencyToProject = dependencyProperty.getRegisterDependencyToProject();
+        this.generateGradleTasks = dependencyProperty.getGenerateGradleTasks();
         this.configureClosure = dependencyProperty.getConfigureClosure();
         this.dependencyType = dependencyProperty.getDependencyType();
         switch (dependencyType) {
@@ -87,6 +89,10 @@ public class Dependency {
 
     public boolean isRegisterDependencyToProject() {
         return registerDependencyToProject;
+    }
+
+    public boolean isGenerateGradleTasks() {
+        return generateGradleTasks;
     }
 
     @Nullable
