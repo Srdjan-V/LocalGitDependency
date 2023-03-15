@@ -10,20 +10,20 @@ import org.gradle.api.GradleException;
 import java.io.*;
 
 public class PersistenceManager {
-    private final SerializableProperty serializableProperty;
+    private final PersistentProjectData serializableProperty;
     private boolean dirty;
 
     public PersistenceManager() {
         File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
-        File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_JSON);
-        serializableProperty = new SerializableProperty();
+        File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.PROJECT_DATA_JSON);
+        serializableProperty = new PersistentProjectData();
         if (mainInitJson.exists()) {
             if (mainInitJson.isDirectory()) {
-                throw new GradleException(Constants.MAIN_INIT_SCRIPT_JSON + " at " + mainInitJson.getAbsolutePath() + " can not be a directory");
+                throw new GradleException(Constants.PROJECT_DATA_JSON + " at " + mainInitJson.getAbsolutePath() + " can not be a directory");
             }
             try {
                 Gson gson = new GsonBuilder().create();
-                SerializableProperty serializableProperty = gson.fromJson(new BufferedReader(new FileReader(mainInitJson)), SerializableProperty.class);
+                PersistentProjectData serializableProperty = gson.fromJson(new BufferedReader(new FileReader(mainInitJson)), PersistentProjectData.class);
                 if (serializableProperty == null) return;
                 this.serializableProperty.mainInitSha1 = serializableProperty.mainInitSha1;
             } catch (IOException e) {
@@ -44,7 +44,7 @@ public class PersistenceManager {
     public void savePersistentData() {
         if (dirty) {
             File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
-            File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_JSON);
+            File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.PROJECT_DATA_JSON);
 
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             try (PrintWriter pw = new PrintWriter(mainInitJson)) {
@@ -58,9 +58,5 @@ public class PersistenceManager {
         for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
             dependency.getPersistentInfo().saveToPersistentFile();
         }
-    }
-
-    private static class SerializableProperty {
-       private String mainInitSha1;
     }
 }

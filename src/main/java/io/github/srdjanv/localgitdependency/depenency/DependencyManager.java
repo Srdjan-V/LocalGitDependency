@@ -4,7 +4,7 @@ import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.Instances;
 import io.github.srdjanv.localgitdependency.Logger;
-import io.github.srdjanv.localgitdependency.persistence.SerializableProperty;
+import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.property.Property;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -196,7 +196,7 @@ public class DependencyManager {
     private void addSourceSets(SourceSetContainer sourceSetContainer, Dependency dependency) {
         Logger.info("Dependency: {} adding sourceSets", dependency.getName());
 
-        for (SerializableProperty.SourceSetSerializable source : dependency.getPersistentInfo().getProbeData().getSources()) {
+        for (PersistentDependencyData.SourceSetSerializable source : dependency.getPersistentInfo().getProbeData().getSources()) {
             sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
                 sourceSet.java(dependencySet -> dependencySet.srcDir(source.getSources()));
             });

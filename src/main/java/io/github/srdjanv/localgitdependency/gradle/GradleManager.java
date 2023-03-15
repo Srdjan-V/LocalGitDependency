@@ -1,6 +1,6 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
-import io.github.srdjanv.localgitdependency.persistence.SerializableProperty;
+import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
@@ -83,7 +83,7 @@ public class GradleManager {
 
             case MavenProjectDependencyLocal:
             case MavenProjectLocal:
-                SerializableProperty.PublicationObjectSerializable publicationObjectSerializable = dependency.getPersistentInfo().getProbeData().getAppropriatePublication();
+                PersistentDependencyData.PublicationObjectSerializable publicationObjectSerializable = dependency.getPersistentInfo().getProbeData().getAppropriatePublication();
                 buildGradleProject(dependency,
                         Constants.FilePublicationTaskName.apply(
                                 publicationObjectSerializable.getPublicationName(),
@@ -132,7 +132,7 @@ public class GradleManager {
 
     private String createDependencyInitScript(Dependency dependency) {
         // TODO: 18/02/2023 work on this
-        SerializableProperty.DependencyInfoModelSerializable model = dependency.getPersistentInfo().getProbeData();
+        PersistentDependencyData.DependencyInfoModelSerializable model = dependency.getPersistentInfo().getProbeData();
         int[] gradleVersion = Arrays.stream(model.projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
 
         final Consumer<GradleInit> configuration;
@@ -148,9 +148,9 @@ public class GradleManager {
                 }
             });
         } else {
-            SerializableProperty.PublicationObjectSerializable publicationObject = dependency.getPersistentInfo().getProbeData().getAppropriatePublication();
+            PersistentDependencyData.PublicationObjectSerializable publicationObject = dependency.getPersistentInfo().getProbeData().getAppropriatePublication();
             List<GradleInit.Task> tasks = new ArrayList<>();
-            for (SerializableProperty.TaskObjectSerializable taskSerializable : publicationObject.getTasks()) {
+            for (PersistentDependencyData.TaskObjectSerializable taskSerializable : publicationObject.getTasks()) {
                 switch (taskSerializable.getClassifier()) {
                     case "sources":
                         if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {

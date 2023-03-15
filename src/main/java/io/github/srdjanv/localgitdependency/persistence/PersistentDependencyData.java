@@ -11,7 +11,7 @@ import org.gradle.api.JavaVersion;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SerializableProperty {
+public class PersistentDependencyData {
     String workingDirSHA1;
     String initFileSHA1;
     Dependency.Type dependencyType;
