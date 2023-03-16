@@ -25,12 +25,12 @@ public class Dependency {
     private final boolean addDependencySourcesToProject;
     private final boolean registerDependencyToProject;
     private final boolean generateGradleTasks;
-    private final Closure<?> configureClosure;// TODO: 12/03/2023 discard object after dependency registration
     private final Type dependencyType;
     private final File mavenFolder;
     private final GitInfo gitInfo;
     private final GradleInfo gradleInfo;
     private final PersistentInfo persistentInfo;
+    private Closure<?> configureClosure;
 
     public Dependency(String configurationName, Property dependencyProperty) {
         Instances.getPropertyManager().applyDefaultProperty(dependencyProperty);
@@ -96,8 +96,10 @@ public class Dependency {
     }
 
     @Nullable
-    public Closure<?> getConfigureClosure() {
-        return configureClosure;
+    public Closure<?> getAndClearConfigureClosure() {
+        Closure<?> configureClosureHolder = configureClosure;
+        configureClosure = null;
+        return configureClosureHolder;
     }
 
     @NotNull

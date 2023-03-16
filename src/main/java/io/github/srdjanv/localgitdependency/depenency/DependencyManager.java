@@ -98,7 +98,6 @@ public class DependencyManager {
         addDependencies(project, dependency);
     }
 
-
     private void addMavenLocalJarsAsDependencies(Dependency dependency, Project project) {
         Logger.info("Adding Dependency {}, from MavenProjectLocal", dependency.getName());
         addDependencies(project, dependency);
@@ -144,7 +143,7 @@ public class DependencyManager {
             return;
         }
 
-        Object[] dependencies;
+        final Object[] dependencies;
         try (Stream<Path> jars = Files.list(libs)) {
             List<String> targetedJars = dependency.getGeneratedJarsToAdd();
             if (targetedJars != null) {
@@ -156,10 +155,7 @@ public class DependencyManager {
                         }
                     }
                 });
-                dependencies = new Object[validJars.size()];
-                for (int i = 0; i < validJars.size(); i++) {
-                    dependencies[i] = validJars.get(i);
-                }
+                dependencies = validJars.toArray();
             } else {
                 dependencies = jars.toArray();
             }
@@ -182,25 +178,26 @@ public class DependencyManager {
 
     private void addDependencies(Project project, Dependency dependency) {
         List<String> artifacts = dependency.getGeneratedArtifactNames();
+        Closure<?> configureClosure = dependency.getAndClearConfigureClosure();
         if (artifacts != null) {
             String[] projectID = dependency.getPersistentInfo().getProbeData().getProjectId().split(":");
             for (String artifact : artifacts) {
                 if (artifact.contains(":")) {
-                    project.getDependencies().add(dependency.getConfigurationName(), artifact, dependency.getConfigureClosure());
+                    project.getDependencies().add(dependency.getConfigurationName(), artifact, configureClosure);
                 } else {
-                    project.getDependencies().add(dependency.getConfigurationName(), projectID[0] + ":" + artifact + ":" + projectID[2], dependency.getConfigureClosure());
+                    project.getDependencies().add(dependency.getConfigurationName(), projectID[0] + ":" + artifact + ":" + projectID[2], configureClosure);
                 }
             }
             return;
         }
-        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getProbeData().getProjectId(), dependency.getConfigureClosure());
+        project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getProbeData().getProjectId(), configureClosure);
     }
 
     private void addSourceSets(SourceSetContainer sourceSetContainer, Dependency dependency) {
         Logger.info("Dependency: {} adding sourceSets", dependency.getName());
 
         for (SerializableProperty.SourceSetSerializable source : dependency.getPersistentInfo().getProbeData().getSources()) {
-            sourceSetContainer.register(dependency.getName() + source.getName(), sourceSet -> {
+            sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
                 sourceSet.java(dependencySet -> dependencySet.srcDir(source.getSources()));
             });
         }
