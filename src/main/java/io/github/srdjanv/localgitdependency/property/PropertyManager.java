@@ -20,6 +20,7 @@ public class PropertyManager {
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
         builder.mavenFolder(Constants.defaultMavenFolder.apply(defaultDir));
         builder.dependencyType(Dependency.Type.JarFlatDir);
+        builder.automaticCleanup(true);
         builder.keepGitUpdated(true);
         builder.keepMainInitScriptUpdated(true);
         builder.generateDefaultGradleTasks(true);

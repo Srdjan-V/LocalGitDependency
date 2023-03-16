@@ -1,5 +1,6 @@
 package io.github.srdjanv.localgitdependency;
 
+import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.SettingsExtension;
 import io.github.srdjanv.localgitdependency.git.GitManager;
@@ -24,6 +25,10 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
             taskRunners.add(new AfterEvaluateTaskWrapper(
                     () -> Instances.getPropertyManager().createEssentialDirectories(),
                     PropertyManager.class.getDeclaredMethod("createEssentialDirectories")
+            ));
+            taskRunners.add(new AfterEvaluateTaskWrapper(
+                    () -> Instances.getCleanupManager().init(),
+                    CleanupManager.class.getDeclaredMethod("init")
             ));
             taskRunners.add(new AfterEvaluateTaskWrapper(
                     () -> Instances.getGitManager().initRepos(),
@@ -65,6 +70,7 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
         Instances.setGitManager(new GitManager());
         Instances.setPersistenceManager(new PersistenceManager());
         Instances.setTasksManager(new TasksManager());
+        Instances.setCleanupManager(new CleanupManager());
         Instances.setSettingsExtension(project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, SettingsExtension.class));
 
         project.afterEvaluate(p -> startPlugin());

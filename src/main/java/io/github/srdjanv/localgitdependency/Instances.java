@@ -1,5 +1,6 @@
 package io.github.srdjanv.localgitdependency;
 
+import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.SettingsExtension;
 import io.github.srdjanv.localgitdependency.git.GitManager;
@@ -18,6 +19,7 @@ public class Instances {
     private static GitManager gitManager;
     private static PersistenceManager persistenceManager;
     private static TasksManager tasksManager;
+    private static CleanupManager cleanupManager;
 
     public static Project getProject() {
         return project;
@@ -81,5 +83,13 @@ public class Instances {
 
     public static void setTasksManager(TasksManager tasksManager) {
         Instances.tasksManager = tasksManager;
+    }
+
+    public static CleanupManager getCleanupManager() {
+        return cleanupManager;
+    }
+
+    public static void setCleanupManager(CleanupManager cleanupManager) {
+        Instances.cleanupManager = cleanupManager;
     }
 }

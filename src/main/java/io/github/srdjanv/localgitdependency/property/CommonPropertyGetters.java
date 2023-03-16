@@ -15,7 +15,7 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return keepGitUpdated;
     }
 
-    public File getDir() {
+    public File getGitDir() {
         return gitDir;
     }
 

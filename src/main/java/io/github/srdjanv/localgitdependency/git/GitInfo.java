@@ -51,7 +51,7 @@ public class GitInfo {
             }
         }
 
-        this.dir = Constants.concatFile.apply(dependencyProperty.getDir(), dependency.getName());
+        this.dir = Constants.concatFile.apply(dependencyProperty.getGitDir(), dependency.getName());
         this.keepGitUpdated = dependencyProperty.getKeepGitUpdated();
     }
 
