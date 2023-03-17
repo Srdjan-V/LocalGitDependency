@@ -33,7 +33,7 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
     }
 
     /**
-     * If set to false the generated dependencyInitScript will new be updated of fixed if changes are detected
+     * If set to false the generated dependencyInitScript will never be updated of fixed if changes are detected
      *
      * @param keepDependencyInitScriptUpdated If it should stay updated
      */

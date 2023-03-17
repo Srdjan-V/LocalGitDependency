@@ -1,8 +1,9 @@
 package io.github.srdjanv.localgitdependency;
 
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.property.Property;
 import groovy.lang.Closure;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.project.ProjectManager;
+import io.github.srdjanv.localgitdependency.property.Property;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
@@ -63,12 +64,15 @@ public class PluginDependencyTests {
     }
 
     static class TestWrapper {
+        private final ProjectManager projectManager;
         private final String dependencyName;
         private final String gitUrl;
         private Dependency.Type dependencyType;
         private String testName;
 
         public TestWrapper(String dependencyName, String gitUrl) {
+            projectManager = LocalGitDependencyPlugin.getProject(ProjectInstance.createProject());
+
             this.dependencyName = dependencyName;
             this.gitUrl = gitUrl;
         }
@@ -91,8 +95,6 @@ public class PluginDependencyTests {
         }
 
         private void registerDepToExtension() {
-            ProjectInstance.createProject();
-
             Closure<Property.Builder> propertyClosure = new Closure<Property.Builder>(null) {
                 public Property.Builder doCall() {
                     Property.Builder builder = (Property.Builder) getDelegate();
@@ -102,15 +104,15 @@ public class PluginDependencyTests {
                 }
             };
 
-            Instances.getSettingsExtension().add(gitUrl, propertyClosure);
+            projectManager.getSettingsExtension().add(gitUrl, propertyClosure);
         }
 
         private void initPluginTasks() {
-            LocalGitDependencyPlugin.startPlugin();
+            projectManager.startPlugin();
         }
 
         private void printData() {
-            Project project = Instances.getProject();
+            Project project = projectManager.getProject();
 
             if (!project.getRepositories().isEmpty()) {
                 System.out.println(System.lineSeparator());
@@ -163,7 +165,7 @@ public class PluginDependencyTests {
 
             if (repo != null) {
                 final String finalRepo = repo;
-                long dependency = Instances.getProject().getRepositories().stream()
+                long dependency = projectManager.getProject().getRepositories().stream()
                         .filter(d -> d.getName().equals(finalRepo)).count();
 
                 Assertions.assertEquals(1, dependency, () -> dependencyName + " repository is not registered wih gradle");
@@ -171,10 +173,10 @@ public class PluginDependencyTests {
 
             long dependency;
             if (dependencyType == Dependency.Type.Jar) {
-                dependency = Instances.getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
+                dependency = projectManager.getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
                         .getDependencies().size();
             } else {
-                dependency = Instances.getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
+                dependency = projectManager.getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
                         .getDependencies().stream().filter(d -> d.getName().equals(testName)).count();
             }
 

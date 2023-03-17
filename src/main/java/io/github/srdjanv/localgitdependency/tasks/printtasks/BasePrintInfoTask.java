@@ -2,10 +2,10 @@ package io.github.srdjanv.localgitdependency.tasks.printtasks;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.Logger;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
+import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 
 import java.lang.reflect.Field;
@@ -17,9 +17,12 @@ public interface BasePrintInfoTask {
         stringBuilder.append("DependencyInfo:").append(System.lineSeparator());
         for (Field field : Dependency.class.getDeclaredFields()) {
             field.setAccessible(true);
+
+            if (filter(field.getType(),
+                    GitInfo.class, GradleInfo.class,
+                    PersistentInfo.class, Closure.class)) continue;
+
             Object fieldVal = field.get(dependency);
-            if (fieldVal instanceof GitInfo || fieldVal instanceof GradleInfo ||
-                    fieldVal instanceof PersistentInfo || fieldVal instanceof Closure) continue;
             stringBuilder.append(Constants.TAB_INDENT);
             stringBuilder.append(field.getName()).append(": ").append(fieldVal).append(System.lineSeparator());
         }
@@ -27,8 +30,8 @@ public interface BasePrintInfoTask {
         stringBuilder.append("GitInfo:").append(System.lineSeparator());
         for (Field field : GitInfo.class.getDeclaredFields()) {
             field.setAccessible(true);
+            if (filter(field.getType(), Dependency.class)) continue;
             Object fieldVal = field.get(dependency.getGitInfo());
-            if (fieldVal instanceof Dependency) continue;
             stringBuilder.append(Constants.TAB_INDENT);
             stringBuilder.append(field.getName()).append(": ").append(fieldVal).append(System.lineSeparator());
         }
@@ -36,13 +39,21 @@ public interface BasePrintInfoTask {
         stringBuilder.append("GradleInfo:").append(System.lineSeparator());
         for (Field field : GradleInfo.class.getDeclaredFields()) {
             field.setAccessible(true);
+            if (filter(field.getType(), Dependency.class)) continue;
             Object fieldVal = field.get(dependency.getGradleInfo());
-            if (fieldVal instanceof Dependency) continue;
             stringBuilder.append(Constants.TAB_INDENT);
             stringBuilder.append(field.getName()).append(": ").append(fieldVal).append(System.lineSeparator());
         }
 
-        Logger.info(stringBuilder.toString());
+        ManagerLogger.infoUnFormatted(stringBuilder.toString());
+    }
+
+    static boolean filter(Class<?> type, Class<?>... filter) {
+        for (Class<?> aClass : filter) {
+            if (type == aClass) return true;
+        }
+
+        return false;
     }
 
 }

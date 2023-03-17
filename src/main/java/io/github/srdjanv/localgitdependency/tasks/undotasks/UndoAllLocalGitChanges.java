@@ -1,20 +1,23 @@
 package io.github.srdjanv.localgitdependency.tasks.undotasks;
 
-import io.github.srdjanv.localgitdependency.Instances;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.tasks.basetasks.BaseSingleTask;
+import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.tasks.basetasks.BaseProjectTask;
 import org.gradle.api.tasks.TaskAction;
 
-public class UndoAllLocalGitChanges extends BaseSingleTask implements BaseUndoLocalChangesTask {
+import javax.inject.Inject;
 
-    public UndoAllLocalGitChanges() {
+public class UndoAllLocalGitChanges extends BaseProjectTask implements BaseUndoLocalChangesTask {
+    @Inject
+    public UndoAllLocalGitChanges(ProjectInstances projectInstances) {
+        super(projectInstances);
         setDescription("This task will undo local git changes to files for all dependencies");
     }
 
     @TaskAction
     public void task$UndoLocalGitChanges() {
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
-            clearChanges(dependency);
+        for (Dependency dependency : projectInstances.getDependencyManager().getDependencies()) {
+            clearChanges(projectInstances.getGitManager(), dependency);
         }
     }
 

@@ -2,7 +2,6 @@ package io.github.srdjanv.localgitdependency.depenency;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.Instances;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
@@ -33,8 +32,6 @@ public class Dependency {
     private Closure<?> configureClosure;
 
     public Dependency(String configurationName, Property dependencyProperty) {
-        Instances.getPropertyManager().applyDefaultProperty(dependencyProperty);
-
         this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
         this.configurationName = configurationName == null ? dependencyProperty.getConfiguration() : configurationName;
         this.generatedJarsToAdd = dependencyProperty.getGeneratedJarsToAdd();

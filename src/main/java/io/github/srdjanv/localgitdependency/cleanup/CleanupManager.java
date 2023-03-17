@@ -1,8 +1,9 @@
 package io.github.srdjanv.localgitdependency.cleanup;
 
-import io.github.srdjanv.localgitdependency.Instances;
-import io.github.srdjanv.localgitdependency.Logger;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
+import io.github.srdjanv.localgitdependency.project.ManagerBase;
+import io.github.srdjanv.localgitdependency.project.ProjectInstances;
 import io.github.srdjanv.localgitdependency.property.DefaultProperty;
 
 import java.io.File;
@@ -11,13 +12,21 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.BiPredicate;
 
-public class CleanupManager {
+public class CleanupManager extends ManagerBase {
+
+    public CleanupManager(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    protected void managerConstructor() {
+    }
 
     public void init() {
-        DefaultProperty props = Instances.getPropertyManager().getGlobalProperty();
+        DefaultProperty props = getPropertyManager().getGlobalProperty();
 
         if (!props.getAutomaticCleanup()) {
-            Logger.info("Skipping cleanup");
+            ManagerLogger.info("Skipping cleanup");
             return;
         }
 
@@ -54,7 +63,7 @@ public class CleanupManager {
             rootDir:
             for (Path path : stream) {
                 if (Files.isDirectory(path)) {
-                    for (Dependency dep : Instances.getDependencyManager().getDependencies()) {
+                    for (Dependency dep : getDependencyManager().getDependencies()) {
                         if (validDir.test(path.toFile(), dep)) continue rootDir;
                     }
                     deleteDir(path);

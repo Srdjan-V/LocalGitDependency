@@ -1,18 +1,19 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
+import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
+import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
+import io.github.srdjanv.localgitdependency.project.ManagerBase;
+import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.property.DefaultProperty;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ModelBuilder;
 import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
-import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.Instances;
-import io.github.srdjanv.localgitdependency.Logger;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import io.github.srdjanv.localgitdependency.property.DefaultProperty;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -25,11 +26,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class GradleManager {
+public class GradleManager extends ManagerBase {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
 
+    public GradleManager(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    protected void managerConstructor() {
+    }
+
     private void cleanCache() {
-        Logger.info("Clearing gradle connector cache");
+        ManagerLogger.info("Clearing gradle connector cache");
         gradleConnectorCache.clear();
     }
 
@@ -47,7 +56,7 @@ public class GradleManager {
 
     public void initGradleAPI() {
         validateMainInitScript();
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+        for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (!dependency.getPersistentInfo().isValidModel()) {
                 probeProject(dependency);
             }
@@ -57,7 +66,7 @@ public class GradleManager {
     }
 
     public void buildDependencies() {
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+        for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (dependency.getGitInfo().hasRefreshed() || dependency.getPersistentInfo().hasDependencyTypeChanged()) {
                 buildDependency(dependency);
             }
@@ -67,7 +76,7 @@ public class GradleManager {
 
     public void buildDependency(Dependency dependency) {
         long start = System.currentTimeMillis();
-        Logger.info("Started building dependency: {}", dependency.getName());
+        ManagerLogger.info("Started building dependency: {}", dependency.getName());
 
         switch (dependency.getDependencyType()) {
             case Jar:
@@ -95,14 +104,14 @@ public class GradleManager {
         }
 
         long spent = System.currentTimeMillis() - start;
-        Logger.info("Finished building in {} ms", spent);
+        ManagerLogger.info("Finished building in {} ms", spent);
     }
 
     private void probeProject(Dependency dependency) {
         long start = System.currentTimeMillis();
-        Logger.info("Started probing dependency: {} for information", dependency.getName());
+        ManagerLogger.info("Started probing dependency: {} for information", dependency.getName());
 
-        File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
+        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentFolder();
         File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
 
         DefaultGradleConnector connector = getGradleConnector(dependency);
@@ -114,7 +123,7 @@ public class GradleManager {
         }
 
         long spent = System.currentTimeMillis() - start;
-        Logger.info("Probe finished in {} ms", spent);
+        ManagerLogger.info("Probe finished in {} ms", spent);
     }
 
     private void buildGradleProject(Dependency dependency, String task) {
@@ -221,14 +230,14 @@ public class GradleManager {
     }
 
     private void validateMainInitScript() {
-        DefaultProperty globalProperty = Instances.getPropertyManager().getGlobalProperty();
+        DefaultProperty globalProperty = getPropertyManager().getGlobalProperty();
         File mainInit = Constants.concatFile.apply(globalProperty.getPersistentFolder(), Constants.MAIN_INIT_SCRIPT_GRADLE);
         validateScript(
                 mainInit,
                 globalProperty.getKeepMainInitScriptUpdated(),
                 GradleInit::createInitProbe,
-                Instances.getPersistenceManager()::getInitScriptSHA,
-                Instances.getPersistenceManager()::setInitScriptSHA);
+                getPersistenceManager()::getInitScriptSHA,
+                getPersistenceManager()::setInitScriptSHA);
     }
 
     private void validateScript(File file, boolean keepUpdated, Supplier<String> scriptSupplier, Supplier<String> persistentSHASupplier, Consumer<String> persistentSHASetter) {
@@ -242,7 +251,7 @@ public class GradleManager {
                 final String persistentInitScriptSHA = persistentSHASupplier.get();
 
                 if (!fileInitScriptSHA.equals(persistentInitScriptSHA)) {
-                    Logger.info("File {}, contains local changes, updating file", file.getName());
+                    ManagerLogger.info("File {}, contains local changes, updating file", file.getName());
                     final String initScript = scriptSupplier.get();
                     writeToFile(file, initScript);
                     persistentSHASetter.accept(generateShaForString(initScript));
@@ -253,13 +262,13 @@ public class GradleManager {
                 final String targetInitScriptSHA = generateShaForString(initScript);
 
                 if (!fileInitScriptSHA.equals(targetInitScriptSHA)) {
-                    Logger.info("Updating file {}", file.getName());
+                    ManagerLogger.info("Updating file {}", file.getName());
                     writeToFile(file, initScript);
                     persistentSHASetter.accept(targetInitScriptSHA);
                 }
             }
         } else {
-            Logger.info("Creating {}", file.getName());
+            ManagerLogger.info("Creating {}", file.getName());
             final String initScript = scriptSupplier.get();
             persistentSHASetter.accept(generateShaForString(initScript));
             writeToFile(file, initScript);

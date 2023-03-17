@@ -1,23 +1,33 @@
 package io.github.srdjanv.localgitdependency.git;
 
-import io.github.srdjanv.localgitdependency.Instances;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.project.ManagerBase;
+import io.github.srdjanv.localgitdependency.project.ProjectInstances;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class GitManager {
+public class GitManager extends ManagerBase {
+    public GitManager(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    protected void managerConstructor() {
+
+    }
+
     public void initRepos() {
         boolean expressions = false;
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+        for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (initRepo(dependency)) {
                 expressions = true;
             }
         }
         if (expressions) {
             List<List<Exception>> exceptionList = new ArrayList<>();
-            for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+            for (Dependency dependency : getDependencyManager().getDependencies()) {
                 if (dependency.getGitInfo().hasGitExceptions())
                     exceptionList.add(dependency.getGitInfo().getGitExceptions());
             }

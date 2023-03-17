@@ -3,18 +3,24 @@ package io.github.srdjanv.localgitdependency.persistence;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.Instances;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.project.ManagerBase;
+import io.github.srdjanv.localgitdependency.project.ProjectInstances;
 import org.gradle.api.GradleException;
 
 import java.io.*;
 
-public class PersistenceManager {
-    private final PersistentProjectData serializableProperty;
+public class PersistenceManager extends ManagerBase {
+    private PersistentProjectData serializableProperty;
     private boolean dirty;
 
-    public PersistenceManager() {
-        File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
+    public PersistenceManager(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    protected void managerConstructor() {
+        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentFolder();
         File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.PROJECT_DATA_JSON);
         serializableProperty = new PersistentProjectData();
         if (mainInitJson.exists()) {
@@ -43,7 +49,7 @@ public class PersistenceManager {
 
     public void savePersistentData() {
         if (dirty) {
-            File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
+            File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentFolder();
             File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.PROJECT_DATA_JSON);
 
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -55,7 +61,7 @@ public class PersistenceManager {
             dirty = false;
         }
 
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+        for (Dependency dependency : getDependencyManager().getDependencies()) {
             dependency.getPersistentInfo().saveToPersistentFile();
         }
     }

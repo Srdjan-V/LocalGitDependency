@@ -11,9 +11,8 @@ import java.util.Properties;
 
 public class ProjectInstance {
 
-    public static void createProject() {
+    public static Project createProject() {
         File projectDir = new File(".", "test/project/");
-        new File(projectDir, "run").mkdirs();
         File homeDir = new File(".", "test/gradle_home/");
 
         Project project = ProjectBuilder.builder()
@@ -33,5 +32,7 @@ public class ProjectInstance {
         project.setGroup(properties.getProperty("group"));
         project.getPluginManager().apply("io.github.srdjan-v.local-git-dependency");
         project.getPluginManager().apply("java");
+
+        return project;
     }
 }

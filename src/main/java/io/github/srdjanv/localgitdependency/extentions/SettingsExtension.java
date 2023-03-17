@@ -3,12 +3,20 @@ package io.github.srdjanv.localgitdependency.extentions;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
-import io.github.srdjanv.localgitdependency.Instances;
+import io.github.srdjanv.localgitdependency.project.ManagerBase;
+import io.github.srdjanv.localgitdependency.project.ProjectInstances;
 import io.github.srdjanv.localgitdependency.property.DefaultProperty;
 import io.github.srdjanv.localgitdependency.property.Property;
 
 @SuppressWarnings("unused")
-public class SettingsExtension {
+public class SettingsExtension extends ManagerBase {
+    public SettingsExtension(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    protected void managerConstructor() {
+    }
 
     public Dependency.Type MavenLocal() {
         return Dependency.Type.MavenLocal;
@@ -33,7 +41,7 @@ public class SettingsExtension {
     public void configureGlobal(
             @DelegatesTo(value = DefaultProperty.Builder.class, strategy = Closure.DELEGATE_FIRST)
             Closure<DefaultProperty.Builder> configureClosure) {
-        Instances.getPropertyManager().globalProperty(configureClosure);
+        getPropertyManager().globalProperty(configureClosure);
     }
 
     public void add(String dependencyURL) {
@@ -53,7 +61,7 @@ public class SettingsExtension {
     public void add(String configurationName, String dependencyURL,
                     @DelegatesTo(value = Property.Builder.class, strategy = Closure.DELEGATE_FIRST)
                     Closure<Property.Builder> configureClosure) {
-        Instances.getDependencyManager().registerDependency(configurationName, dependencyURL, configureClosure);
+        getDependencyManager().registerDependency(configurationName, dependencyURL, configureClosure);
     }
 
 }

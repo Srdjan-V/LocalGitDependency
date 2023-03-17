@@ -1,11 +1,11 @@
 package io.github.srdjanv.localgitdependency;
 
 import org.gradle.api.GradleException;
+import org.gradle.api.Project;
 
 import java.io.File;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class Constants {
     public static String PROJECT_VERSION = "@PROJECTVERSION@";
@@ -19,7 +19,7 @@ public class Constants {
     public final static Function<String, String> PRINT_DEPENDENCY_INFO = s -> s + "-PrintDependencyInfo";
     public final static String JAVA_IMPLEMENTATION = "implementation";
     public final static String TAB_INDENT = "    ";
-
+    public final static String TAB_INDENTX2 = "        ";
 
     public final static String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
     public final static String PROJECT_DATA_JSON = "projectData.json";
@@ -39,7 +39,7 @@ public class Constants {
     public final static Function<String, String> JarSourceTaskName = s -> "InitScriptSourceTaskForProject" + s;
     public final static Function<String, String> JarJavaDocTaskName = s -> "InitScriptJavaDocTaskForProject" + s;
 
-    public static final Supplier<File> defaultDir = () -> new File(Instances.getProject().getLayout().getProjectDirectory().getAsFile(), "/localGitDependency");
+    public static final Function<Project, File> defaultDir = project -> new File(project.getLayout().getProjectDirectory().getAsFile(), "/localGitDependency");
 
     public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!data");
     public static final Function<File, File> defaultLibsDir = file -> new File(file, "/libs");

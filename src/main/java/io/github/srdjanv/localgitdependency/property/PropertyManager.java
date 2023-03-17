@@ -3,19 +3,26 @@ package io.github.srdjanv.localgitdependency.property;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import groovy.lang.Closure;
+import io.github.srdjanv.localgitdependency.project.ManagerBase;
+import io.github.srdjanv.localgitdependency.project.ProjectInstances;
 import org.gradle.api.GradleException;
 
 import java.io.File;
 import java.lang.reflect.Field;
 
-public class PropertyManager {
+public class PropertyManager extends ManagerBase {
     private boolean customGlobalProperty;
     private DefaultProperty globalProperty;
 
-    {
+    public PropertyManager(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    protected void managerConstructor() {
         DefaultProperty.Builder builder = new DefaultProperty.Builder();
         builder.configuration(Constants.JAVA_IMPLEMENTATION);
-        File defaultDir = Constants.defaultDir.get();
+        File defaultDir = Constants.defaultDir.apply(getProject());
         builder.persistentFolder(Constants.defaultPersistentDir.apply(defaultDir));
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
         builder.mavenFolder(Constants.defaultMavenFolder.apply(defaultDir));
@@ -60,7 +67,7 @@ public class PropertyManager {
     }
 
     private void configureFilePaths(DefaultProperty.Builder defaultProperty) {
-        File defaultDir = Constants.defaultDir.get();
+        File defaultDir = Constants.defaultDir.apply(getProject());
         for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
             try {
                 field.setAccessible(true);
