@@ -2,7 +2,7 @@ package io.github.srdjanv.localgitdependency.project;
 
 import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
-import io.github.srdjanv.localgitdependency.extentions.SettingsExtension;
+import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
 import io.github.srdjanv.localgitdependency.git.GitManager;
 import io.github.srdjanv.localgitdependency.gradle.GradleManager;
 import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
@@ -27,8 +27,8 @@ public abstract class ManagerBase {
         return projectInstances.getProject();
     }
 
-    public SettingsExtension getSettingsExtension() {
-        return projectInstances.getSettingsExtension();
+    public LocalGitDependencyExtension getLocalGitDependencyExtension() {
+        return projectInstances.getLocalGitDependencyExtension();
     }
 
     public DependencyManager getDependencyManager() {

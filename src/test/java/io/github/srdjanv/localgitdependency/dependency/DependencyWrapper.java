@@ -75,11 +75,11 @@ public class DependencyWrapper {
 
     private void setGlobalConfiguration() {
         if (globalClosure != null)
-            projectManager.getSettingsExtension().configureGlobal(globalClosure);
+            projectManager.getLocalGitDependencyExtension().configureGlobal(globalClosure);
     }
 
     private void registerDepToExtension() {
-        projectManager.getSettingsExtension().add(gitUrl, dependencyClosure);
+        projectManager.getLocalGitDependencyExtension().add(gitUrl, dependencyClosure);
 
         Optional<Dependency> optionalDependency = projectManager.getDependencyManager().getDependencies().stream().
                 filter(dependency1 -> dependency1.getName().equals(getDependencyName())).findFirst();

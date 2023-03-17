@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.project;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
-import io.github.srdjanv.localgitdependency.extentions.SettingsExtension;
+import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
 import io.github.srdjanv.localgitdependency.git.GitManager;
 import io.github.srdjanv.localgitdependency.gradle.GradleManager;
 import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
@@ -14,20 +14,20 @@ import org.gradle.api.Project;
 import java.lang.reflect.Field;
 
 public class ProjectInstances {
-   private final Project project;
+    private final Project project;
     private final PropertyManager propertyManager;
     private final DependencyManager dependencyManager;
     private final GitManager gitManager;
     private final GradleManager gradleManager;
     private final PersistenceManager persistenceManager;
     private final TasksManager tasksManager;
-    private final SettingsExtension settingsExtension;
+    private final LocalGitDependencyExtension localGitDependencyExtension;
     private final CleanupManager cleanupManager;
 
     public ProjectInstances(Project project) {
         this.project = project;
 
-        settingsExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, SettingsExtension.class, this);
+        localGitDependencyExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, LocalGitDependencyExtension.class, this);
         dependencyManager = new DependencyManager(this);
         propertyManager = new PropertyManager(this);
         gitManager = new GitManager(this);
@@ -79,8 +79,8 @@ public class ProjectInstances {
         return tasksManager;
     }
 
-    public SettingsExtension getSettingsExtension() {
-        return settingsExtension;
+    public LocalGitDependencyExtension getLocalGitDependencyExtension() {
+        return localGitDependencyExtension;
     }
 
     public CleanupManager getCleanupManager() {
