@@ -20,7 +20,7 @@ public class PersistentInfo {
 
     public PersistentInfo(Property dependencyProperty, Dependency dependency) {
         this.dependency = dependency;
-        this.persistentFile = Constants.persistentJsonFile.apply(dependencyProperty.getPersistentFolder(), dependency.getName());
+        this.persistentFile = Constants.persistentJsonFile.apply(dependencyProperty.getPersistentDir(), dependency.getName());
         this.persistentDependencyData = new PersistentDependencyData();
         try {
             loadFromJson();

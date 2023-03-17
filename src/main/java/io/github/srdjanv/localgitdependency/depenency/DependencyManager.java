@@ -92,7 +92,7 @@ public class DependencyManager extends ManagerBase {
     }
 
     private void addRepositoryMavenProjectLocal(Project project) {
-        File mavenRepo = Constants.MavenProjectLocal.apply(getPropertyManager().getGlobalProperty().getMavenFolder());
+        File mavenRepo = Constants.MavenProjectLocal.apply(getPropertyManager().getGlobalProperty().getMavenDir());
         ManagerLogger.info("Adding MavenProjectLocal repository at {}", mavenRepo.getAbsolutePath());
         project.getRepositories().add(project.getRepositories().maven(mavenArtifactRepository -> {
             mavenArtifactRepository.setName(Constants.RepositoryMavenProjectLocal);

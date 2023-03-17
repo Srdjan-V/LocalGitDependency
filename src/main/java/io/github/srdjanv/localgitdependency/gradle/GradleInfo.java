@@ -19,7 +19,7 @@ public class GradleInfo {
     public GradleInfo(Property dependencyProperty, Dependency dependency) {
         this.dependency = dependency;
         this.keepDependencyInitScriptUpdated = dependencyProperty.getKeepDependencyInitScriptUpdated();
-        this.initScript = Constants.persistentInitScript.apply(dependencyProperty.getPersistentFolder(), dependency.getName());
+        this.initScript = Constants.persistentInitScript.apply(dependencyProperty.getPersistentDir(), dependency.getName());
         this.javaHome = dependencyProperty.getJavaHomeDir();
         this.tryGeneratingSourceJar = dependencyProperty.getTryGeneratingSourceJar();
         this.tryGeneratingJavaDocJar = dependencyProperty.getTryGeneratingJavaDocJar();

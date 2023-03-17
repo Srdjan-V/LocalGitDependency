@@ -24,12 +24,12 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return javaHomeDir;
     }
 
-    public File getPersistentFolder() {
-        return persistentFolder;
+    public File getPersistentDir() {
+        return persistentDir;
     }
 
-    public File getMavenFolder() {
-        return mavenFolder;
+    public File getMavenDir() {
+        return mavenDir;
     }
 
     public Dependency.Type getDependencyType() {

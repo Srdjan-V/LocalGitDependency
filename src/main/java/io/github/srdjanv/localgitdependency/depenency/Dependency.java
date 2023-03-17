@@ -43,11 +43,11 @@ public class Dependency {
         this.dependencyType = dependencyProperty.getDependencyType();
         switch (dependencyType) {
             case MavenProjectLocal:
-                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyProperty.getMavenFolder());
+                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyProperty.getMavenDir());
                 break;
 
             case MavenProjectDependencyLocal:
-                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyProperty.getMavenFolder(), name);
+                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyProperty.getMavenDir(), name);
                 break;
 
             default:

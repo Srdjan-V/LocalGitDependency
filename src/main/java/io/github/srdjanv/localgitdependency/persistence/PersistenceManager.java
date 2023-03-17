@@ -20,7 +20,7 @@ public class PersistenceManager extends ManagerBase {
 
     @Override
     protected void managerConstructor() {
-        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentFolder();
+        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentDir();
         File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.PROJECT_DATA_JSON);
         serializableProperty = new PersistentProjectData();
         if (mainInitJson.exists()) {
@@ -49,7 +49,7 @@ public class PersistenceManager extends ManagerBase {
 
     public void savePersistentData() {
         if (dirty) {
-            File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentFolder();
+            File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentDir();
             File mainInitJson = Constants.concatFile.apply(initScriptFolder, Constants.PROJECT_DATA_JSON);
 
             Gson gson = new GsonBuilder().setPrettyPrinting().create();

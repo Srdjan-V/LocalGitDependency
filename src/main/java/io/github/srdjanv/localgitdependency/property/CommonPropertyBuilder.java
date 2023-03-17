@@ -82,39 +82,39 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      * This will set the directory in which the dependency data will be stored, it will not set the folder.
      * If you set the path to "./folder" the dependency will make a directory based of the dependency name inside the folder
      *
-     * @param initScript directory target
+     * @param persistentDir directory target
      */
-    public void persistentFolder(File initScript) {
-        this.persistentFolder = initScript;
+    public void persistentDir(File persistentDir) {
+        this.persistentDir = persistentDir;
     }
 
     /**
      * Same as the above, but takes a string
      *
-     * @param initScript directory target
+     * @param persistentDir directory target
      */
-    public void persistentFolder(String initScript) {
-        this.persistentFolder = new File(initScript);
+    public void persistentDir(String persistentDir) {
+        this.persistentDir = new File(persistentDir);
     }
 
 
     /**
      * Some Dependency types will publish the artifact to local maven repo.
      *
-     * @param mavenFolder directory target
+     * @param mavenDir directory target
      * @see Dependency.Type
      */
-    public void mavenFolder(File mavenFolder) {
-        this.mavenFolder = mavenFolder;
+    public void mavenDir(File mavenDir) {
+        this.mavenDir = mavenDir;
     }
 
     /**
      * Same as the above, but takes a string
      *
-     * @param mavenFolder directory target
+     * @param mavenDir directory target
      */
-    public void mavenFolder(String mavenFolder) {
-        this.mavenFolder = new File(mavenFolder);
+    public void mavenDir(String mavenDir) {
+        this.mavenDir = new File(mavenDir);
     }
 
     /**

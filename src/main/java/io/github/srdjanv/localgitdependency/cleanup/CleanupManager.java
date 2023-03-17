@@ -31,8 +31,8 @@ public class CleanupManager extends ManagerBase {
         }
 
         cleanLibsDir(props.getGitDir());
-        cleanMavenDir(props.getMavenFolder());
-        cleanDataDir(props.getPersistentFolder());
+        cleanMavenDir(props.getMavenDir());
+        cleanDataDir(props.getPersistentDir());
     }
 
     private void cleanLibsDir(File libsDir) {

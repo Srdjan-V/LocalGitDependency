@@ -23,9 +23,9 @@ public class PropertyManager extends ManagerBase {
         DefaultProperty.Builder builder = new DefaultProperty.Builder();
         builder.configuration(Constants.JAVA_IMPLEMENTATION);
         File defaultDir = Constants.defaultDir.apply(getProject());
-        builder.persistentFolder(Constants.defaultPersistentDir.apply(defaultDir));
+        builder.persistentDir(Constants.defaultPersistentDir.apply(defaultDir));
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
-        builder.mavenFolder(Constants.defaultMavenFolder.apply(defaultDir));
+        builder.mavenDir(Constants.defaultMavenFolder.apply(defaultDir));
         builder.dependencyType(Dependency.Type.JarFlatDir);
         builder.automaticCleanup(true);
         builder.keepGitUpdated(true);
@@ -61,9 +61,9 @@ public class PropertyManager extends ManagerBase {
     }
 
     public void createEssentialDirectories() {
-        Constants.checkExistsAndMkdirs(globalProperty.persistentFolder);
+        Constants.checkExistsAndMkdirs(globalProperty.persistentDir);
         Constants.checkExistsAndMkdirs(globalProperty.gitDir);
-        Constants.checkExistsAndMkdirs(globalProperty.mavenFolder);
+        Constants.checkExistsAndMkdirs(globalProperty.mavenDir);
     }
 
     private void configureFilePaths(DefaultProperty.Builder defaultProperty) {

@@ -111,7 +111,7 @@ public class GradleManager extends ManagerBase {
         long start = System.currentTimeMillis();
         ManagerLogger.info("Started probing dependency: {} for information", dependency.getName());
 
-        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentFolder();
+        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentDir();
         File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
 
         DefaultGradleConnector connector = getGradleConnector(dependency);
@@ -231,7 +231,7 @@ public class GradleManager extends ManagerBase {
 
     private void validateMainInitScript() {
         DefaultProperty globalProperty = getPropertyManager().getGlobalProperty();
-        File mainInit = Constants.concatFile.apply(globalProperty.getPersistentFolder(), Constants.MAIN_INIT_SCRIPT_GRADLE);
+        File mainInit = Constants.concatFile.apply(globalProperty.getPersistentDir(), Constants.MAIN_INIT_SCRIPT_GRADLE);
         validateScript(
                 mainInit,
                 globalProperty.getKeepMainInitScriptUpdated(),
