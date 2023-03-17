@@ -82,7 +82,7 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
             if (getProject().getConfigurations().findByName(name) != null) {
                 return true;
             }
-            return name.contains(".git");
+            return name.endsWith(".git");
         }
 
         @Override
