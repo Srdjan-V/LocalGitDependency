@@ -73,11 +73,14 @@ public class ProjectManager extends ManagerBase {
     }
 
     public void startPlugin() {
+        String name = getProject().getName();
+        String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
+
         long start = System.currentTimeMillis();
-        PluginLogger.info("Project {} starting {} tasks", getProject(), Constants.EXTENSION_NAME);
+        PluginLogger.startInfo("{} starting {} tasks", formattedName, Constants.EXTENSION_NAME);
         PROJECT_RUNNERS.forEach(projectRunner -> projectRunner.runAndLog(this));
         long spent = System.currentTimeMillis() - start;
-        PluginLogger.info("Project {} finished {} tasks in {} ms", getProject(), Constants.EXTENSION_NAME, spent);
+        PluginLogger.startInfo("{} finished {} tasks in {} ms", formattedName, Constants.EXTENSION_NAME, spent);
     }
 
     private static class ManagerRunner {
