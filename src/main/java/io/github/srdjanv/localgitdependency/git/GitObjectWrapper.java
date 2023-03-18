@@ -18,6 +18,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -25,7 +27,7 @@ import java.util.Set;
 // https://github.com/alexvasilkov/GradleGitDependenciesPlugin/blob/master/src/main/groovy/com/alexvasilkov/gradle/git/utils/GitUtils.groovy
 class GitObjectWrapper implements AutoCloseable, GitTasks {
     private boolean cloned;
-    private boolean gitExceptions;
+    private List<Exception> gitExceptions;
     private Git git;
     private GitInfo gitInfo;
     private String SHALocalChanges;
@@ -39,17 +41,17 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
             try {
                 cloneRepo();
             } catch (GitAPIException exception) {
-                gitExceptions(exception);
+                addGitExceptions(exception);
             }
         } catch (Exception exception) {
-            gitExceptions(exception);
+            addGitExceptions(exception);
         }
     }
 
     @Override
     public void setup() {
         try {
-            if (gitExceptions) return;
+            if (hasGitExceptions()) return;
             if (cloned) {
                 checkSHA1();
                 return;
@@ -57,10 +59,10 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
             final String remoteUrl = git.getRepository().getConfig().getString("remote", Constants.DEFAULT_REMOTE_NAME, "url");
 
             if (remoteUrl == null) {
-                gitInfo.addGitExceptions(new Exception(String.format("The repo has no remote url, Delete directory %s and try again", gitInfo.getDir())));
+                addGitExceptions(new Exception(String.format("The repo has no remote url, Delete directory %s and try again", gitInfo.getDir())));
                 return;
             } else if (!remoteUrl.equals(gitInfo.getUrl())) {
-                gitInfo.addGitExceptions(new Exception(String.format("The repo has a different remote url, Delete directory %s and try again", gitInfo.getDir())));
+                addGitExceptions(new Exception(String.format("The repo has a different remote url, Delete directory %s and try again", gitInfo.getDir())));
                 return;
             }
 
@@ -71,7 +73,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
                 ManagerLogger.info("Local version {} is not equal to target {} for {}", localCommit, targetCommit, gitInfo.getDependency().getName());
 
                 if (hasLocalChanges()) {
-                    gitInfo.addGitExceptions(new Exception(String.format("Git repo cannot be updated to %s, %s contains local changes. Commit or revert all changes manually.", targetCommit, gitInfo.getDir())));
+                    addGitExceptions(new Exception(String.format("Git repo cannot be updated to %s, %s contains local changes. Commit or revert all changes manually.", targetCommit, gitInfo.getDir())));
                 } else {
                     ManagerLogger.info("Updating to version {} for {}", targetCommit, gitInfo.getDependency().getName());
                     update();
@@ -80,7 +82,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
 
             checkSHA1();
         } catch (Exception e) {
-            gitExceptions(e);
+            addGitExceptions(e);
         }
     }
 
@@ -201,7 +203,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
 
     @Override
     public void clearLocalChanges() {
-        if (gitExceptions) return;
+        if (hasGitExceptions()) return;
 
         ManagerLogger.info("Dependency {}, clearing local changes and marking dependency to be rebuild", gitInfo.getDependency().getName());
         try {
@@ -211,7 +213,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
             }
         } catch (Exception e) {
             ManagerLogger.error("Dependency {}, unable to clear local changes", gitInfo.getDependency().getName());
-            gitExceptions(e);
+            addGitExceptions(e);
         }
     }
 
@@ -273,12 +275,18 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         return ObjectId.toString(git.getRepository().resolve(Constants.HEAD));
     }
 
-    private void gitExceptions(Exception exception) {
-        gitExceptions = true;
-        gitInfo.addGitExceptions(exception);
+    private void addGitExceptions(Exception exception) {
+        if (gitExceptions == null) {
+            gitExceptions = new ArrayList<>();
+        }
+        gitExceptions.add(exception);
     }
 
-    public boolean hasGitExceptions() {
-        return gitExceptions;
+    private boolean hasGitExceptions() {
+        return gitExceptions != null;
+    }
+
+    public GitManager.GitReport getGitReport(){
+        return new GitManager.GitReport(gitExceptions);
     }
 }

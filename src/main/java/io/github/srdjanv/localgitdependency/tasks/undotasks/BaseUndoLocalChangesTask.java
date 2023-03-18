@@ -7,12 +7,10 @@ import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 
 public interface BaseUndoLocalChangesTask {
     default void clearChanges(GitManager gitManager, Dependency dependency) {
-        if (gitManager.runRepoCommand(dependency, GitTasks::clearLocalChanges)) {
-            if (dependency.getGitInfo().hasGitExceptions()) {
-                dependency.getGitInfo().getGitExceptions().forEach(exception -> ManagerLogger.error(exception.getMessage()));
-            } else {
-                ManagerLogger.error("Unexpected error, gitManager reported git exceptions but gitInfo had non");
-            }
+        GitManager.GitReport gitReport = gitManager.runRepoCommand(dependency, GitTasks::clearLocalChanges);
+
+        if (gitReport.isHasGitExceptions()) {
+            gitReport.getGitExceptions().forEach(exception -> ManagerLogger.error(exception.getMessage()));
         }
     }
 
