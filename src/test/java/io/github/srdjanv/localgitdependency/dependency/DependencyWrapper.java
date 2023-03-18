@@ -7,6 +7,7 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ProjectManager;
 import io.github.srdjanv.localgitdependency.property.DefaultProperty;
 import io.github.srdjanv.localgitdependency.property.Property;
+import org.junit.jupiter.api.Assertions;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -66,7 +67,7 @@ public class DependencyWrapper {
             public Property.Builder doCall() {
                 Property.Builder builder = (Property.Builder) getDelegate();
                 dependencyClosure.accept(builder);
-                builder.name(dependencyName);
+                builder.name(getTestName());
                 return builder;
             }
         };
@@ -93,7 +94,7 @@ public class DependencyWrapper {
         projectManager.getLocalGitDependencyExtension().add(gitUrl, dependencyClosure);
 
         Optional<Dependency> optionalDependency = projectManager.getDependencyManager().getDependencies().stream().
-                filter(dependency1 -> dependency1.getName().equals(getDependencyName())).findFirst();
+                filter(dependency1 -> dependency1.getName().equals(getTestName())).findFirst();
 
         dependencyReference = optionalDependency.orElseThrow(() -> new RuntimeException("Dependency: " + getDependencyName() + " was not found in the DependencyManager"));
     }
@@ -126,11 +127,12 @@ public class DependencyWrapper {
     }
 
     private void checkDependencyState() {
+        Assertions.assertNotNull(testName, "testName cant be null");
         if (dependencyClosure == null) {
             dependencyClosure = new Closure<Property.Builder>(null) {
                 public Property.Builder doCall() {
                     Property.Builder builder = (Property.Builder) getDelegate();
-                    builder.name(dependencyName);
+                    builder.name(getTestName());
                     return builder;
                 }
             };

@@ -46,6 +46,7 @@ public class PluginDependencyTests {
         dependencyWrappers.forEach(dependencyWrapper -> {
             dependencyWrapper.setTestName(dependencyType.name());
             dependencyWrapper.setDependencyClosure(builder -> {
+                builder.name(dependencyWrapper.getTestName());
                 builder.dependencyType(dependencyType);
                 builder.gradleDaemonMaxIdleTime(0);
             });
