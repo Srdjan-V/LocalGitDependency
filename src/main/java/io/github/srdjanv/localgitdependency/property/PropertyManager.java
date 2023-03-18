@@ -3,28 +3,43 @@ package io.github.srdjanv.localgitdependency.property;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import groovy.lang.Closure;
+import io.github.srdjanv.localgitdependency.project.ManagerBase;
+import io.github.srdjanv.localgitdependency.project.ProjectInstances;
 import org.gradle.api.GradleException;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.concurrent.TimeUnit;
 
-public class PropertyManager {
+public class PropertyManager extends ManagerBase {
     private boolean customGlobalProperty;
     private DefaultProperty globalProperty;
 
-    {
+    public PropertyManager(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    protected void managerConstructor() {
         DefaultProperty.Builder builder = new DefaultProperty.Builder();
         builder.configuration(Constants.JAVA_IMPLEMENTATION);
-        File defaultDir = Constants.defaultDir.get();
-        builder.persistentFolder(Constants.defaultPersistentDir.apply(defaultDir));
+        File defaultDir = Constants.defaultDir.apply(getProject());
+        builder.persistentDir(Constants.defaultPersistentDir.apply(defaultDir));
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
-        builder.mavenFolder(Constants.defaultMavenFolder.apply(defaultDir));
+        builder.mavenDir(Constants.defaultMavenFolder.apply(defaultDir));
         builder.dependencyType(Dependency.Type.JarFlatDir);
+        builder.automaticCleanup(true);
         builder.keepGitUpdated(true);
         builder.keepMainInitScriptUpdated(true);
+        builder.generateDefaultGradleTasks(true);
+        builder.generateGradleTasks(true);
         builder.keepDependencyInitScriptUpdated(true);
         builder.tryGeneratingSourceJar(false);
         builder.tryGeneratingJavaDocJar(false);
+        builder.addDependencySourcesToProject(true);
+        builder.registerDependencyToProject(true);
+        builder.registerDependencyRepositoryToProject(true);
+        builder.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
 
         globalProperty = new DefaultProperty(builder);
     }
@@ -49,20 +64,20 @@ public class PropertyManager {
     }
 
     public void createEssentialDirectories() {
-        Constants.checkExistsAndMkdirs(globalProperty.persistentFolder);
+        Constants.checkExistsAndMkdirs(globalProperty.persistentDir);
         Constants.checkExistsAndMkdirs(globalProperty.gitDir);
-        Constants.checkExistsAndMkdirs(globalProperty.mavenFolder);
+        Constants.checkExistsAndMkdirs(globalProperty.mavenDir);
     }
 
     private void configureFilePaths(DefaultProperty.Builder defaultProperty) {
-        File defaultDir = Constants.defaultDir.get();
+        File defaultDir = Constants.defaultDir.apply(getProject());
         for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
             try {
                 field.setAccessible(true);
                 if (field.getType() == File.class) {
                     File file = (File) field.get(defaultProperty);
 
-                    if (file.isAbsolute()) continue;
+                    if (file == null || file.isAbsolute()) continue;
                     field.set(defaultProperty, new File(defaultDir, String.valueOf(file)).toPath().normalize().toFile());
                 }
             } catch (Exception e) {

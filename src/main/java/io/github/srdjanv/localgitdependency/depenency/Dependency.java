@@ -1,16 +1,17 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
+import groovy.lang.Closure;
+import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
-import io.github.srdjanv.localgitdependency.Instances;
+import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
+import io.github.srdjanv.localgitdependency.property.Property;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
-import io.github.srdjanv.localgitdependency.property.Property;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,25 +19,37 @@ import java.util.regex.Pattern;
 public class Dependency {
     private final String name;
     private final String configurationName;
-    private final File mavenFolder;
-    private final PersistentInfo persistentInfo;
+    private final List<String> generatedJarsToAdd;
+    private final List<String> generatedArtifactNames;
+    private final boolean addDependencySourcesToProject;
+    private final boolean registerDependencyToProject;
+    private final boolean registerDependencyRepositoryToProject;
+    private final boolean generateGradleTasks;
     private final Type dependencyType;
+    private final File mavenFolder;
     private final GitInfo gitInfo;
     private final GradleInfo gradleInfo;
+    private final PersistentInfo persistentInfo;
+    private Closure<?> configureClosure;
 
     public Dependency(String configurationName, Property dependencyProperty) {
-        Instances.getPropertyManager().applyDefaultProperty(dependencyProperty);
-
         this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
         this.configurationName = configurationName == null ? dependencyProperty.getConfiguration() : configurationName;
+        this.generatedJarsToAdd = dependencyProperty.getGeneratedJarsToAdd();
+        this.generatedArtifactNames = dependencyProperty.getGeneratedArtifactNames();
+        this.addDependencySourcesToProject = dependencyProperty.getAddDependencySourcesToProject();
+        this.registerDependencyToProject = dependencyProperty.getRegisterDependencyToProject();
+        this.registerDependencyRepositoryToProject = dependencyProperty.getRegisterDependencyRepositoryToProject();
+        this.generateGradleTasks = dependencyProperty.getGenerateGradleTasks();
+        this.configureClosure = dependencyProperty.getConfigureClosure();
         this.dependencyType = dependencyProperty.getDependencyType();
         switch (dependencyType) {
             case MavenProjectLocal:
-                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyProperty.getMavenFolder());
+                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyProperty.getMavenDir());
                 break;
 
             case MavenProjectDependencyLocal:
-                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyProperty.getMavenFolder(), name);
+                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyProperty.getMavenDir(), name);
                 break;
 
             default:
@@ -60,6 +73,44 @@ public class Dependency {
     }
 
     @Nullable
+    public List<String> getGeneratedJarsToAdd() {
+        return generatedJarsToAdd;
+    }
+
+    @Nullable
+    public List<String> getGeneratedArtifactNames() {
+        return generatedArtifactNames;
+    }
+
+    public boolean isAddDependencySourcesToProject() {
+        return addDependencySourcesToProject;
+    }
+
+    public boolean isRegisterDependencyToProject() {
+        return registerDependencyToProject;
+    }
+
+    public boolean isRegisterDependencyRepositoryToProject() {
+        return registerDependencyRepositoryToProject;
+    }
+
+    public boolean isGenerateGradleTasks() {
+        return generateGradleTasks;
+    }
+
+    @Nullable
+    public Closure<?> getAndClearConfigureClosure() {
+        Closure<?> configureClosureHolder = configureClosure;
+        configureClosure = null;
+        return configureClosureHolder;
+    }
+
+    @NotNull
+    public Type getDependencyType() {
+        return dependencyType;
+    }
+
+    @Nullable
     public File getMavenFolder() {
         return mavenFolder;
     }
@@ -77,11 +128,6 @@ public class Dependency {
     @NotNull
     public PersistentInfo getPersistentInfo() {
         return persistentInfo;
-    }
-
-    @NotNull
-    public Type getDependencyType() {
-        return dependencyType;
     }
 
     // TODO: 18/02/2023 add all of the parameters for validation

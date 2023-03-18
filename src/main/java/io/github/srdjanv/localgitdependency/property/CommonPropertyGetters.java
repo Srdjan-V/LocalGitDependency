@@ -15,7 +15,7 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return keepGitUpdated;
     }
 
-    public File getDir() {
+    public File getGitDir() {
         return gitDir;
     }
 
@@ -24,12 +24,12 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return javaHomeDir;
     }
 
-    public File getPersistentFolder() {
-        return persistentFolder;
+    public File getPersistentDir() {
+        return persistentDir;
     }
 
-    public File getMavenFolder() {
-        return mavenFolder;
+    public File getMavenDir() {
+        return mavenDir;
     }
 
     public Dependency.Type getDependencyType() {
@@ -46,5 +46,25 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
 
     public Boolean getTryGeneratingJavaDocJar() {
         return tryGeneratingJavaDocJar;
+    }
+
+    public Boolean getAddDependencySourcesToProject() {
+        return addDependencySourcesToProject;
+    }
+
+    public Boolean getRegisterDependencyToProject() {
+        return registerDependencyToProject;
+    }
+
+    public Boolean getRegisterDependencyRepositoryToProject() {
+        return registerDependencyRepositoryToProject;
+    }
+
+    public Boolean getGenerateGradleTasks() {
+        return generateGradleTasks;
+    }
+
+    public Integer getGradleDaemonMaxIdleTime() {
+        return gradleDaemonMaxIdleTime;
     }
 }

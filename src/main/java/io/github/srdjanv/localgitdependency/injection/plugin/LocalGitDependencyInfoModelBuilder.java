@@ -4,22 +4,28 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.imp.DefaultPublishingObject;
+import io.github.srdjanv.localgitdependency.injection.model.imp.DefaultSourceSet;
 import io.github.srdjanv.localgitdependency.injection.model.imp.DefaultTaskObject;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.UnknownDomainObjectException;
+import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.publish.internal.DefaultPublishingExtension;
 import org.gradle.api.publish.maven.internal.publication.DefaultMavenPublication;
 import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.tooling.provider.model.ToolingModelBuilder;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// TODO: 09/03/2023 Rewrite the logic
 public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
     private static final String MODEL_NAME = LocalGitDependencyInfoModel.class.getName();
 
@@ -35,7 +41,7 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
 
         List<DefaultTaskObject> appropriateTasks = queueAppropriateTasks(project, hasJavaPlugin);
         DefaultPublishingObject defaultPublicationObject = queueAppropriateMavenPublications(project, appropriateTasks, hasMavenPublishPlugin);
-
+        int[] gradleVersion = Arrays.stream(project.getGradle().getGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
         JavaVersion javaVersion = null;
         boolean canProjectUseWithSourcesJar = true;
         boolean canProjectUseWithJavadocJar = true;
@@ -43,7 +49,6 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
             JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
             javaVersion = javaPluginExtension.getSourceCompatibility();
 
-            int[] gradleVersion = Arrays.stream(project.getGradle().getGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
             if (gradleVersion[0] >= 7 && gradleVersion[1] >= 1) {
                 SourceSet main = javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
                 for (Task task : project.getTasks()) {
@@ -67,7 +72,8 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
                 hasJavaPlugin,
                 hasMavenPublishPlugin,
                 appropriateTasks,
-                defaultPublicationObject);
+                defaultPublicationObject,
+                getSources(project));
     }
 
     private static List<DefaultTaskObject> queueAppropriateTasks(Project project, boolean hasJavaPlugin) {
@@ -125,6 +131,27 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
         }
 
         return new DefaultPublishingObject(repositoryName, publicationName, appropriateTasks);
+    }
+
+    private static List<DefaultSourceSet> getSources(Project project) {
+        List<DefaultSourceSet> sourceSets = new ArrayList<>();
+        SourceSetContainer sourceContainer;
+        try {
+            sourceContainer = project.getExtensions().getByType(SourceSetContainer.class);
+        } catch (UnknownDomainObjectException ignore) {
+            return sourceSets;
+        }
+
+        for (SourceSet sourceSet : sourceContainer) {
+            SourceDirectorySet sourceDirectorySet = sourceSet.getJava();
+            List<String> paths = new ArrayList<>();
+            for (File file : sourceDirectorySet.getSourceDirectories().getFiles()) {
+                paths.add(file.getAbsolutePath());
+            }
+            sourceSets.add(new DefaultSourceSet(sourceSet.getName(), paths));
+        }
+
+        return sourceSets;
     }
 
 }

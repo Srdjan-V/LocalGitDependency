@@ -13,9 +13,14 @@ public abstract class CommonPropertyFields {
     Boolean keepDependencyInitScriptUpdated;
     File gitDir;
     File javaHomeDir;
-    File persistentFolder;
-    File mavenFolder;
+    File persistentDir;
+    File mavenDir;
     Dependency.Type dependencyType;
     Boolean tryGeneratingSourceJar;
     Boolean tryGeneratingJavaDocJar;
+    Boolean addDependencySourcesToProject;
+    Boolean registerDependencyToProject;
+    Boolean registerDependencyRepositoryToProject;
+    Boolean generateGradleTasks;
+    Integer gradleDaemonMaxIdleTime;
 }

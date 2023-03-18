@@ -13,6 +13,7 @@ public interface LocalGitDependencyInfoModel {
     boolean canProjectUseWithJavadocJar();
     boolean hasJavaPlugin();
     boolean hasMavenPublishPlugin();
-    List<TaskObject> getAppropriateTasks();
+    List<? extends TaskObject> getAppropriateTasks();
     PublishingObject getAppropriatePublication();
+    List<? extends SourceSet> getSources();
 }

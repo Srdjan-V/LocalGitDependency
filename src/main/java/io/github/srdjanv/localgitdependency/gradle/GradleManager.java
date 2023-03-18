@@ -1,18 +1,19 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
-import io.github.srdjanv.localgitdependency.persistence.SerializableProperty;
+import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
+import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
+import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
+import io.github.srdjanv.localgitdependency.project.ManagerBase;
+import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.property.DefaultProperty;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ModelBuilder;
 import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
-import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.Instances;
-import io.github.srdjanv.localgitdependency.Logger;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import io.github.srdjanv.localgitdependency.property.DefaultProperty;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -25,15 +26,28 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class GradleManager {
+public class GradleManager extends ManagerBase {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
+
+    public GradleManager(ProjectInstances projectInstances) {
+        super(projectInstances);
+    }
+
+    @Override
+    protected void managerConstructor() {
+    }
+
+    private void cleanCache() {
+        ManagerLogger.info("Clearing gradle connector cache");
+        gradleConnectorCache.clear();
+    }
 
     private DefaultGradleConnector getGradleConnector(Dependency dependency) {
         DefaultGradleConnector gradleConnector = gradleConnectorCache.get(dependency.getName());
         if (gradleConnector == null) {
             gradleConnector = (DefaultGradleConnector) GradleConnector.newConnector();
             gradleConnector.searchUpwards(false);
-            gradleConnector.daemonMaxIdleTime(2, TimeUnit.MINUTES);
+            gradleConnector.daemonMaxIdleTime(dependency.getGradleInfo().getGradleDaemonMaxIdleTime(), TimeUnit.SECONDS);
             gradleConnector.forProjectDirectory(dependency.getGitInfo().getDir());
             gradleConnectorCache.put(dependency.getName(), gradleConnector);
         }
@@ -42,7 +56,7 @@ public class GradleManager {
 
     public void initGradleAPI() {
         validateMainInitScript();
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+        for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (!dependency.getPersistentInfo().isValidModel()) {
                 probeProject(dependency);
             }
@@ -52,16 +66,17 @@ public class GradleManager {
     }
 
     public void buildDependencies() {
-        for (Dependency dependency : Instances.getDependencyManager().getDependencies()) {
+        for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (dependency.getGitInfo().hasRefreshed() || dependency.getPersistentInfo().hasDependencyTypeChanged()) {
                 buildDependency(dependency);
             }
         }
+        cleanCache();
     }
 
     public void buildDependency(Dependency dependency) {
         long start = System.currentTimeMillis();
-        Logger.info("Started building dependency: {}", dependency.getName());
+        ManagerLogger.info("Started building dependency: {}", dependency.getName());
 
         switch (dependency.getDependencyType()) {
             case Jar:
@@ -72,12 +87,12 @@ public class GradleManager {
             case MavenLocal:
                 buildGradleProject(dependency,
                         Constants.PublicationTaskName.apply(
-                                dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName()));
+                                dependency.getPersistentInfo().getProbeData().getAppropriatePublication().getPublicationName()));
                 break;
 
             case MavenProjectDependencyLocal:
             case MavenProjectLocal:
-                SerializableProperty.PublicationObjectSerializable publicationObjectSerializable = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject();
+                PersistentDependencyData.PublicationObjectSerializable publicationObjectSerializable = dependency.getPersistentInfo().getProbeData().getAppropriatePublication();
                 buildGradleProject(dependency,
                         Constants.FilePublicationTaskName.apply(
                                 publicationObjectSerializable.getPublicationName(),
@@ -89,14 +104,14 @@ public class GradleManager {
         }
 
         long spent = System.currentTimeMillis() - start;
-        Logger.info("Finished building in {} ms", spent);
+        ManagerLogger.info("Finished building in {} ms", spent);
     }
 
     private void probeProject(Dependency dependency) {
         long start = System.currentTimeMillis();
-        Logger.info("Started probing dependency: {} for information", dependency.getName());
+        ManagerLogger.info("Started probing dependency: {} for information", dependency.getName());
 
-        File initScriptFolder = Instances.getPropertyManager().getGlobalProperty().getPersistentFolder();
+        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentDir();
         File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
 
         DefaultGradleConnector connector = getGradleConnector(dependency);
@@ -104,11 +119,11 @@ public class GradleManager {
             ModelBuilder<LocalGitDependencyInfoModel> customModelBuilder = connection.model(LocalGitDependencyInfoModel.class);
             customModelBuilder.withArguments("--init-script", mainInit.getAbsolutePath());
             LocalGitDependencyInfoModel localGitDependencyInfoModel = customModelBuilder.get();
-            dependency.getPersistentInfo().setDefaultLocalGitDependencyInfoModel(localGitDependencyInfoModel);
+            dependency.getPersistentInfo().setProbeData(localGitDependencyInfoModel);
         }
 
         long spent = System.currentTimeMillis() - start;
-        Logger.info("Probe finished in {} ms", spent);
+        ManagerLogger.info("Probe finished in {} ms", spent);
     }
 
     private void buildGradleProject(Dependency dependency, String task) {
@@ -126,25 +141,25 @@ public class GradleManager {
 
     private String createDependencyInitScript(Dependency dependency) {
         // TODO: 18/02/2023 work on this
-        SerializableProperty.DependencyInfoModelSerializable model = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel();
-        int[] gradleVersion = Arrays.stream(model.getProjectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+        PersistentDependencyData.DependencyInfoModelSerializable model = dependency.getPersistentInfo().getProbeData();
+        int[] gradleVersion = Arrays.stream(model.projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
 
         final Consumer<GradleInit> configuration;
         if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
             configuration = gradleInit -> gradleInit.setJavaJars(jars -> {
                 if (dependency.getGradleInfo().isTryGeneratingSourceJar() &&
-                        dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().isCanProjectUseWithSourcesJar()) {
+                        dependency.getPersistentInfo().getProbeData().canProjectUseWithSourcesJar()) {
                     jars.add(GradleInit.JavaJars.sources());
                 }
                 if (dependency.getGradleInfo().isTryGeneratingJavaDocJar() &&
-                        dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().isCanProjectUseWithJavadocJar()) {
+                        dependency.getPersistentInfo().getProbeData().canProjectUseWithJavadocJar()) {
                     jars.add(GradleInit.JavaJars.javadoc());
                 }
             });
         } else {
-            SerializableProperty.PublicationObjectSerializable publicationObject = dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject();
+            PersistentDependencyData.PublicationObjectSerializable publicationObject = dependency.getPersistentInfo().getProbeData().getAppropriatePublication();
             List<GradleInit.Task> tasks = new ArrayList<>();
-            for (SerializableProperty.TaskObjectSerializable taskSerializable : publicationObject.getTasks()) {
+            for (PersistentDependencyData.TaskObjectSerializable taskSerializable : publicationObject.getTasks()) {
                 switch (taskSerializable.getClassifier()) {
                     case "sources":
                         if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {
@@ -187,9 +202,9 @@ public class GradleManager {
         configurations.add(configuration);
         configurations.add(gradleInit -> {
             gradleInit.setPublishing(p -> p.add(new GradleInit.Publication(
-                    dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getRepositoryName(),
+                    dependency.getPersistentInfo().getProbeData().getAppropriatePublication().getRepositoryName(),
                     dependency.getMavenFolder(),
-                    dependency.getPersistentInfo().getDefaultLocalGitDependencyInfoModel().getPublicationObject().getPublicationName())));
+                    dependency.getPersistentInfo().getProbeData().getAppropriatePublication().getPublicationName())));
         });
 
         return GradleInit.crateInitProject(configurations);
@@ -215,14 +230,14 @@ public class GradleManager {
     }
 
     private void validateMainInitScript() {
-        DefaultProperty globalProperty = Instances.getPropertyManager().getGlobalProperty();
-        File mainInit = Constants.concatFile.apply(globalProperty.getPersistentFolder(), Constants.MAIN_INIT_SCRIPT_GRADLE);
+        DefaultProperty globalProperty = getPropertyManager().getGlobalProperty();
+        File mainInit = Constants.concatFile.apply(globalProperty.getPersistentDir(), Constants.MAIN_INIT_SCRIPT_GRADLE);
         validateScript(
                 mainInit,
                 globalProperty.getKeepMainInitScriptUpdated(),
                 GradleInit::createInitProbe,
-                Instances.getPersistenceManager()::getInitScriptSHA,
-                Instances.getPersistenceManager()::setInitScriptSHA);
+                getPersistenceManager()::getInitScriptSHA,
+                getPersistenceManager()::setInitScriptSHA);
     }
 
     private void validateScript(File file, boolean keepUpdated, Supplier<String> scriptSupplier, Supplier<String> persistentSHASupplier, Consumer<String> persistentSHASetter) {
@@ -236,7 +251,7 @@ public class GradleManager {
                 final String persistentInitScriptSHA = persistentSHASupplier.get();
 
                 if (!fileInitScriptSHA.equals(persistentInitScriptSHA)) {
-                    Logger.info("File {}, contains local changes, updating file", file.getName());
+                    ManagerLogger.info("File {}, contains local changes, updating file", file.getName());
                     final String initScript = scriptSupplier.get();
                     writeToFile(file, initScript);
                     persistentSHASetter.accept(generateShaForString(initScript));
@@ -247,13 +262,13 @@ public class GradleManager {
                 final String targetInitScriptSHA = generateShaForString(initScript);
 
                 if (!fileInitScriptSHA.equals(targetInitScriptSHA)) {
-                    Logger.info("Updating file {}", file.getName());
+                    ManagerLogger.info("Updating file {}", file.getName());
                     writeToFile(file, initScript);
                     persistentSHASetter.accept(targetInitScriptSHA);
                 }
             }
         } else {
-            Logger.info("Creating {}", file.getName());
+            ManagerLogger.info("Creating {}", file.getName());
             final String initScript = scriptSupplier.get();
             persistentSHASetter.accept(generateShaForString(initScript));
             writeToFile(file, initScript);
