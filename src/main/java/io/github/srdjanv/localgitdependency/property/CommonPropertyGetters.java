@@ -63,4 +63,8 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
     public Boolean getGenerateGradleTasks() {
         return generateGradleTasks;
     }
+
+    public Integer getGradleDaemonMaxIdleTime() {
+        return gradleDaemonMaxIdleTime;
+    }
 }

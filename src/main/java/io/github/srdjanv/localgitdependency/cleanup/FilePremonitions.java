@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.cleanup;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
@@ -27,7 +28,7 @@ class FilePremonitions {
                 try {
                     Files.setAttribute(p, "dos:readonly", false);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new UncheckedIOException(e);
                 }
             };
         } else {
@@ -37,7 +38,7 @@ class FilePremonitions {
                     perms.add(PosixFilePermission.OWNER_WRITE);
                     Files.setPosixFilePermissions(p, perms);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new UncheckedIOException(e);
                 }
             };
         }

@@ -15,6 +15,7 @@ public class GradleInfo {
     private final boolean keepDependencyInitScriptUpdated;
     private final boolean tryGeneratingSourceJar;
     private final boolean tryGeneratingJavaDocJar;
+    private final int gradleDaemonMaxIdleTime;
 
     public GradleInfo(Property dependencyProperty, Dependency dependency) {
         this.dependency = dependency;
@@ -23,6 +24,7 @@ public class GradleInfo {
         this.javaHome = dependencyProperty.getJavaHomeDir();
         this.tryGeneratingSourceJar = dependencyProperty.getTryGeneratingSourceJar();
         this.tryGeneratingJavaDocJar = dependencyProperty.getTryGeneratingJavaDocJar();
+        this.gradleDaemonMaxIdleTime = dependencyProperty.getGradleDaemonMaxIdleTime();
     }
 
     @NotNull
@@ -50,5 +52,9 @@ public class GradleInfo {
 
     public boolean isTryGeneratingJavaDocJar() {
         return tryGeneratingJavaDocJar;
+    }
+
+    public int getGradleDaemonMaxIdleTime() {
+        return gradleDaemonMaxIdleTime;
     }
 }

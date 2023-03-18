@@ -47,7 +47,7 @@ public class GradleManager extends ManagerBase {
         if (gradleConnector == null) {
             gradleConnector = (DefaultGradleConnector) GradleConnector.newConnector();
             gradleConnector.searchUpwards(false);
-            gradleConnector.daemonMaxIdleTime(2, TimeUnit.MINUTES);
+            gradleConnector.daemonMaxIdleTime(dependency.getGradleInfo().getGradleDaemonMaxIdleTime(), TimeUnit.SECONDS);
             gradleConnector.forProjectDirectory(dependency.getGitInfo().getDir());
             gradleConnectorCache.put(dependency.getName(), gradleConnector);
         }

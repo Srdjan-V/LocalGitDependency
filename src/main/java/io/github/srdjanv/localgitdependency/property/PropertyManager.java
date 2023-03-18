@@ -9,6 +9,7 @@ import org.gradle.api.GradleException;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.concurrent.TimeUnit;
 
 public class PropertyManager extends ManagerBase {
     private boolean customGlobalProperty;
@@ -38,6 +39,7 @@ public class PropertyManager extends ManagerBase {
         builder.addDependencySourcesToProject(true);
         builder.registerDependencyToProject(true);
         builder.registerDependencyRepositoryToProject(true);
+        builder.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
 
         globalProperty = new DefaultProperty(builder);
     }

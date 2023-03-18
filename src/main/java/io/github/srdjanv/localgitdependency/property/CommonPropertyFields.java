@@ -22,4 +22,5 @@ public abstract class CommonPropertyFields {
     Boolean registerDependencyToProject;
     Boolean registerDependencyRepositoryToProject;
     Boolean generateGradleTasks;
+    Integer gradleDaemonMaxIdleTime;
 }

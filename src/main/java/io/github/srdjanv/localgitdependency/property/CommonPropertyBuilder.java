@@ -187,4 +187,15 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
         this.generateGradleTasks = generateGradleTasks;
     }
 
+    /**
+     * For how long should the gradle daemon used for dependency building idle.
+     * Use java's TimeUnit class for easy conversion
+     *
+     * @param gradleDaemonMaxIdleTime the amount of time in seconds
+     * @see java.util.concurrent.TimeUnit
+     */
+    public void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime) {
+        this.gradleDaemonMaxIdleTime = gradleDaemonMaxIdleTime;
+    }
+
 }
