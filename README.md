@@ -64,10 +64,7 @@ instance [globalProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/ma
 
 ### Limitations  ###
 
-Currently, this plugin can not be used on multi project builds,
-nor can a project that is using this plugin be used as a dependency.
-
-Project that are using a different java version may or may not build,
+Projects that are using a different java version may or may not build,
 you can supply the correct java version by using the `javaHomeDir` property for the dependency
 
 ### Examples  ###
@@ -86,7 +83,7 @@ localGitDependency {
 }
 ```
 
-By default, this will use java's default configuration, `implementation`. If you want you can specify it yourself
+By default, the plugin will use java's default configuration, `implementation`. If you want you can specify it yourself
 
 ```
 localGitDependency {
@@ -105,7 +102,7 @@ localGitDependency {
 }
 ```
 
-The plugin can try to generate a source or javadoc jar for the dependency
+The plugin can try to generate source or javadoc jars for the dependency
 
 ```
 localGitDependency {
@@ -121,14 +118,87 @@ localGitDependency {
 }
 ```
 
-You can change the directories that he plugin uses, the paths can be absolute or relative
+You can change the directories that the plugin uses, the paths can be absolute or relative
 
 ```
 localGitDependency {
     configureGlobal {
         gitDir "./yourGitDir"
-        persistentFolder new File("./yourPersistentFolder")
-        mavenFolder "/rootMaven"
+        persistentDir new File("./yourPersistentDir")
+        mavenDir "/rootMaven"
+    }
+}
+```
+
+You can now also add dependencies like so
+
+```
+localGitDependency {
+    "https://example.com/repository.git"
+
+    "https://example.com/repository.git" {
+        name "test"
+    }
+
+    implementation "https://example.com/repository.git"
+
+    implementation "https://example.com/repository.git", {
+        name "test"
+    }
+}
+```
+
+While using the jar dependency type you can use `generatedJarsToAdd` to filter what jars are going to be added as dependencies
+
+```
+localGitDependency {
+    implementation "https://example.com/repository.git", {
+        generatedJarsToAdd(["1.1.0.jar", "1.1.0-sources.jar"])
+    }
+}
+```
+
+`generatedArtifactNames` is the same as `generatedJarsToAdd` but for configuring repositories. See the java doc for more information 
+
+```
+localGitDependency {
+    implementation "https://example.com/repository.git", {
+        generatedArtifactNames(["name", "group:name:version"])
+    }
+}
+```
+
+It's possible to add a dependency configuration that will be used by gradle's DependencyHandler 
+
+```
+localGitDependency {
+    implementation "https://example.com/repository.git", {
+        configure {
+            transitive = false
+        }
+    }
+}
+```
+
+If you don't want to configure your dependencies is such a way or don't need for the dependency to be registered
+
+```
+dependencies {
+    implementation "example.com:repository:1.0.1"
+}
+localGitDependency {
+    implementation 'https://example.com/repository.git', {
+        registerDependencyToProject = false
+    }
+}
+```
+
+You can change for how long gradle daemons will idle by using `gradleDaemonMaxIdleTime`, this is in seconds
+
+```
+localGitDependency {
+    implementation 'https://example.com/repository.git', {
+        gradleDaemonMaxIdleTime = 60
     }
 }
 ```
