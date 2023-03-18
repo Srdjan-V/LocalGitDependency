@@ -45,6 +45,9 @@ public class PluginDependencyTests {
 
         dependencyWrappers.forEach(dependencyWrapper -> {
             dependencyWrapper.setTestName(dependencyType.name());
+            dependencyWrapper.setGlobalClosure(clause-> {
+                clause.automaticCleanup(false);
+            });
             dependencyWrapper.setDependencyClosure(builder -> {
                 builder.name(dependencyWrapper.getTestName());
                 builder.dependencyType(dependencyType);
