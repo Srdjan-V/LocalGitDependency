@@ -66,6 +66,7 @@ public class CleanupManager extends ManagerBase {
                     for (Dependency dep : getDependencyManager().getDependencies()) {
                         if (validDir.test(path.toFile(), dep)) continue rootDir;
                     }
+                    ManagerLogger.info("Cleaning directory at {}", path.toAbsolutePath());
                     deleteDir(path);
                 }
             }
