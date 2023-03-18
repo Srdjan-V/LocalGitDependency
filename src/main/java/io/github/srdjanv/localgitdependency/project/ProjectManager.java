@@ -23,35 +23,35 @@ public class ProjectManager extends ManagerBase {
         PROJECT_RUNNERS = new LinkedList<>();
         try {
             PROJECT_RUNNERS.add(new ManagerRunner(
-                    projectManager -> projectManager.getPropertyManager().createEssentialDirectories(),
+                    managers -> managers.getPropertyManager().createEssentialDirectories(),
                     PropertyManager.class.getDeclaredMethod("createEssentialDirectories")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
-                    projectManager -> projectManager.getCleanupManager().init(),
+                    managers -> managers.getCleanupManager().init(),
                     CleanupManager.class.getDeclaredMethod("init")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
-                    projectManager -> projectManager.getGitManager().initRepos(),
+                    managers -> managers.getGitManager().initRepos(),
                     GitManager.class.getDeclaredMethod("initRepos")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
-                    projectManager -> projectManager.getGradleManager().initGradleAPI(),
+                    managers -> managers.getGradleManager().initGradleAPI(),
                     GradleManager.class.getDeclaredMethod("initGradleAPI")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
-                    projectManager -> projectManager.getPersistenceManager().savePersistentData(),
+                    managers -> managers.getPersistenceManager().savePersistentData(),
                     PersistenceManager.class.getDeclaredMethod("savePersistentData")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
-                    projectManager -> projectManager.getGradleManager().buildDependencies(),
+                    managers -> managers.getGradleManager().buildDependencies(),
                     GradleManager.class.getDeclaredMethod("buildDependencies")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
-                    projectManager -> projectManager.getDependencyManager().addBuiltDependencies(),
+                    managers -> managers.getDependencyManager().addBuiltDependencies(),
                     DependencyManager.class.getDeclaredMethod("addBuiltDependencies")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
-                    projectManager -> projectManager.getTasksManager().initTasks(),
+                    managers -> managers.getTasksManager().initTasks(),
                     TasksManager.class.getDeclaredMethod("initTasks")
             ));
         } catch (NoSuchMethodException e) {
@@ -60,12 +60,11 @@ public class ProjectManager extends ManagerBase {
     }
 
     public static ProjectManager createProject(Project project) {
-        return new ProjectManager(project);
+        return new ProjectInstances(project).getProjectManager();
     }
 
-    private ProjectManager(Project project) {
-        super(new ProjectInstances(project));
-        this.managerConstructor();
+    ProjectManager(ProjectInstances projectInstances) {
+        super(projectInstances);
     }
 
     @Override
@@ -78,24 +77,24 @@ public class ProjectManager extends ManagerBase {
 
         long start = System.currentTimeMillis();
         PluginLogger.startInfo("{} starting {} tasks", formattedName, Constants.EXTENSION_NAME);
-        PROJECT_RUNNERS.forEach(projectRunner -> projectRunner.runAndLog(this));
+        PROJECT_RUNNERS.forEach(projectRunner -> projectRunner.runAndLog(getProjectInstances()));
         long spent = System.currentTimeMillis() - start;
         PluginLogger.startInfo("{} finished {} tasks in {} ms", formattedName, Constants.EXTENSION_NAME, spent);
     }
 
     private static class ManagerRunner {
-        private final Consumer<ProjectManager> task;
+        private final Consumer<Managers> task;
         private final Method method;
 
-        public ManagerRunner(Consumer<ProjectManager> task, Method method) {
+        public ManagerRunner(Consumer<Managers> task, Method method) {
             this.task = task;
             this.method = method;
         }
 
-        public void runAndLog(ProjectManager projectManager) {
+        public void runAndLog(Managers managers) {
             long start = System.currentTimeMillis();
             PluginLogger.info("{}: Starting task {}", method.getDeclaringClass().getSimpleName(), method.getName());
-            task.accept(projectManager);
+            task.accept(managers);
             long spent = System.currentTimeMillis() - start;
             PluginLogger.info("{}: Finished task {} in {} ms", method.getDeclaringClass().getSimpleName(), method.getName(), spent);
         }

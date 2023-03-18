@@ -11,10 +11,12 @@ import io.github.srdjanv.localgitdependency.property.PropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.TasksManager;
 import org.gradle.api.Project;
 
-import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ProjectInstances {
+public class ProjectInstances implements Managers {
     private final Project project;
+    private final ProjectManager projectManager;
     private final PropertyManager propertyManager;
     private final DependencyManager dependencyManager;
     private final GitManager gitManager;
@@ -27,62 +29,68 @@ public class ProjectInstances {
     public ProjectInstances(Project project) {
         this.project = project;
 
-        localGitDependencyExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, LocalGitDependencyExtension.class, this);
-        dependencyManager = new DependencyManager(this);
-        propertyManager = new PropertyManager(this);
-        gitManager = new GitManager(this);
-        gradleManager = new GradleManager(this);
-        persistenceManager = new PersistenceManager(this);
-        tasksManager = new TasksManager(this);
-        cleanupManager = new CleanupManager(this);
-        constructMangers();
-    }
+        final List<ManagerBase> managerList = new ArrayList<>();
+        managerList.add(projectManager = new ProjectManager(this));
+        managerList.add(localGitDependencyExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, LocalGitDependencyExtension.class, this));
+        managerList.add(dependencyManager = new DependencyManager(this));
+        managerList.add(propertyManager = new PropertyManager(this));
+        managerList.add(gitManager = new GitManager(this));
+        managerList.add(gradleManager = new GradleManager(this));
+        managerList.add(persistenceManager = new PersistenceManager(this));
+        managerList.add(tasksManager = new TasksManager(this));
+        managerList.add(cleanupManager = new CleanupManager(this));
 
-    private void constructMangers() {
-        for (Field field : ProjectInstances.class.getDeclaredFields()) {
-            if (field.getType().getSuperclass() == ManagerBase.class) {
-                try {
-                    ManagerBase managerBase = (ManagerBase) field.get(this);
-                    managerBase.managerConstructor();
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+        for (ManagerBase managerBase : managerList) {
+            managerBase.managerConstructor();
         }
     }
 
+    @Override
     public Project getProject() {
         return project;
     }
 
+    @Override
+    public ProjectManager getProjectManager() {
+        return projectManager;
+    }
+
+    @Override
     public PropertyManager getPropertyManager() {
         return propertyManager;
     }
 
+    @Override
     public DependencyManager getDependencyManager() {
         return dependencyManager;
     }
 
+    @Override
     public GitManager getGitManager() {
         return gitManager;
     }
 
+    @Override
     public GradleManager getGradleManager() {
         return gradleManager;
     }
 
+    @Override
     public PersistenceManager getPersistenceManager() {
         return persistenceManager;
     }
 
+    @Override
     public TasksManager getTasksManager() {
         return tasksManager;
     }
 
+    @Override
     public LocalGitDependencyExtension getLocalGitDependencyExtension() {
         return localGitDependencyExtension;
     }
 
+    @Override
     public CleanupManager getCleanupManager() {
         return cleanupManager;
     }
