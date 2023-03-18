@@ -37,6 +37,7 @@ public class PropertyManager extends ManagerBase {
         builder.tryGeneratingJavaDocJar(false);
         builder.addDependencySourcesToProject(true);
         builder.registerDependencyToProject(true);
+        builder.registerDependencyRepositoryToProject(true);
 
         globalProperty = new DefaultProperty(builder);
     }

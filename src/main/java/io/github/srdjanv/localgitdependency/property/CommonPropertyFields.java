@@ -20,5 +20,6 @@ public abstract class CommonPropertyFields {
     Boolean tryGeneratingJavaDocJar;
     Boolean addDependencySourcesToProject;
     Boolean registerDependencyToProject;
+    Boolean registerDependencyRepositoryToProject;
     Boolean generateGradleTasks;
 }

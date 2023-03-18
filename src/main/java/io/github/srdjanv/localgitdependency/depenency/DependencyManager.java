@@ -8,6 +8,7 @@ import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.ProjectInstances;
 import io.github.srdjanv.localgitdependency.property.Property;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
@@ -47,12 +48,14 @@ public class DependencyManager extends ManagerBase {
         boolean addRepositoryMavenProjectLocal = false;
         boolean addRepositoryMavenLocal = false;
         for (Dependency dependency : dependencies) {
-            switch (dependency.getDependencyType()) {
-                case MavenProjectLocal:
-                    addRepositoryMavenProjectLocal = true;
-                    break;
-                case MavenLocal:
-                    addRepositoryMavenLocal = true;
+            if (dependency.isRegisterDependencyRepositoryToProject()) {
+                switch (dependency.getDependencyType()) {
+                    case MavenProjectLocal:
+                        addRepositoryMavenProjectLocal = true;
+                        break;
+                    case MavenLocal:
+                        addRepositoryMavenLocal = true;
+                }
             }
         }
 
@@ -62,10 +65,6 @@ public class DependencyManager extends ManagerBase {
         SourceSetContainer sourceSetContainer = project.getRootProject().getExtensions().getByType(SourceSetContainer.class);
 
         for (Dependency dependency : dependencies) {
-            if (!dependency.isRegisterDependencyToProject()) {
-                ManagerLogger.info("Skipping dependency registration for {}", dependency.getName());
-                continue;
-            }
             if (dependency.isAddDependencySourcesToProject()) {
                 addSourceSets(sourceSetContainer, dependency);
             }
@@ -106,13 +105,11 @@ public class DependencyManager extends ManagerBase {
     }
 
     private void addMavenJarsAsDependencies(Dependency dependency, Project project) {
-        ManagerLogger.info("Adding Dependency: {}, from MavenLocal", dependency.getName());
-        addDependencies(project, dependency);
+        addRepositoryDependency(project, dependency);
     }
 
     private void addMavenLocalJarsAsDependencies(Dependency dependency, Project project) {
-        ManagerLogger.info("Adding Dependency {}, from MavenProjectLocal", dependency.getName());
-        addDependencies(project, dependency);
+        addRepositoryDependency(project, dependency);
     }
 
     private void addMavenProjectDependencyLocal(Dependency dependency, Project project) {
@@ -121,30 +118,26 @@ public class DependencyManager extends ManagerBase {
         }
 
         String mavenRepo = dependency.getMavenFolder().getAbsolutePath();
-        ManagerLogger.info("Adding Dependency: {}, from ProjectDependencyLocal at {}", dependency.getName(), mavenRepo);
-
-        project.getRepositories().add(project.getRepositories().maven(mavenArtifactRepository -> {
+        addRepository(project, dependency, mavenRepo, project.getRepositories().maven(mavenArtifactRepository -> {
             mavenArtifactRepository.setName(Constants.RepositoryMavenProjectDependencyLocal.apply(dependency.getName()));
             mavenArtifactRepository.setUrl(mavenRepo);
         }));
-
-        addDependencies(project, dependency);
+        addRepositoryDependency(project, dependency);
     }
 
     private void addJarsAsFlatDirDependencies(Dependency dependency, Project project) {
-        Path libs = Constants.buildDir.apply(dependency.getGitInfo().getDir()).toPath();
+        File libs = Constants.buildDir.apply(dependency.getGitInfo().getDir());
 
-        if (!Files.exists(libs)) {
+        if (!libs.exists()) {
             ManagerLogger.error("Dependency: {}, no libs folder was found", dependency.getName());
             return;
         }
 
-        ManagerLogger.info("Adding FlatDir Dependency: {}", dependency.getName());
-        project.getRepositories().add(project.getRepositories().flatDir(flatDir -> {
+        addRepository(project, dependency, libs.getAbsolutePath(), project.getRepositories().flatDir(flatDir -> {
             flatDir.setName(Constants.RepositoryFlatDir.apply(dependency.getName()));
             flatDir.dir(libs);
         }));
-        addDependencies(project, dependency);
+        addRepositoryDependency(project, dependency);
     }
 
     private void addJarsAsDependencies(Dependency dependency, Project project) {
@@ -188,7 +181,23 @@ public class DependencyManager extends ManagerBase {
         project.getDependencies().add(dependency.getConfigurationName(), project.getLayout().files(dependencies));
     }
 
-    private void addDependencies(Project project, Dependency dependency) {
+    private void addRepository(Project project, Dependency dependency, String repositoryPath, ArtifactRepository repository) {
+        if (dependency.isRegisterDependencyRepositoryToProject()) {
+            ManagerLogger.info("Adding {} repository at {} for dependency: {}", dependency.getDependencyType(), repositoryPath, dependency.getName());
+            project.getRepositories().add(repository);
+        } else {
+            ManagerLogger.info("Skipping registration of {} repository for dependency: {}", dependency.getDependencyType(), dependency.getName());
+        }
+    }
+
+    private void addRepositoryDependency(Project project, Dependency dependency) {
+        if (!dependency.isRegisterDependencyToProject()) {
+            ManagerLogger.info("Skipping dependency registration for {}", dependency.getName());
+            return;
+        }
+
+        ManagerLogger.info("Adding Dependency {}, from {}", dependency.getName(), dependency.getDependencyType());
+
         List<String> artifacts = dependency.getGeneratedArtifactNames();
         Closure<?> configureClosure = dependency.getAndClearConfigureClosure();
         if (artifacts != null) {

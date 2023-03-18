@@ -106,7 +106,8 @@ public class Property extends CommonPropertyGetters {
 
         /**
          * If the dependency is generating artifacts with a different name then the project id set the artifacts to be added.
-         *
+         * If the supplied string contains ':' the plugin will assume that is a dependency notation(group:name:version).
+         * Each element of the list will be added as a dependency
          * @param generatedArtifactNames Targeted artifacts
          */
         public void generatedArtifactNames(List<String> generatedArtifactNames) {

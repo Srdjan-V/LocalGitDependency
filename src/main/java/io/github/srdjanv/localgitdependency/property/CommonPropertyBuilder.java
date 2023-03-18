@@ -158,18 +158,30 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      * If the built dependencies should be added as dependencies.
      * You can manually add the dependency manually
      *
-     * @see org.gradle.api.artifacts.dsl.DependencyHandler
      * @param registerDependencyToProject if it should register the dependency
+     * @see org.gradle.api.artifacts.dsl.DependencyHandler
      */
     public void registerDependencyToProject(Boolean registerDependencyToProject) {
         this.registerDependencyToProject = registerDependencyToProject;
     }
 
     /**
+     * If a repository should be added for the build dependency, this is will not do anything for the Jar dependency type
+     *
+     * @param registerDependencyRepositoryToProject if it should register the dependency
+     * @see Dependency.Type
+     * @see org.gradle.api.artifacts.dsl.RepositoryHandler
+     */
+    public void registerDependencyRepositoryToProject(Boolean registerDependencyRepositoryToProject) {
+        this.registerDependencyRepositoryToProject = registerDependencyRepositoryToProject;
+    }
+
+
+    /**
      * Custom tasks can be generated for this dependency
      *
-     * @see org.gradle.api.artifacts.dsl.DependencyHandler
      * @param generateGradleTasks if it should create custom tasks
+     * @see org.gradle.api.artifacts.dsl.DependencyHandler
      */
     public void generateGradleTasks(Boolean generateGradleTasks) {
         this.generateGradleTasks = generateGradleTasks;
