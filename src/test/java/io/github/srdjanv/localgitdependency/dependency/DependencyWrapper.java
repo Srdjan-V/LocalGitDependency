@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class DependencyWrapper {
-    private final ProjectManager projectManager;
+    private ProjectManager projectManager;
     private final String dependencyName;
     private final String gitUrl;
     private String testName;
@@ -22,8 +22,6 @@ public class DependencyWrapper {
     private Dependency dependencyReference;
 
     public DependencyWrapper(DependencyRegistry registry) {
-        projectManager = LocalGitDependencyPlugin.getProject(ProjectInstance.createProject());
-
         this.dependencyName = registry.dependencyName;
         this.gitUrl = registry.gitUrl;
     }
@@ -92,6 +90,8 @@ public class DependencyWrapper {
     }
 
     public void startPluginAndRunTests() {
+        projectManager = LocalGitDependencyPlugin.getProject(ProjectInstance.createProject());
+
         checkDependencyState();
 
         setGlobalConfiguration();
