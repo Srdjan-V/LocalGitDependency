@@ -18,7 +18,7 @@ public abstract class CommonPropertyFields {
     Dependency.Type dependencyType;
     Boolean tryGeneratingSourceJar;
     Boolean tryGeneratingJavaDocJar;
-    Boolean addDependencySourcesToProject;
+    Boolean enableIdeSupport;
     Boolean registerDependencyToProject;
     Boolean registerDependencyRepositoryToProject;
     Boolean generateGradleTasks;

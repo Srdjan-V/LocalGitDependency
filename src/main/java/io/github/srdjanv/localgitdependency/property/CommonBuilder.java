@@ -111,11 +111,13 @@ public interface CommonBuilder {
     void tryGeneratingJavaDocJar(Boolean tryGeneratingJavaDocJar);
 
     /**
-     * If the cloned dependencies source sets should be added to the main project.
+     * If you plan on editing this dependency from the same ide enable this.
+     * By enabling this the plugin will register the source sets, configurations, repositories and its dependencies to your project.
+     * By default, its disabled
      *
-     * @param addDependencySourcesToProject if it should add the source sets
+     * @param enableIdeSupport if it should enable ide support
      */
-    void addDependencySourcesToProject(Boolean addDependencySourcesToProject);
+    void enableIdeSupport(Boolean enableIdeSupport);
 
     /**
      * If the built dependencies should be added as dependencies.

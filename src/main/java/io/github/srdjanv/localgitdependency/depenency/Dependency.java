@@ -21,7 +21,7 @@ public class Dependency {
     private final String configurationName;
     private final List<String> generatedJarsToAdd;
     private final List<String> generatedArtifactNames;
-    private final boolean addDependencySourcesToProject;
+    private final boolean enableIdeSupport;
     private final boolean registerDependencyToProject;
     private final boolean registerDependencyRepositoryToProject;
     private final boolean generateGradleTasks;
@@ -37,7 +37,7 @@ public class Dependency {
         this.configurationName = configurationName == null ? dependencyDependencyProperty.getConfiguration() : configurationName;
         this.generatedJarsToAdd = dependencyDependencyProperty.getGeneratedJarsToAdd();
         this.generatedArtifactNames = dependencyDependencyProperty.getGeneratedArtifactNames();
-        this.addDependencySourcesToProject = dependencyDependencyProperty.getAddDependencySourcesToProject();
+        this.enableIdeSupport = dependencyDependencyProperty.getEnableIdeSupport();
         this.registerDependencyToProject = dependencyDependencyProperty.getRegisterDependencyToProject();
         this.registerDependencyRepositoryToProject = dependencyDependencyProperty.getRegisterDependencyRepositoryToProject();
         this.generateGradleTasks = dependencyDependencyProperty.getGenerateGradleTasks();
@@ -82,8 +82,8 @@ public class Dependency {
         return generatedArtifactNames;
     }
 
-    public boolean isAddDependencySourcesToProject() {
-        return addDependencySourcesToProject;
+    public boolean isEnableIdeSupport() {
+        return enableIdeSupport;
     }
 
     public boolean isRegisterDependencyToProject() {

@@ -85,8 +85,8 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields impleme
     }
 
     @Override
-    public void addDependencySourcesToProject(Boolean addDependencySourcesToProject) {
-        this.addDependencySourcesToProject = addDependencySourcesToProject;
+    public void enableIdeSupport(Boolean enableIdeSupport) {
+        this.enableIdeSupport = enableIdeSupport;
     }
 
     @Override

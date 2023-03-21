@@ -9,13 +9,16 @@ public class DefaultSourceSet implements SourceSet, Serializable {
     private final String name;
     private final String classpathConfigurationName;
     private final List<String> sources;
-    private final List<String> classpathDependencies;
+    private final List<String> repositoryClasspathDependencies;
+    private final List<String> fileClasspathDependencies;
 
-    public DefaultSourceSet(String name, String classpathConfigurationName, List<String> sources, List<String> classpathDependencies) {
+    public DefaultSourceSet(String name, String classpathConfigurationName, List<String> sources,
+                            List<String> repositoryClasspathDependencies,List<String> fileClasspathDependencies) {
         this.name = name;
         this.sources = sources;
         this.classpathConfigurationName = classpathConfigurationName;
-        this.classpathDependencies = classpathDependencies;
+        this.repositoryClasspathDependencies = repositoryClasspathDependencies;
+        this.fileClasspathDependencies = fileClasspathDependencies;
     }
 
     @Override
@@ -29,8 +32,13 @@ public class DefaultSourceSet implements SourceSet, Serializable {
     }
 
     @Override
-    public List<String> getClasspathDependencies() {
-        return classpathDependencies;
+    public List<String> getRepositoryClasspathDependencies() {
+        return repositoryClasspathDependencies;
+    }
+
+    @Override
+    public List<String> getFileClasspathDependencies() {
+        return fileClasspathDependencies;
     }
 
     @Override

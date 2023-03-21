@@ -67,8 +67,8 @@ public class DependencyManager extends ManagerBase {
         SourceSetContainer sourceSetContainer = project.getRootProject().getExtensions().getByType(SourceSetContainer.class);
 
         for (Dependency dependency : dependencies) {
-            if (dependency.isAddDependencySourcesToProject()) {
-                addSourceSets(project.getRootProject(), sourceSetContainer, dependency);
+            if (dependency.isEnableIdeSupport()) {
+                enableIdeSupport(project.getRootProject(), sourceSetContainer, dependency);
             }
             switch (dependency.getDependencyType()) {
                 case MavenLocal:
@@ -217,8 +217,8 @@ public class DependencyManager extends ManagerBase {
     }
 
     // TODO: 21/03/2023 improve
-    private void addSourceSets(Project project, SourceSetContainer sourceSetContainer, Dependency dependency) {
-        ManagerLogger.info("Dependency: {} adding sourceSets", dependency.getName());
+    private void enableIdeSupport(Project project, SourceSetContainer sourceSetContainer, Dependency dependency) {
+        ManagerLogger.info("Dependency: {} enabled ide support", dependency.getName());
 
         for (PersistentDependencyData.SourceSetSerializable source : dependency.getPersistentInfo().getProbeData().getSources()) {
             NamedDomainObjectProvider<SourceSet> sourceSetNamedDomainObjectProvider = sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
@@ -226,10 +226,13 @@ public class DependencyManager extends ManagerBase {
             });
 
             SourceSet sourceSet = sourceSetNamedDomainObjectProvider.get();
-            for (String classpathDependency : source.getClasspathDependencies()) {
+            for (String classpathDependency : source.getRepositoryClasspathDependencies()) {
                 project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(), classpathDependency);
             }
 
+            if (!source.getFileClasspathDependencies().isEmpty()) {
+                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(), project.getLayout().files(source.getFileClasspathDependencies()));
+            }
         }
     }
 

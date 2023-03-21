@@ -39,7 +39,7 @@ public class PropertyManager extends ManagerBase {
         builder.keepDependencyInitScriptUpdated(true);
         builder.tryGeneratingSourceJar(false);
         builder.tryGeneratingJavaDocJar(false);
-        builder.addDependencySourcesToProject(true);
+        builder.enableIdeSupport(true);
         builder.registerDependencyToProject(true);
         builder.registerDependencyRepositoryToProject(true);
         builder.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
