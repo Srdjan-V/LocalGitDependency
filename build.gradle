@@ -5,8 +5,13 @@ plugins {
     id 'idea'
 }
 
+def currentBranch = ("git rev-parse --abbrev-ref HEAD").execute().inputStream.readLines().get(0)
+if (currentBranch != "master") {
+    version = project.version + "-dev"
+} else {
+    version = project.version
+}
 group = project.group
-version = project.version
 
 repositories {
     mavenCentral()
@@ -76,7 +81,6 @@ publishing {
 
 def publishPluginsChecks = tasks.register("publishPluginsChecks") {
     doLast {
-        def currentBranch = ("git rev-parse --abbrev-ref HEAD").execute().inputStream.readLines().get(0)
         if (currentBranch != "master") {
             throw new RuntimeException("You can't publish to the gradle plugin portal if not on the master branch")
         }

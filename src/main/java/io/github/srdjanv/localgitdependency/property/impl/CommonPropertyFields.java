@@ -1,4 +1,4 @@
-package io.github.srdjanv.localgitdependency.property;
+package io.github.srdjanv.localgitdependency.property.impl;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 

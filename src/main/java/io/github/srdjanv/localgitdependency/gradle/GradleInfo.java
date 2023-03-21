@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.gradle;
 import org.jetbrains.annotations.NotNull;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.property.impl.Property;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;

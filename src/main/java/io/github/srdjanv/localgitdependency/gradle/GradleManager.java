@@ -7,7 +7,7 @@ import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.DefaultProperty;
+import io.github.srdjanv.localgitdependency.property.impl.DefaultProperty;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;

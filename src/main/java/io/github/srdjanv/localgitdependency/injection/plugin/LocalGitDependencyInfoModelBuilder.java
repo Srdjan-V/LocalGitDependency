@@ -10,6 +10,7 @@ import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.UnknownDomainObjectException;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
 import org.gradle.api.plugins.JavaPluginExtension;
@@ -145,10 +146,18 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
         for (SourceSet sourceSet : sourceContainer) {
             SourceDirectorySet sourceDirectorySet = sourceSet.getJava();
             List<String> paths = new ArrayList<>();
+            List<String> classpathDependencies = new ArrayList<>();
+
             for (File file : sourceDirectorySet.getSourceDirectories().getFiles()) {
                 paths.add(file.getAbsolutePath());
             }
-            sourceSets.add(new DefaultSourceSet(sourceSet.getName(), paths));
+
+            for (Dependency dependency : project.getConfigurations().getByName(sourceSet.getCompileClasspathConfigurationName()).getAllDependencies()) {
+                if (dependency.getGroup() == null || dependency.getVersion() == null || dependency.getName().equals("unspecified"))
+                    continue;
+                classpathDependencies.add(dependency.getGroup() + ":" + dependency.getName() + ":" + dependency.getVersion());
+            }
+            sourceSets.add(new DefaultSourceSet(sourceSet.getName(), sourceSet.getCompileClasspathConfigurationName(), paths, classpathDependencies));
         }
 
         return sourceSets;

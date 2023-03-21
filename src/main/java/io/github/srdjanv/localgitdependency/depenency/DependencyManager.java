@@ -6,9 +6,11 @@ import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.property.impl.Property;
+import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
@@ -66,7 +68,7 @@ public class DependencyManager extends ManagerBase {
 
         for (Dependency dependency : dependencies) {
             if (dependency.isAddDependencySourcesToProject()) {
-                addSourceSets(sourceSetContainer, dependency);
+                addSourceSets(project.getRootProject(), sourceSetContainer, dependency);
             }
             switch (dependency.getDependencyType()) {
                 case MavenLocal:
@@ -214,13 +216,20 @@ public class DependencyManager extends ManagerBase {
         project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getProbeData().getProjectId(), configureClosure);
     }
 
-    private void addSourceSets(SourceSetContainer sourceSetContainer, Dependency dependency) {
+    // TODO: 21/03/2023 improve
+    private void addSourceSets(Project project, SourceSetContainer sourceSetContainer, Dependency dependency) {
         ManagerLogger.info("Dependency: {} adding sourceSets", dependency.getName());
 
         for (PersistentDependencyData.SourceSetSerializable source : dependency.getPersistentInfo().getProbeData().getSources()) {
-            sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
+            NamedDomainObjectProvider<SourceSet> sourceSetNamedDomainObjectProvider = sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
                 sourceSet.java(dependencySet -> dependencySet.srcDir(source.getSources()));
             });
+
+            SourceSet sourceSet = sourceSetNamedDomainObjectProvider.get();
+            for (String classpathDependency : source.getClasspathDependencies()) {
+                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(), classpathDependency);
+            }
+
         }
     }
 

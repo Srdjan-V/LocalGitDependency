@@ -5,6 +5,9 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.property.impl.CommonPropertyFields;
+import io.github.srdjanv.localgitdependency.property.impl.DefaultProperty;
+import io.github.srdjanv.localgitdependency.property.impl.Property;
 import org.gradle.api.GradleException;
 
 import java.io.File;
@@ -64,9 +67,9 @@ public class PropertyManager extends ManagerBase {
     }
 
     public void createEssentialDirectories() {
-        Constants.checkExistsAndMkdirs(globalProperty.persistentDir);
-        Constants.checkExistsAndMkdirs(globalProperty.gitDir);
-        Constants.checkExistsAndMkdirs(globalProperty.mavenDir);
+        Constants.checkExistsAndMkdirs(globalProperty.getPersistentDir());
+        Constants.checkExistsAndMkdirs(globalProperty.getGitDir());
+        Constants.checkExistsAndMkdirs(globalProperty.getMavenDir());
     }
 
     private void configureFilePaths(DefaultProperty.Builder defaultProperty) {

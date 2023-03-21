@@ -5,8 +5,8 @@ import io.github.srdjanv.localgitdependency.LocalGitDependencyPlugin;
 import io.github.srdjanv.localgitdependency.ProjectInstance;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ProjectManager;
-import io.github.srdjanv.localgitdependency.property.DefaultProperty;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.property.impl.DefaultProperty;
+import io.github.srdjanv.localgitdependency.property.impl.Property;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.Optional;

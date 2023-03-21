@@ -5,7 +5,7 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.property.impl.Property;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

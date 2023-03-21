@@ -1,7 +1,9 @@
-package io.github.srdjanv.localgitdependency.property;
+package io.github.srdjanv.localgitdependency.property.impl;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
+import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
+import io.github.srdjanv.localgitdependency.property.PropertyManager;
 
 import java.util.List;
 
@@ -56,7 +58,7 @@ public class Property extends CommonPropertyGetters {
         return configureClosure;
     }
 
-    public static class Builder extends CommonPropertyBuilder {
+    public static class Builder extends CommonPropertyBuilder implements DependencyBuilder {
         private final String url;
         private String name;
         private String target;

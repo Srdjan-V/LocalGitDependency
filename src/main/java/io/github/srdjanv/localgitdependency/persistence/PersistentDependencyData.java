@@ -119,16 +119,30 @@ public class PersistentDependencyData {
 
     public static class SourceSetSerializable implements SourceSet {
         private final String name;
+        private final String classpathConfigurationName;
+        private final List<String> classpathDependencies;
         private final List<String> sources;
 
         public SourceSetSerializable(SourceSet sourceSet) {
             this.name = sourceSet.getName();
             this.sources = sourceSet.getSources();
+            this.classpathConfigurationName = sourceSet.classpathConfigurationName();
+            this.classpathDependencies = sourceSet.getClasspathDependencies();
         }
 
         @Override
         public String getName() {
             return name;
+        }
+
+        @Override
+        public String classpathConfigurationName() {
+            return classpathConfigurationName;
+        }
+
+        @Override
+        public List<String> getClasspathDependencies() {
+            return classpathDependencies;
         }
 
         @Override

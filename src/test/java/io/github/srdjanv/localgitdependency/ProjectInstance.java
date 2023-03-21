@@ -3,13 +3,25 @@ package io.github.srdjanv.localgitdependency;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Properties;
 
 public class ProjectInstance {
+
+    private static String branch;
+
+    private static String getBranch() {
+        if (branch == null) {
+            try (InputStream stream = Runtime.getRuntime().exec("git rev-parse --abbrev-ref HEAD").getInputStream();
+                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream))) {
+                branch = bufferedReader.readLine();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return branch;
+    }
 
     public static Project createProject() {
         File projectDir = new File(".", "test/project/");
@@ -27,8 +39,15 @@ public class ProjectInstance {
             throw new RuntimeException(e);
         }
 
-        project.setVersion(properties.getProperty("version"));
-        Constants.PROJECT_VERSION = properties.getProperty("version");
+        String version;
+        if (!getBranch().equals("master")) {
+            version = properties.getProperty("version") + "-dev";
+        } else {
+            version = properties.getProperty("version");
+        }
+
+        project.setVersion(version);
+        Constants.PROJECT_VERSION = version;
         project.setGroup(properties.getProperty("group"));
         project.getPluginManager().apply("io.github.srdjan-v.local-git-dependency");
         project.getPluginManager().apply("java");

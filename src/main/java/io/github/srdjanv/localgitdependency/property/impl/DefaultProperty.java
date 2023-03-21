@@ -1,4 +1,7 @@
-package io.github.srdjanv.localgitdependency.property;
+package io.github.srdjanv.localgitdependency.property.impl;
+
+import io.github.srdjanv.localgitdependency.property.DefaultBuilder;
+import io.github.srdjanv.localgitdependency.property.PropertyManager;
 
 /**
  * Property's used for global configuration
@@ -15,7 +18,7 @@ public class DefaultProperty extends CommonPropertyGetters {
         PropertyManager.instantiateCommonPropertyFieldsInstance(this, builder);
     }
 
-    DefaultProperty() {
+    public DefaultProperty() {
         keepMainInitScriptUpdated = null;
         generateDefaultGradleTasks = null;
         automaticCleanup = null;
@@ -33,34 +36,22 @@ public class DefaultProperty extends CommonPropertyGetters {
         return automaticCleanup;
     }
 
-    public static class Builder extends CommonPropertyBuilder {
+    public static class Builder extends CommonPropertyBuilder implements DefaultBuilder {
         private Boolean keepMainInitScriptUpdated;
         private Boolean generateDefaultGradleTasks;
         private Boolean automaticCleanup;
 
-        /**
-         * If set to false the generated mainInitScript will new be updated of fixed if changes are detected
-         *
-         * @param keepMainInitScriptUpdated If it should stay updated
-         */
+        @Override
         public void keepMainInitScriptUpdated(Boolean keepMainInitScriptUpdated) {
             this.keepMainInitScriptUpdated = keepMainInitScriptUpdated;
         }
 
-        /**
-         * This will generate default tasks
-         *
-         * @param generateDefaultGradleTasks if it should create custom tasks
-         */
+        @Override
         public void generateDefaultGradleTasks(Boolean generateDefaultGradleTasks) {
             this.generateDefaultGradleTasks = generateDefaultGradleTasks;
         }
 
-        /**
-         * Cleanup removed dependencies
-         *
-         * @param automaticCleanup if it should cleanup removed dependencies
-         */
+        @Override
         public void automaticCleanup(Boolean automaticCleanup) {
             this.automaticCleanup = automaticCleanup;
         }

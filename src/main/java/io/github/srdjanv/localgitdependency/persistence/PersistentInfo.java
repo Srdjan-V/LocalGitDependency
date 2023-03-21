@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.property.impl.Property;
 
 import java.io.*;
 import java.util.Objects;

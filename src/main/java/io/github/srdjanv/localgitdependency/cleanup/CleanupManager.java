@@ -4,7 +4,7 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.DefaultProperty;
+import io.github.srdjanv.localgitdependency.property.impl.DefaultProperty;
 
 import java.io.File;
 import java.io.IOException;

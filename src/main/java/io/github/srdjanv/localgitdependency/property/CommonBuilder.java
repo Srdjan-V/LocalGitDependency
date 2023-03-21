@@ -4,14 +4,7 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
 import java.io.File;
 
-/**
- * Base property's used for dependency and global configuration.
- * A new dependency will inherit properties from the global configuration.
- */
-@SuppressWarnings("unused")
-public abstract class CommonPropertyBuilder extends CommonPropertyFields {
-    CommonPropertyBuilder() {
-    }
+public interface CommonBuilder {
 
     /**
      * To what configuration the dependency is going to be added
@@ -19,27 +12,21 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      * @param configuration Configuration name
      * @see org.gradle.api.artifacts.ConfigurationContainer
      */
-    public void configuration(String configuration) {
-        this.configuration = configuration;
-    }
+    void configuration(String configuration);
 
     /**
      * This will try to keep the gir repo of the dependency updated
      *
      * @param keepGitUpdated True if the plugin should update the git repo if the target commit changes
      */
-    public void keepGitUpdated(Boolean keepGitUpdated) {
-        this.keepGitUpdated = keepGitUpdated;
-    }
+    void keepGitUpdated(Boolean keepGitUpdated);
 
     /**
      * If set to false the generated dependencyInitScript will never be updated of fixed if changes are detected
      *
      * @param keepDependencyInitScriptUpdated If it should stay updated
      */
-    public void keepDependencyInitScriptUpdated(Boolean keepDependencyInitScriptUpdated) {
-        this.keepDependencyInitScriptUpdated = keepDependencyInitScriptUpdated;
-    }
+    void keepDependencyInitScriptUpdated(Boolean keepDependencyInitScriptUpdated);
 
     /**
      * This will set the directory in which the dependency will be created, it will not set the folder.
@@ -47,36 +34,28 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      *
      * @param dir directory target
      */
-    public void gitDir(File dir) {
-        this.gitDir = dir;
-    }
+    void gitDir(File dir);
 
     /**
      * Same as the above, but takes a string
      *
      * @param dir directory target
      */
-    public void gitDir(String dir) {
-        this.gitDir = new File(dir);
-    }
+    void gitDir(String dir);
 
     /**
      * Some project need a specific java version to be build, specify the path of the JDK
      *
      * @param javaHomeDir Path to the JDK
      */
-    public void javaHomeDir(File javaHomeDir) {
-        this.javaHomeDir = javaHomeDir;
-    }
+    void javaHomeDir(File javaHomeDir);
 
     /**
      * Same as the above, but takes a string
      *
      * @param javaHomeDir directory target
      */
-    public void javaHomeDir(String javaHomeDir) {
-        this.javaHomeDir = new File(javaHomeDir);
-    }
+    void javaHomeDir(String javaHomeDir);
 
     /**
      * This will set the directory in which the dependency data will be stored, it will not set the folder.
@@ -84,18 +63,14 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      *
      * @param persistentDir directory target
      */
-    public void persistentDir(File persistentDir) {
-        this.persistentDir = persistentDir;
-    }
+    void persistentDir(File persistentDir);
 
     /**
      * Same as the above, but takes a string
      *
      * @param persistentDir directory target
      */
-    public void persistentDir(String persistentDir) {
-        this.persistentDir = new File(persistentDir);
-    }
+    void persistentDir(String persistentDir);
 
 
     /**
@@ -104,18 +79,14 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      * @param mavenDir directory target
      * @see Dependency.Type
      */
-    public void mavenDir(File mavenDir) {
-        this.mavenDir = mavenDir;
-    }
+    void mavenDir(File mavenDir);
 
     /**
      * Same as the above, but takes a string
      *
      * @param mavenDir directory target
      */
-    public void mavenDir(String mavenDir) {
-        this.mavenDir = new File(mavenDir);
-    }
+    void mavenDir(String mavenDir);
 
     /**
      * How the dependency is going to be added to the project
@@ -123,36 +94,28 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      * @param dependencyType dependency target
      * @see Dependency.Type
      */
-    public void dependencyType(Dependency.Type dependencyType) {
-        this.dependencyType = dependencyType;
-    }
+    void dependencyType(Dependency.Type dependencyType);
 
     /**
      * If the cloned dependency doesn't have a task that is going to make a source jar, the plugin can try to generate one
      *
      * @param tryGeneratingSourceJar if it should try
      */
-    public void tryGeneratingSourceJar(Boolean tryGeneratingSourceJar) {
-        this.tryGeneratingSourceJar = tryGeneratingSourceJar;
-    }
+    void tryGeneratingSourceJar(Boolean tryGeneratingSourceJar);
 
     /**
      * If the cloned dependency doesn't have a task that is going to make a java doc jar, the plugin can try to generate one
      *
      * @param tryGeneratingJavaDocJar if it should try
      */
-    public void tryGeneratingJavaDocJar(Boolean tryGeneratingJavaDocJar) {
-        this.tryGeneratingJavaDocJar = tryGeneratingJavaDocJar;
-    }
+    void tryGeneratingJavaDocJar(Boolean tryGeneratingJavaDocJar);
 
     /**
      * If the cloned dependencies source sets should be added to the main project.
      *
      * @param addDependencySourcesToProject if it should add the source sets
      */
-    public void addDependencySourcesToProject(Boolean addDependencySourcesToProject) {
-        this.addDependencySourcesToProject = addDependencySourcesToProject;
-    }
+    void addDependencySourcesToProject(Boolean addDependencySourcesToProject);
 
     /**
      * If the built dependencies should be added as dependencies.
@@ -161,9 +124,7 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      * @param registerDependencyToProject if it should register the dependency
      * @see org.gradle.api.artifacts.dsl.DependencyHandler
      */
-    public void registerDependencyToProject(Boolean registerDependencyToProject) {
-        this.registerDependencyToProject = registerDependencyToProject;
-    }
+    void registerDependencyToProject(Boolean registerDependencyToProject);
 
     /**
      * If a repository should be added for the build dependency, this is will not do anything for the Jar dependency type
@@ -172,10 +133,7 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      * @see Dependency.Type
      * @see org.gradle.api.artifacts.dsl.RepositoryHandler
      */
-    public void registerDependencyRepositoryToProject(Boolean registerDependencyRepositoryToProject) {
-        this.registerDependencyRepositoryToProject = registerDependencyRepositoryToProject;
-    }
-
+    void registerDependencyRepositoryToProject(Boolean registerDependencyRepositoryToProject);
 
     /**
      * Custom tasks can be generated for this dependency
@@ -183,9 +141,7 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      * @param generateGradleTasks if it should create custom tasks
      * @see org.gradle.api.artifacts.dsl.DependencyHandler
      */
-    public void generateGradleTasks(Boolean generateGradleTasks) {
-        this.generateGradleTasks = generateGradleTasks;
-    }
+    void generateGradleTasks(Boolean generateGradleTasks);
 
     /**
      * For how long should the gradle daemon used for dependency building idle.
@@ -194,8 +150,6 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields {
      * @param gradleDaemonMaxIdleTime the amount of time in seconds
      * @see java.util.concurrent.TimeUnit
      */
-    public void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime) {
-        this.gradleDaemonMaxIdleTime = gradleDaemonMaxIdleTime;
-    }
+    void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime);
 
 }
