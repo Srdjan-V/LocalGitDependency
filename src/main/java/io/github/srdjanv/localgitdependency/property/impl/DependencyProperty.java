@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Property's that only a dependency can have
  */
-public class Property extends CommonPropertyGetters {
+public class DependencyProperty extends CommonPropertyGetters {
     private final String url;
     private final String name;
     private final String target;
@@ -19,7 +19,7 @@ public class Property extends CommonPropertyGetters {
     private final List<String> generatedArtifactNames;
     private final Closure<?> configureClosure;
 
-    public Property(Builder builder) {
+    public DependencyProperty(Builder builder) {
         url = builder.url;
         name = builder.name;
         target = builder.target;

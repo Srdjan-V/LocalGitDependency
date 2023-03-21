@@ -6,8 +6,8 @@ import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.ProjectInstances;
 import io.github.srdjanv.localgitdependency.property.impl.CommonPropertyFields;
-import io.github.srdjanv.localgitdependency.property.impl.DefaultProperty;
-import io.github.srdjanv.localgitdependency.property.impl.Property;
+import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
+import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.gradle.api.GradleException;
 
 import java.io.File;
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PropertyManager extends ManagerBase {
     private boolean customGlobalProperty;
-    private DefaultProperty globalProperty;
+    private GlobalProperty globalProperty;
 
     public PropertyManager(ProjectInstances projectInstances) {
         super(projectInstances);
@@ -24,7 +24,7 @@ public class PropertyManager extends ManagerBase {
 
     @Override
     protected void managerConstructor() {
-        DefaultProperty.Builder builder = new DefaultProperty.Builder();
+        GlobalProperty.Builder builder = new GlobalProperty.Builder();
         builder.configuration(Constants.JAVA_IMPLEMENTATION);
         File defaultDir = Constants.defaultDir.apply(getProject());
         builder.persistentDir(Constants.defaultPersistentDir.apply(defaultDir));
@@ -44,25 +44,25 @@ public class PropertyManager extends ManagerBase {
         builder.registerDependencyRepositoryToProject(true);
         builder.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
 
-        globalProperty = new DefaultProperty(builder);
+        globalProperty = new GlobalProperty(builder);
     }
 
-    public void globalProperty(Closure<DefaultProperty.Builder> configureClosure) {
+    public void globalProperty(Closure<GlobalProperty.Builder> configureClosure) {
         if (configureClosure != null) {
             if (customGlobalProperty) {
                 throw new GradleException("You can't change the globalProperty once they are set");
             }
-            DefaultProperty.Builder defaultProperty = new DefaultProperty.Builder();
+            GlobalProperty.Builder defaultProperty = new GlobalProperty.Builder();
             configureClosure.setDelegate(defaultProperty);
             configureClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
             configureClosure.call();
             configureFilePaths(defaultProperty);
-            this.globalProperty = resolveGlobalProperty(new DefaultProperty(defaultProperty));
+            this.globalProperty = resolveGlobalProperty(new GlobalProperty(defaultProperty));
             customGlobalProperty = true;
         }
     }
 
-    public DefaultProperty getGlobalProperty() {
+    public GlobalProperty getGlobalProperty() {
         return globalProperty;
     }
 
@@ -72,7 +72,7 @@ public class PropertyManager extends ManagerBase {
         Constants.checkExistsAndMkdirs(globalProperty.getMavenDir());
     }
 
-    private void configureFilePaths(DefaultProperty.Builder defaultProperty) {
+    private void configureFilePaths(GlobalProperty.Builder defaultProperty) {
         File defaultDir = Constants.defaultDir.apply(getProject());
         for (Field field : CommonPropertyFields.class.getDeclaredFields()) {
             try {
@@ -90,11 +90,11 @@ public class PropertyManager extends ManagerBase {
     }
 
     //applies missing globalProperty from the defaultGlobalProperty
-    private DefaultProperty resolveGlobalProperty(DefaultProperty newGlobalProperty) {
-        DefaultProperty resolvedProperty = new DefaultProperty();
+    private GlobalProperty resolveGlobalProperty(GlobalProperty newGlobalProperty) {
+        GlobalProperty resolvedProperty = new GlobalProperty();
         Class<?>[] classes = new Class[2];
         classes[0] = CommonPropertyFields.class;
-        classes[1] = DefaultProperty.class;
+        classes[1] = GlobalProperty.class;
 
         for (Class<?> clazz : classes) {
             for (Field field : clazz.getDeclaredFields()) {
@@ -119,13 +119,13 @@ public class PropertyManager extends ManagerBase {
     }
 
     //applies missing dependencyProperty from the globalProperty
-    public void applyDefaultProperty(Property dependencyProperty) {
+    public void applyDefaultProperty(DependencyProperty dependencyDependencyProperty) {
         Class<CommonPropertyFields> clazz = CommonPropertyFields.class;
         for (Field field : clazz.getDeclaredFields()) {
             try {
                 field.setAccessible(true);
-                if (field.get(dependencyProperty) == null) {
-                    field.set(dependencyProperty, field.get(globalProperty));
+                if (field.get(dependencyDependencyProperty) == null) {
+                    field.set(dependencyDependencyProperty, field.get(globalProperty));
                 }
             } catch (Exception e) {
                 throw new GradleException(String.format("Unexpected error while reflecting %s class", clazz), e);

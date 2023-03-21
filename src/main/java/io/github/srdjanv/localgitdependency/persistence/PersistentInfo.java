@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import io.github.srdjanv.localgitdependency.property.impl.Property;
+import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 
 import java.io.*;
 import java.util.Objects;
@@ -18,9 +18,9 @@ public class PersistentInfo {
     private boolean dependencyTypeChanged;
     private boolean dirty;
 
-    public PersistentInfo(Property dependencyProperty, Dependency dependency) {
+    public PersistentInfo(DependencyProperty dependencyDependencyProperty, Dependency dependency) {
         this.dependency = dependency;
-        this.persistentFile = Constants.persistentJsonFile.apply(dependencyProperty.getPersistentDir(), dependency.getName());
+        this.persistentFile = Constants.persistentJsonFile.apply(dependencyDependencyProperty.getPersistentDir(), dependency.getName());
         this.persistentDependencyData = new PersistentDependencyData();
         try {
             loadFromJson();

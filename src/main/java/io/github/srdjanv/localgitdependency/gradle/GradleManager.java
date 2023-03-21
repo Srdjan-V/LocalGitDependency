@@ -7,7 +7,7 @@ import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.impl.DefaultProperty;
+import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
@@ -230,7 +230,7 @@ public class GradleManager extends ManagerBase {
     }
 
     private void validateMainInitScript() {
-        DefaultProperty globalProperty = getPropertyManager().getGlobalProperty();
+        GlobalProperty globalProperty = getPropertyManager().getGlobalProperty();
         File mainInit = Constants.concatFile.apply(globalProperty.getPersistentDir(), Constants.MAIN_INIT_SCRIPT_GRADLE);
         validateScript(
                 mainInit,

@@ -6,7 +6,7 @@ import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.impl.Property;
+import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
@@ -31,8 +31,8 @@ public class DependencyManager extends ManagerBase {
     protected void managerConstructor() {
     }
 
-    public void registerDependency(String configurationName, String dependencyURL, Closure<Property.Builder> configureClosure) {
-        Property.Builder dependencyPropertyBuilder = new Property.Builder(dependencyURL);
+    public void registerDependency(String configurationName, String dependencyURL, Closure<DependencyProperty.Builder> configureClosure) {
+        DependencyProperty.Builder dependencyPropertyBuilder = new DependencyProperty.Builder(dependencyURL);
 
         if (configureClosure != null) {
             configureClosure.setDelegate(dependencyPropertyBuilder);
@@ -40,10 +40,10 @@ public class DependencyManager extends ManagerBase {
             configureClosure.call();
         }
 
-        Property dependencyProperty = new Property(dependencyPropertyBuilder);
-        getPropertyManager().applyDefaultProperty(dependencyProperty);
+        DependencyProperty dependencyDependencyProperty = new DependencyProperty(dependencyPropertyBuilder);
+        getPropertyManager().applyDefaultProperty(dependencyDependencyProperty);
 
-        dependencies.add(new Dependency(configurationName, dependencyProperty));
+        dependencies.add(new Dependency(configurationName, dependencyDependencyProperty));
     }
 
     public void addBuiltDependencies() {

@@ -4,7 +4,7 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.impl.DefaultProperty;
+import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class CleanupManager extends ManagerBase {
     }
 
     public void init() {
-        DefaultProperty props = getPropertyManager().getGlobalProperty();
+        GlobalProperty props = getPropertyManager().getGlobalProperty();
 
         if (!props.getAutomaticCleanup()) {
             ManagerLogger.info("Skipping cleanup");

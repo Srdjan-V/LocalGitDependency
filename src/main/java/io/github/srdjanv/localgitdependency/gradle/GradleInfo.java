@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.gradle;
 import org.jetbrains.annotations.NotNull;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.property.impl.Property;
+import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -17,14 +17,14 @@ public class GradleInfo {
     private final boolean tryGeneratingJavaDocJar;
     private final int gradleDaemonMaxIdleTime;
 
-    public GradleInfo(Property dependencyProperty, Dependency dependency) {
+    public GradleInfo(DependencyProperty dependencyDependencyProperty, Dependency dependency) {
         this.dependency = dependency;
-        this.keepDependencyInitScriptUpdated = dependencyProperty.getKeepDependencyInitScriptUpdated();
-        this.initScript = Constants.persistentInitScript.apply(dependencyProperty.getPersistentDir(), dependency.getName());
-        this.javaHome = dependencyProperty.getJavaHomeDir();
-        this.tryGeneratingSourceJar = dependencyProperty.getTryGeneratingSourceJar();
-        this.tryGeneratingJavaDocJar = dependencyProperty.getTryGeneratingJavaDocJar();
-        this.gradleDaemonMaxIdleTime = dependencyProperty.getGradleDaemonMaxIdleTime();
+        this.keepDependencyInitScriptUpdated = dependencyDependencyProperty.getKeepDependencyInitScriptUpdated();
+        this.initScript = Constants.persistentInitScript.apply(dependencyDependencyProperty.getPersistentDir(), dependency.getName());
+        this.javaHome = dependencyDependencyProperty.getJavaHomeDir();
+        this.tryGeneratingSourceJar = dependencyDependencyProperty.getTryGeneratingSourceJar();
+        this.tryGeneratingJavaDocJar = dependencyDependencyProperty.getTryGeneratingJavaDocJar();
+        this.gradleDaemonMaxIdleTime = dependencyDependencyProperty.getGradleDaemonMaxIdleTime();
     }
 
     @NotNull
