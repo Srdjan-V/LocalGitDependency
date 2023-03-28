@@ -10,6 +10,7 @@ import org.gradle.api.GradleException;
 
 import java.io.*;
 
+// TODO: 28/03/2023 implement interface access and move all serialization logic to this class
 public class PersistenceManager extends ManagerBase {
     private PersistentProjectData serializableProperty;
     private boolean dirty;

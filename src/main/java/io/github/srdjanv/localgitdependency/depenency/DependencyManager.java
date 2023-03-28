@@ -12,6 +12,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
 import java.io.IOException;
@@ -236,7 +237,8 @@ public class DependencyManager extends ManagerBase {
         }
     }
 
+    @Unmodifiable
     public Set<Dependency> getDependencies() {
-        return dependencies;
+        return Collections.unmodifiableSet(dependencies);
     }
 }

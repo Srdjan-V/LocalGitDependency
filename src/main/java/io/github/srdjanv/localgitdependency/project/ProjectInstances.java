@@ -5,7 +5,7 @@ import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
 import io.github.srdjanv.localgitdependency.git.GitManager;
-import io.github.srdjanv.localgitdependency.gradle.GradleManager;
+import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
 import io.github.srdjanv.localgitdependency.property.PropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.TasksManager;
@@ -20,7 +20,7 @@ public class ProjectInstances implements Managers {
     private final PropertyManager propertyManager;
     private final DependencyManager dependencyManager;
     private final GitManager gitManager;
-    private final GradleManager gradleManager;
+    private final IGradleManager gradleManager;
     private final PersistenceManager persistenceManager;
     private final TasksManager tasksManager;
     private final LocalGitDependencyExtension localGitDependencyExtension;
@@ -35,7 +35,7 @@ public class ProjectInstances implements Managers {
         managerList.add(dependencyManager = new DependencyManager(this));
         managerList.add(propertyManager = new PropertyManager(this));
         managerList.add(gitManager = new GitManager(this));
-        managerList.add(gradleManager = new GradleManager(this));
+        managerList.add((ManagerBase) (gradleManager = IGradleManager.createInstance(this)));
         managerList.add(persistenceManager = new PersistenceManager(this));
         managerList.add(tasksManager = new TasksManager(this));
         managerList.add(cleanupManager = new CleanupManager(this));
@@ -71,7 +71,7 @@ public class ProjectInstances implements Managers {
     }
 
     @Override
-    public GradleManager getGradleManager() {
+    public IGradleManager getGradleManager() {
         return gradleManager;
     }
 

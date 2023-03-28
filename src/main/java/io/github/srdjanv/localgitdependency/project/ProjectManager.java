@@ -4,7 +4,7 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
 import io.github.srdjanv.localgitdependency.git.GitManager;
-import io.github.srdjanv.localgitdependency.gradle.GradleManager;
+import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
 import io.github.srdjanv.localgitdependency.property.PropertyManager;
@@ -36,7 +36,7 @@ public class ProjectManager extends ManagerBase {
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getGradleManager().initGradleAPI(),
-                    GradleManager.class.getDeclaredMethod("initGradleAPI")
+                    IGradleManager.class.getDeclaredMethod("initGradleAPI")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getPersistenceManager().savePersistentData(),
@@ -44,7 +44,7 @@ public class ProjectManager extends ManagerBase {
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getGradleManager().buildDependencies(),
-                    GradleManager.class.getDeclaredMethod("buildDependencies")
+                    IGradleManager.class.getDeclaredMethod("buildDependencies")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getDependencyManager().addBuiltDependencies(),
