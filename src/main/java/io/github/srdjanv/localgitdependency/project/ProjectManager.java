@@ -30,6 +30,10 @@ class ProjectManager extends ManagerBase implements IProjectManager {
                     ICleanupManager.class.getDeclaredMethod("init")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
+                    managers -> managers.getPersistenceManager().loadPersistentData(),
+                    IPersistenceManager.class.getDeclaredMethod("loadPersistentData")
+            ));
+            PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getGitManager().initRepos(),
                     IGitManager.class.getDeclaredMethod("initRepos")
             ));
