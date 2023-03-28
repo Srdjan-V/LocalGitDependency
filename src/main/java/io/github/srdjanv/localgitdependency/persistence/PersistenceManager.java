@@ -11,11 +11,11 @@ import org.gradle.api.GradleException;
 import java.io.*;
 
 // TODO: 28/03/2023 implement interface access and move all serialization logic to this class
-public class PersistenceManager extends ManagerBase {
+class PersistenceManager extends ManagerBase implements IPersistenceManager {
     private PersistentProjectData serializableProperty;
     private boolean dirty;
 
-    public PersistenceManager(ProjectInstances projectInstances) {
+    PersistenceManager(ProjectInstances projectInstances) {
         super(projectInstances);
     }
 
@@ -39,15 +39,18 @@ public class PersistenceManager extends ManagerBase {
         }
     }
 
+    @Override
     public String getInitScriptSHA() {
         return serializableProperty.mainInitSha1;
     }
 
+    @Override
     public void setInitScriptSHA(String initScriptSHA) {
         this.serializableProperty.mainInitSha1 = initScriptSHA;
         this.dirty = true;
     }
 
+    @Override
     public void savePersistentData() {
         if (dirty) {
             File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentDir();

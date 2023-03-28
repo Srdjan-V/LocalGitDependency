@@ -6,7 +6,7 @@ import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
-import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
+import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.property.PropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.TasksManager;
 import org.gradle.api.Project;
@@ -40,7 +40,7 @@ public class ProjectManager extends ManagerBase {
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getPersistenceManager().savePersistentData(),
-                    PersistenceManager.class.getDeclaredMethod("savePersistentData")
+                    IPersistenceManager.class.getDeclaredMethod("savePersistentData")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getGradleManager().buildDependencies(),

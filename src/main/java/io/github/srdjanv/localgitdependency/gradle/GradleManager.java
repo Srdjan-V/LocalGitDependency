@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 class GradleManager extends ManagerBase implements IGradleManager {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
 
-    public GradleManager(ProjectInstances projectInstances) {
+    GradleManager(ProjectInstances projectInstances) {
         super(projectInstances);
     }
 

@@ -6,7 +6,7 @@ import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
-import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
+import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.property.PropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.TasksManager;
 import org.gradle.api.Project;
@@ -21,7 +21,7 @@ public class ProjectInstances implements Managers {
     private final IDependencyManager dependencyManager;
     private final IGitManager gitManager;
     private final IGradleManager gradleManager;
-    private final PersistenceManager persistenceManager;
+    private final IPersistenceManager persistenceManager;
     private final TasksManager tasksManager;
     private final LocalGitDependencyExtension localGitDependencyExtension;
     private final ICleanupManager cleanupManager;
@@ -36,7 +36,7 @@ public class ProjectInstances implements Managers {
         managerList.add(propertyManager = new PropertyManager(this));
         managerList.add((ManagerBase) (gitManager = IGitManager.createInstance(this)));
         managerList.add((ManagerBase) (gradleManager = IGradleManager.createInstance(this)));
-        managerList.add(persistenceManager = new PersistenceManager(this));
+        managerList.add((ManagerBase) (persistenceManager = IPersistenceManager.createInstance(this)));
         managerList.add(tasksManager = new TasksManager(this));
         managerList.add((ManagerBase) (cleanupManager = ICleanupManager.createInstance(this)));
 
@@ -76,7 +76,7 @@ public class ProjectInstances implements Managers {
     }
 
     @Override
-    public PersistenceManager getPersistenceManager() {
+    public IPersistenceManager getPersistenceManager() {
         return persistenceManager;
     }
 
