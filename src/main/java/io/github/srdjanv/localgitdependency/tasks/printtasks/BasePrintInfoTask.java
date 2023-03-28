@@ -10,7 +10,7 @@ import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 
 import java.lang.reflect.Field;
 
-public interface BasePrintInfoTask {
+interface BasePrintInfoTask {
     default void printInfo(Dependency dependency) throws IllegalAccessException {
         StringBuilder stringBuilder = new StringBuilder();
 

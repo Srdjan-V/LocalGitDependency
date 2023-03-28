@@ -6,7 +6,7 @@ import io.github.srdjanv.localgitdependency.git.GitTasks;
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 
-public interface BaseUndoLocalChangesTask {
+interface BaseUndoLocalChangesTask {
     default void clearChanges(IGitManager gitManager, Dependency dependency) {
         GitReport gitReport = gitManager.runRepoCommand(dependency, GitTasks::clearLocalChanges);
 
