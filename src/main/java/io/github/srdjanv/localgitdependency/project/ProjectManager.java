@@ -7,7 +7,7 @@ import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
-import io.github.srdjanv.localgitdependency.property.PropertyManager;
+import io.github.srdjanv.localgitdependency.property.IPropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.TasksManager;
 
 import java.lang.reflect.Method;
@@ -23,7 +23,7 @@ class ProjectManager extends ManagerBase implements IProjectManager {
         try {
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getPropertyManager().createEssentialDirectories(),
-                    PropertyManager.class.getDeclaredMethod("createEssentialDirectories")
+                    IPropertyManager.class.getDeclaredMethod("createEssentialDirectories")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getCleanupManager().init(),

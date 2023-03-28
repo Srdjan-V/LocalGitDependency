@@ -14,11 +14,11 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 
-public class PropertyManager extends ManagerBase {
+class PropertyManager extends ManagerBase implements IPropertyManager {
     private boolean customGlobalProperty;
     private GlobalProperty globalProperty;
 
-    public PropertyManager(ProjectInstances projectInstances) {
+    PropertyManager(ProjectInstances projectInstances) {
         super(projectInstances);
     }
 
@@ -47,6 +47,7 @@ public class PropertyManager extends ManagerBase {
         globalProperty = new GlobalProperty(builder);
     }
 
+    @Override
     public void globalProperty(Closure<GlobalProperty.Builder> configureClosure) {
         if (configureClosure != null) {
             if (customGlobalProperty) {
@@ -62,10 +63,12 @@ public class PropertyManager extends ManagerBase {
         }
     }
 
+    @Override
     public GlobalProperty getGlobalProperty() {
         return globalProperty;
     }
 
+    @Override
     public void createEssentialDirectories() {
         Constants.checkExistsAndMkdirs(globalProperty.getPersistentDir());
         Constants.checkExistsAndMkdirs(globalProperty.getGitDir());
@@ -119,6 +122,7 @@ public class PropertyManager extends ManagerBase {
     }
 
     //applies missing dependencyProperty from the globalProperty
+    @Override
     public void applyDefaultProperty(DependencyProperty dependencyDependencyProperty) {
         Class<CommonPropertyFields> clazz = CommonPropertyFields.class;
         for (Field field : clazz.getDeclaredFields()) {
@@ -127,18 +131,6 @@ public class PropertyManager extends ManagerBase {
                 if (field.get(dependencyDependencyProperty) == null) {
                     field.set(dependencyDependencyProperty, field.get(globalProperty));
                 }
-            } catch (Exception e) {
-                throw new GradleException(String.format("Unexpected error while reflecting %s class", clazz), e);
-            }
-        }
-    }
-
-    public static void instantiateCommonPropertyFieldsInstance(CommonPropertyFields object, CommonPropertyFields builder) {
-        Class<CommonPropertyFields> clazz = CommonPropertyFields.class;
-        for (Field field : clazz.getDeclaredFields()) {
-            try {
-                field.setAccessible(true);
-                field.set(object, field.get(builder));
             } catch (Exception e) {
                 throw new GradleException(String.format("Unexpected error while reflecting %s class", clazz), e);
             }

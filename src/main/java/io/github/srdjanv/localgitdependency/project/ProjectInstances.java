@@ -7,7 +7,7 @@ import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtensi
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
-import io.github.srdjanv.localgitdependency.property.PropertyManager;
+import io.github.srdjanv.localgitdependency.property.IPropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.TasksManager;
 import org.gradle.api.Project;
 
@@ -17,7 +17,7 @@ import java.util.List;
 public class ProjectInstances implements Managers {
     private final Project project;
     private final IProjectManager projectManager;
-    private final PropertyManager propertyManager;
+    private final IPropertyManager propertyManager;
     private final IDependencyManager dependencyManager;
     private final IGitManager gitManager;
     private final IGradleManager gradleManager;
@@ -33,7 +33,7 @@ public class ProjectInstances implements Managers {
         managerList.add((ManagerBase) (projectManager = IProjectManager.createInstance(this)));
         managerList.add(localGitDependencyExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, LocalGitDependencyExtension.class, this));
         managerList.add((ManagerBase) (dependencyManager = IDependencyManager.createInstance(this)));
-        managerList.add(propertyManager = new PropertyManager(this));
+        managerList.add((ManagerBase) (propertyManager = IPropertyManager.createInstance(this)));
         managerList.add((ManagerBase) (gitManager = IGitManager.createInstance(this)));
         managerList.add((ManagerBase) (gradleManager = IGradleManager.createInstance(this)));
         managerList.add((ManagerBase) (persistenceManager = IPersistenceManager.createInstance(this)));
@@ -56,7 +56,7 @@ public class ProjectInstances implements Managers {
     }
 
     @Override
-    public PropertyManager getPropertyManager() {
+    public IPropertyManager getPropertyManager() {
         return propertyManager;
     }
 

@@ -6,14 +6,14 @@ import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtensi
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
-import io.github.srdjanv.localgitdependency.property.PropertyManager;
+import io.github.srdjanv.localgitdependency.property.IPropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.TasksManager;
 import org.gradle.api.Project;
 
 public interface Managers {
     Project getProject();
     IProjectManager getProjectManager();
-    PropertyManager getPropertyManager();
+    IPropertyManager getPropertyManager();
     IDependencyManager getDependencyManager();
     IGitManager getGitManager();
     IGradleManager getGradleManager();
