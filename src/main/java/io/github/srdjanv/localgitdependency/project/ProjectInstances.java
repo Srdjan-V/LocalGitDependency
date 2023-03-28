@@ -16,7 +16,7 @@ import java.util.List;
 
 public class ProjectInstances implements Managers {
     private final Project project;
-    private final ProjectManager projectManager;
+    private final IProjectManager projectManager;
     private final PropertyManager propertyManager;
     private final IDependencyManager dependencyManager;
     private final IGitManager gitManager;
@@ -30,7 +30,7 @@ public class ProjectInstances implements Managers {
         this.project = project;
 
         final List<ManagerBase> managerList = new ArrayList<>();
-        managerList.add(projectManager = new ProjectManager(this));
+        managerList.add((ManagerBase) (projectManager = IProjectManager.createInstance(this)));
         managerList.add(localGitDependencyExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, LocalGitDependencyExtension.class, this));
         managerList.add((ManagerBase) (dependencyManager = IDependencyManager.createInstance(this)));
         managerList.add(propertyManager = new PropertyManager(this));
@@ -51,7 +51,7 @@ public class ProjectInstances implements Managers {
     }
 
     @Override
-    public ProjectManager getProjectManager() {
+    public IProjectManager getProjectManager() {
         return projectManager;
     }
 

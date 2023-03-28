@@ -29,7 +29,7 @@ public abstract class ManagerBase implements Managers {
     }
 
     @Override
-    public ProjectManager getProjectManager() {
+    public IProjectManager getProjectManager() {
         return projectInstances.getProjectManager();
     }
 

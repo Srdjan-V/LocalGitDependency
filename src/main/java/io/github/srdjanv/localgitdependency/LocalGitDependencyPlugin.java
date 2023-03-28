@@ -1,6 +1,6 @@
 package io.github.srdjanv.localgitdependency;
 
-import io.github.srdjanv.localgitdependency.project.ProjectManager;
+import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.jetbrains.annotations.NotNull;
@@ -10,15 +10,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LocalGitDependencyPlugin implements Plugin<Project> {
-    private static final Map<File, ProjectManager> projectRegistry = new HashMap<>();
+    private static final Map<File, IProjectManager> projectRegistry = new HashMap<>();
 
-    public static ProjectManager getProject(Project project) {
+    public static IProjectManager getProject(Project project) {
         return projectRegistry.get(project.getProjectDir());
     }
 
     @Override
     public void apply(@NotNull Project project) {
-        ProjectManager createdProjectManager = ProjectManager.createProject(project);
+        IProjectManager createdProjectManager = IProjectManager.createProject(project);
         projectRegistry.put(project.getProjectDir(), createdProjectManager);
 
         project.afterEvaluate(p -> projectRegistry.get(p.getProjectDir()).startPlugin());

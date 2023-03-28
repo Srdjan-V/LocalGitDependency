@@ -4,16 +4,16 @@ import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.LocalGitDependencyPlugin;
 import io.github.srdjanv.localgitdependency.ProjectInstance;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.project.ProjectManager;
-import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
+import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public class DependencyWrapper {
-    private ProjectManager projectManager;
+    private IProjectManager projectManager;
     private final String dependencyName;
     private final String gitUrl;
     private String testName;
@@ -33,7 +33,7 @@ public class DependencyWrapper {
         return state;
     }
 
-    public ProjectManager getProjectManager() {
+    public IProjectManager getProjectManager() {
         return projectManager;
     }
 

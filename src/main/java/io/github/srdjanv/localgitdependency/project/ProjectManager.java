@@ -9,14 +9,13 @@ import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.property.PropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.TasksManager;
-import org.gradle.api.Project;
 
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ProjectManager extends ManagerBase {
+class ProjectManager extends ManagerBase implements IProjectManager {
     private static final List<ManagerRunner> PROJECT_RUNNERS;
 
     static {
@@ -59,10 +58,6 @@ public class ProjectManager extends ManagerBase {
         }
     }
 
-    public static ProjectManager createProject(Project project) {
-        return new ProjectInstances(project).getProjectManager();
-    }
-
     ProjectManager(ProjectInstances projectInstances) {
         super(projectInstances);
     }
@@ -71,6 +66,7 @@ public class ProjectManager extends ManagerBase {
     protected void managerConstructor() {
     }
 
+    @Override
     public void startPlugin() {
         String name = getProject().getName();
         String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
