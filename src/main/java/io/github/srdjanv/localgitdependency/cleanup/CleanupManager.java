@@ -12,9 +12,9 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.BiPredicate;
 
-public class CleanupManager extends ManagerBase {
+class CleanupManager extends ManagerBase implements ICleanupManager {
 
-    public CleanupManager(ProjectInstances projectInstances) {
+    CleanupManager(ProjectInstances projectInstances) {
         super(projectInstances);
     }
 
@@ -22,6 +22,7 @@ public class CleanupManager extends ManagerBase {
     protected void managerConstructor() {
     }
 
+    @Override
     public void init() {
         GlobalProperty props = getPropertyManager().getGlobalProperty();
 

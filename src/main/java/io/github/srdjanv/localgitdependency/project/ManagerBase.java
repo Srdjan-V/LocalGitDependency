@@ -1,6 +1,6 @@
 package io.github.srdjanv.localgitdependency.project;
 
-import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
+import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
 import io.github.srdjanv.localgitdependency.git.GitManager;
@@ -69,7 +69,7 @@ public abstract class ManagerBase implements Managers {
     }
 
     @Override
-    public CleanupManager getCleanupManager() {
+    public ICleanupManager getCleanupManager() {
         return projectInstances.getCleanupManager();
     }
 

@@ -1,7 +1,7 @@
 package io.github.srdjanv.localgitdependency.project;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
+import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
 import io.github.srdjanv.localgitdependency.git.GitManager;
@@ -24,7 +24,7 @@ public class ProjectInstances implements Managers {
     private final PersistenceManager persistenceManager;
     private final TasksManager tasksManager;
     private final LocalGitDependencyExtension localGitDependencyExtension;
-    private final CleanupManager cleanupManager;
+    private final ICleanupManager cleanupManager;
 
     public ProjectInstances(Project project) {
         this.project = project;
@@ -38,7 +38,7 @@ public class ProjectInstances implements Managers {
         managerList.add((ManagerBase) (gradleManager = IGradleManager.createInstance(this)));
         managerList.add(persistenceManager = new PersistenceManager(this));
         managerList.add(tasksManager = new TasksManager(this));
-        managerList.add(cleanupManager = new CleanupManager(this));
+        managerList.add((ManagerBase) (cleanupManager = ICleanupManager.createInstance(this)));
 
         for (ManagerBase managerBase : managerList) {
             managerBase.managerConstructor();
@@ -91,7 +91,7 @@ public class ProjectInstances implements Managers {
     }
 
     @Override
-    public CleanupManager getCleanupManager() {
+    public ICleanupManager getCleanupManager() {
         return cleanupManager;
     }
 }

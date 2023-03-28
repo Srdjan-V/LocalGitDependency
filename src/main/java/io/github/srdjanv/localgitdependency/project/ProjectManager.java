@@ -1,7 +1,7 @@
 package io.github.srdjanv.localgitdependency.project;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
+import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.git.GitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
@@ -28,7 +28,7 @@ public class ProjectManager extends ManagerBase {
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getCleanupManager().init(),
-                    CleanupManager.class.getDeclaredMethod("init")
+                    ICleanupManager.class.getDeclaredMethod("init")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getGitManager().initRepos(),
