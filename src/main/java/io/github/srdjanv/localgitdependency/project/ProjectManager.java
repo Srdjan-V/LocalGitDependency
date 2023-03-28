@@ -2,7 +2,7 @@ package io.github.srdjanv.localgitdependency.project;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
-import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
+import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.git.GitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
@@ -48,7 +48,7 @@ public class ProjectManager extends ManagerBase {
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getDependencyManager().addBuiltDependencies(),
-                    DependencyManager.class.getDeclaredMethod("addBuiltDependencies")
+                    IDependencyManager.class.getDeclaredMethod("addBuiltDependencies")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getTasksManager().initTasks(),

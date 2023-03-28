@@ -1,7 +1,7 @@
 package io.github.srdjanv.localgitdependency.project;
 
 import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
-import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
+import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
 import io.github.srdjanv.localgitdependency.git.GitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
@@ -14,7 +14,7 @@ public interface Managers {
     Project getProject();
     ProjectManager getProjectManager();
     PropertyManager getPropertyManager();
-    DependencyManager getDependencyManager();
+    IDependencyManager getDependencyManager();
     GitManager getGitManager();
     IGradleManager getGradleManager();
     PersistenceManager getPersistenceManager();

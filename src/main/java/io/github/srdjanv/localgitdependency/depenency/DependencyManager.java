@@ -21,10 +21,10 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class DependencyManager extends ManagerBase {
+class DependencyManager extends ManagerBase implements IDependencyManager{
     private final Set<Dependency> dependencies = new HashSet<>();
 
-    public DependencyManager(ProjectInstances projectInstances) {
+    DependencyManager(ProjectInstances projectInstances) {
         super(projectInstances);
     }
 
@@ -32,6 +32,7 @@ public class DependencyManager extends ManagerBase {
     protected void managerConstructor() {
     }
 
+    @Override
     public void registerDependency(String configurationName, String dependencyURL, Closure<DependencyProperty.Builder> configureClosure) {
         DependencyProperty.Builder dependencyPropertyBuilder = new DependencyProperty.Builder(dependencyURL);
 
@@ -47,6 +48,7 @@ public class DependencyManager extends ManagerBase {
         dependencies.add(new Dependency(configurationName, dependencyDependencyProperty));
     }
 
+    @Override
     public void addBuiltDependencies() {
         boolean addRepositoryMavenProjectLocal = false;
         boolean addRepositoryMavenLocal = false;
@@ -237,6 +239,7 @@ public class DependencyManager extends ManagerBase {
         }
     }
 
+    @Override
     @Unmodifiable
     public Set<Dependency> getDependencies() {
         return Collections.unmodifiableSet(dependencies);

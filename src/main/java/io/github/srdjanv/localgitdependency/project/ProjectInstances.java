@@ -2,7 +2,7 @@ package io.github.srdjanv.localgitdependency.project;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
-import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
+import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
 import io.github.srdjanv.localgitdependency.git.GitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
@@ -18,7 +18,7 @@ public class ProjectInstances implements Managers {
     private final Project project;
     private final ProjectManager projectManager;
     private final PropertyManager propertyManager;
-    private final DependencyManager dependencyManager;
+    private final IDependencyManager dependencyManager;
     private final GitManager gitManager;
     private final IGradleManager gradleManager;
     private final PersistenceManager persistenceManager;
@@ -32,7 +32,7 @@ public class ProjectInstances implements Managers {
         final List<ManagerBase> managerList = new ArrayList<>();
         managerList.add(projectManager = new ProjectManager(this));
         managerList.add(localGitDependencyExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, LocalGitDependencyExtension.class, this));
-        managerList.add(dependencyManager = new DependencyManager(this));
+        managerList.add((ManagerBase) (dependencyManager = IDependencyManager.createInstance(this)));
         managerList.add(propertyManager = new PropertyManager(this));
         managerList.add(gitManager = new GitManager(this));
         managerList.add((ManagerBase) (gradleManager = IGradleManager.createInstance(this)));
@@ -61,7 +61,7 @@ public class ProjectInstances implements Managers {
     }
 
     @Override
-    public DependencyManager getDependencyManager() {
+    public IDependencyManager getDependencyManager() {
         return dependencyManager;
     }
 
