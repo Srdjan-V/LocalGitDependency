@@ -15,8 +15,8 @@ import org.gradle.api.tasks.TaskProvider;
 
 import java.util.Arrays;
 
-public class TasksManager extends ManagerBase {
-    public TasksManager(ProjectInstances projectInstances) {
+class TasksManager extends ManagerBase implements ITasksManager {
+    TasksManager(ProjectInstances projectInstances) {
         super(projectInstances);
     }
 
@@ -24,6 +24,7 @@ public class TasksManager extends ManagerBase {
     protected void managerConstructor() {
     }
 
+    @Override
     public void initTasks() {
         TaskCreator taskCreator;
         int[] gradleVersion = Arrays.stream(getProject().getGradle().getGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();

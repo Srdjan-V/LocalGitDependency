@@ -8,7 +8,7 @@ import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.property.IPropertyManager;
-import io.github.srdjanv.localgitdependency.tasks.TasksManager;
+import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 
 import java.lang.reflect.Method;
 import java.util.LinkedList;
@@ -51,7 +51,7 @@ class ProjectManager extends ManagerBase implements IProjectManager {
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getTasksManager().initTasks(),
-                    TasksManager.class.getDeclaredMethod("initTasks")
+                    ITasksManager.class.getDeclaredMethod("initTasks")
             ));
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
