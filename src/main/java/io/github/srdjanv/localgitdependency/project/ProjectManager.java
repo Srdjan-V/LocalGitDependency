@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.project;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
-import io.github.srdjanv.localgitdependency.git.GitManager;
+import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
@@ -32,7 +32,7 @@ public class ProjectManager extends ManagerBase {
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getGitManager().initRepos(),
-                    GitManager.class.getDeclaredMethod("initRepos")
+                    IGitManager.class.getDeclaredMethod("initRepos")
             ));
             PROJECT_RUNNERS.add(new ManagerRunner(
                     managers -> managers.getGradleManager().initGradleAPI(),

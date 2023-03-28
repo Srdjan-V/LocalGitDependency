@@ -286,7 +286,7 @@ class GitObjectWrapper implements AutoCloseable, GitTasks {
         return gitExceptions != null;
     }
 
-    public GitManager.GitReport getGitReport(){
-        return new GitManager.GitReport(gitExceptions);
+    public GitReport getGitReport(){
+        return new GitReport(gitExceptions);
     }
 }

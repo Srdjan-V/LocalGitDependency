@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.project;
 import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
-import io.github.srdjanv.localgitdependency.git.GitManager;
+import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
 import io.github.srdjanv.localgitdependency.property.PropertyManager;
@@ -54,7 +54,7 @@ public abstract class ManagerBase implements Managers {
     }
 
     @Override
-    public GitManager getGitManager() {
+    public IGitManager getGitManager() {
         return projectInstances.getGitManager();
     }
 

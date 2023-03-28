@@ -4,7 +4,7 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
-import io.github.srdjanv.localgitdependency.git.GitManager;
+import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
 import io.github.srdjanv.localgitdependency.property.PropertyManager;
@@ -19,7 +19,7 @@ public class ProjectInstances implements Managers {
     private final ProjectManager projectManager;
     private final PropertyManager propertyManager;
     private final IDependencyManager dependencyManager;
-    private final GitManager gitManager;
+    private final IGitManager gitManager;
     private final IGradleManager gradleManager;
     private final PersistenceManager persistenceManager;
     private final TasksManager tasksManager;
@@ -34,7 +34,7 @@ public class ProjectInstances implements Managers {
         managerList.add(localGitDependencyExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, LocalGitDependencyExtension.class, this));
         managerList.add((ManagerBase) (dependencyManager = IDependencyManager.createInstance(this)));
         managerList.add(propertyManager = new PropertyManager(this));
-        managerList.add(gitManager = new GitManager(this));
+        managerList.add((ManagerBase) (gitManager = IGitManager.createInstance(this)));
         managerList.add((ManagerBase) (gradleManager = IGradleManager.createInstance(this)));
         managerList.add(persistenceManager = new PersistenceManager(this));
         managerList.add(tasksManager = new TasksManager(this));
@@ -66,7 +66,7 @@ public class ProjectInstances implements Managers {
     }
 
     @Override
-    public GitManager getGitManager() {
+    public IGitManager getGitManager() {
         return gitManager;
     }
 
