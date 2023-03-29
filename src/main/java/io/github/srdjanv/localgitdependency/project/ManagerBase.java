@@ -19,6 +19,7 @@ public abstract class ManagerBase implements Manager {
 
     protected abstract void managerConstructor();
 
+    @Override
     public Managers getProjectManagers() {
         return managers;
     }

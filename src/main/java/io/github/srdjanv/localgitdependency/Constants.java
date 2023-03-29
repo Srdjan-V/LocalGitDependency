@@ -22,7 +22,7 @@ public class Constants {
     public final static Function<Dependency, String> PRINT_DEPENDENCY_INFO = s -> s.getName() + "-PrintDependencyInfo";
     public final static String JAVA_IMPLEMENTATION = "implementation";
     public final static String TAB_INDENT = "    ";
-    public final static String TAB_INDENTX2 = "        ";
+    public final static String TAB_INDENTX2 = TAB_INDENT + TAB_INDENT;
 
     public final static String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
     public final static String PROJECT_DATA_JSON = "projectData.json";
@@ -84,7 +84,6 @@ public class Constants {
     public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
 
     public static final BiFunction<File, String, File> concatFile = File::new;
-
 
     public static final String RepositoryMavenProjectLocal = "MavenProjectLocal";
     public static final Function<String, String> RepositoryFlatDir = name -> name + "FlatDir";

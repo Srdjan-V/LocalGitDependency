@@ -21,7 +21,7 @@ public class LocalGitDependencyPlugin implements Plugin<Project> {
         IProjectManager createdProjectManager = IProjectManager.createProject(project);
         projectRegistry.put(project.getProjectDir(), createdProjectManager);
 
-        project.afterEvaluate(p -> projectRegistry.get(p.getProjectDir()).startPlugin());
+        project.afterEvaluate(p -> getProject(p).startPlugin());
     }
 
 }

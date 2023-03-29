@@ -8,6 +8,7 @@ import org.gradle.internal.impldep.org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Objects;
 
 public class PersistentInfo {
     private final Dependency dependency;
@@ -69,6 +70,19 @@ public class PersistentInfo {
         setDirty();
         setValidModel();
         persistentDependencyData.setProjectProbe(new PersistentDependencyData.DependencyInfoModelSerializable(defaultLocalGitDependencyInfoModel));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PersistentInfo gitInfo = (PersistentInfo) o;
+        return Objects.equals(gitInfo.getDependency().getName(), getDependency().getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dependency.getName());
     }
 
     void setValidModel() {

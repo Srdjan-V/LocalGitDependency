@@ -6,6 +6,7 @@ import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Objects;
 
 import static org.eclipse.jgit.lib.Constants.*;
 
@@ -85,6 +86,19 @@ public class GitInfo {
 
     public void setRefreshed() {
         refreshed = true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GitInfo gitInfo = (GitInfo) o;
+        return Objects.equals(gitInfo.getDependency().getName(), getDependency().getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dependency.getName());
     }
 
     public enum TargetType {

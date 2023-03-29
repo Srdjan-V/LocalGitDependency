@@ -1,12 +1,13 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
-import org.jetbrains.annotations.NotNull;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Objects;
 
 public class GradleInfo {
     private final Dependency dependency;
@@ -56,5 +57,18 @@ public class GradleInfo {
 
     public int getGradleDaemonMaxIdleTime() {
         return gradleDaemonMaxIdleTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GradleInfo gitInfo = (GradleInfo) o;
+        return Objects.equals(gitInfo.getDependency().getName(), getDependency().getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dependency.getName());
     }
 }
