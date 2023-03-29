@@ -16,7 +16,7 @@ public interface IPropertyManager extends Manager {
         return new PropertyManager(managers);
     }
 
-    void globalProperty(Closure<GlobalProperty.Builder> configureClosure);
+    void globalProperty(Closure<GlobalBuilder> configureClosure);
     GlobalProperty getGlobalProperty();
     @TaskDescription("create essential directories")
     void createEssentialDirectories();

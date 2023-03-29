@@ -5,8 +5,8 @@ import groovy.lang.DelegatesTo;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
-import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
+import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
+import io.github.srdjanv.localgitdependency.property.GlobalBuilder;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.MethodAccess;
 import org.gradle.internal.metaobject.MethodMixIn;
@@ -45,8 +45,8 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
     }
 
     public void configureGlobal(
-            @DelegatesTo(value = GlobalProperty.Builder.class, strategy = Closure.DELEGATE_FIRST)
-            Closure<GlobalProperty.Builder> configureClosure) {
+            @DelegatesTo(value = GlobalBuilder.class, strategy = Closure.DELEGATE_FIRST)
+            Closure<GlobalBuilder> configureClosure) {
         getPropertyManager().globalProperty(configureClosure);
     }
 
@@ -55,8 +55,8 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
     }
 
     public void add(String dependencyURL,
-                    @DelegatesTo(value = DependencyProperty.Builder.class, strategy = Closure.DELEGATE_FIRST)
-                    Closure<DependencyProperty.Builder> configureClosure) {
+                    @DelegatesTo(value = DependencyBuilder.class, strategy = Closure.DELEGATE_FIRST)
+                    Closure<DependencyBuilder> configureClosure) {
         add(null, dependencyURL, configureClosure);
     }
 
@@ -65,8 +65,8 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
     }
 
     public void add(String configurationName, String dependencyURL,
-                    @DelegatesTo(value = DependencyProperty.Builder.class, strategy = Closure.DELEGATE_FIRST)
-                    Closure<DependencyProperty.Builder> configureClosure) {
+                    @DelegatesTo(value = DependencyBuilder.class, strategy = Closure.DELEGATE_FIRST)
+                    Closure<DependencyBuilder> configureClosure) {
         getDependencyManager().registerDependency(configurationName, dependencyURL, configureClosure);
     }
 

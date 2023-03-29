@@ -1,6 +1,6 @@
 package io.github.srdjanv.localgitdependency.property;
 
-public interface GlobalBuilder {
+public interface GlobalBuilder extends CommonBuilder {
 
     /**
      * If set to false the generated mainInitScript will new be updated of fixed if changes are detected

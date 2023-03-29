@@ -5,8 +5,8 @@ import io.github.srdjanv.localgitdependency.LocalGitDependencyPlugin;
 import io.github.srdjanv.localgitdependency.ProjectInstance;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
-import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
+import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
+import io.github.srdjanv.localgitdependency.property.GlobalBuilder;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.Optional;
@@ -19,8 +19,8 @@ public class DependencyWrapper {
     private String testName;
     private State state;
     private Consumer<DependencyWrapper> test;
-    private Closure<GlobalProperty.Builder> globalClosure;
-    private Closure<DependencyProperty.Builder> dependencyClosure;
+    private Closure<GlobalBuilder> globalClosure;
+    private Closure<DependencyBuilder> dependencyClosure;
     private Dependency dependencyReference;
 
     public DependencyWrapper(DependencyRegistry registry) {
@@ -52,20 +52,20 @@ public class DependencyWrapper {
         }
     }
 
-    public void setGlobalClosure(Consumer<GlobalProperty.Builder> globalClosure) {
-        this.globalClosure = new Closure<GlobalProperty.Builder>(null) {
-            public GlobalProperty.Builder doCall() {
-                GlobalProperty.Builder builder = (GlobalProperty.Builder) getDelegate();
+    public void setGlobalClosure(Consumer<GlobalBuilder> globalClosure) {
+        this.globalClosure = new Closure<GlobalBuilder>(null) {
+            public GlobalBuilder doCall() {
+                GlobalBuilder builder = (GlobalBuilder) getDelegate();
                 globalClosure.accept(builder);
                 return builder;
             }
         };
     }
 
-    public void setDependencyClosure(Consumer<DependencyProperty.Builder> dependencyClosure) {
-        this.dependencyClosure = new Closure<DependencyProperty.Builder>(null) {
-            public DependencyProperty.Builder doCall() {
-                DependencyProperty.Builder builder = (DependencyProperty.Builder) getDelegate();
+    public void setDependencyClosure(Consumer<DependencyBuilder> dependencyClosure) {
+        this.dependencyClosure = new Closure<DependencyBuilder>(null) {
+            public DependencyBuilder doCall() {
+                DependencyBuilder builder = (DependencyBuilder) getDelegate();
                 dependencyClosure.accept(builder);
                 builder.name(getTestName());
                 return builder;
@@ -129,9 +129,9 @@ public class DependencyWrapper {
     private void checkDependencyState() {
         Assertions.assertNotNull(testName, "testName cant be null");
         if (dependencyClosure == null) {
-            dependencyClosure = new Closure<DependencyProperty.Builder>(null) {
-                public DependencyProperty.Builder doCall() {
-                    DependencyProperty.Builder builder = (DependencyProperty.Builder) getDelegate();
+            dependencyClosure = new Closure<DependencyBuilder>(null) {
+                public DependencyBuilder doCall() {
+                    DependencyBuilder builder = (DependencyBuilder) getDelegate();
                     builder.name(getTestName());
                     return builder;
                 }

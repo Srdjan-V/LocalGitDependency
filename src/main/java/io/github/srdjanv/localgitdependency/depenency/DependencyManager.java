@@ -6,6 +6,7 @@ import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Project;
@@ -33,7 +34,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     @Override
-    public void registerDependency(String configurationName, String dependencyURL, Closure<DependencyProperty.Builder> configureClosure) {
+    public void registerDependency(String configurationName, String dependencyURL, Closure<DependencyBuilder> configureClosure) {
         DependencyProperty.Builder dependencyPropertyBuilder = new DependencyProperty.Builder(dependencyURL);
 
         if (configureClosure != null) {

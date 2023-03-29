@@ -4,7 +4,7 @@ import groovy.lang.Closure;
 
 import java.util.List;
 
-public interface DependencyBuilder {
+public interface DependencyBuilder extends CommonBuilder {
 
     /**
      * Sets the name of the dependency, it will also be used as the directory name
