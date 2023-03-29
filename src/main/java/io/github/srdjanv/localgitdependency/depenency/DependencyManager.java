@@ -5,7 +5,7 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Project;
@@ -21,11 +21,11 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
-class DependencyManager extends ManagerBase implements IDependencyManager{
+class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
 
-    DependencyManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+    DependencyManager(Managers managers) {
+        super(managers);
     }
 
     @Override

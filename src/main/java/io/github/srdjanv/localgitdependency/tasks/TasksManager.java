@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.tasks;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.tasks.buildtasks.BuildAllGitDependencies;
 import io.github.srdjanv.localgitdependency.tasks.buildtasks.BuildGitDependency;
 import io.github.srdjanv.localgitdependency.tasks.printtasks.PrintAllDependenciesInfo;
@@ -18,8 +18,8 @@ import org.gradle.api.tasks.TaskProvider;
 import java.util.Arrays;
 
 class TasksManager extends ManagerBase implements ITasksManager {
-    TasksManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+    TasksManager(Managers managers) {
+        super(managers);
     }
 
     @Override
@@ -37,19 +37,19 @@ class TasksManager extends ManagerBase implements ITasksManager {
         }
 
         if (getPropertyManager().getGlobalProperty().getGenerateDefaultGradleTasks()) {
-            taskCreator.create(Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class, getProjectInstances());
-            taskCreator.create(Constants.PROBE_ALL_DEPENDENCIES, ProbeAllDependenciesTask.class, getProjectInstances());
-            taskCreator.create(Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class, getProjectInstances());
-            taskCreator.create(Constants.PRINT_ALL_DEPENDENCIES_INFO, PrintAllDependenciesInfo.class, getProjectInstances());
+            taskCreator.create(Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class, getProjectManagers());
+            taskCreator.create(Constants.PROBE_ALL_DEPENDENCIES, ProbeAllDependenciesTask.class, getProjectManagers());
+            taskCreator.create(Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class, getProjectManagers());
+            taskCreator.create(Constants.PRINT_ALL_DEPENDENCIES_INFO, PrintAllDependenciesInfo.class, getProjectManagers());
         }
 
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (!dependency.isGenerateGradleTasks()) continue;
 
-            taskCreator.create(Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency), UndoLocalGitChanges.class, getProjectInstances(), dependency);
-            taskCreator.create(Constants.PROBE_DEPENDENCY.apply(dependency), ProbeDependencyTask.class, getProjectInstances(), dependency);
-            taskCreator.create(Constants.BUILD_GIT_DEPENDENCY.apply(dependency), BuildGitDependency.class, getProjectInstances(), dependency);
-            taskCreator.create(Constants.PRINT_DEPENDENCY_INFO.apply(dependency), PrintDependencyInfo.class, getProjectInstances(), dependency);
+            taskCreator.create(Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency), UndoLocalGitChanges.class, getProjectManagers(), dependency);
+            taskCreator.create(Constants.PROBE_DEPENDENCY.apply(dependency), ProbeDependencyTask.class, getProjectManagers(), dependency);
+            taskCreator.create(Constants.BUILD_GIT_DEPENDENCY.apply(dependency), BuildGitDependency.class, getProjectManagers(), dependency);
+            taskCreator.create(Constants.PRINT_DEPENDENCY_INFO.apply(dependency), PrintDependencyInfo.class, getProjectManagers(), dependency);
         }
     }
 

@@ -1,9 +1,9 @@
 package io.github.srdjanv.localgitdependency.tasks.basetasks;
 
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.project.Managers;
 
 public abstract class BaseProjectTask extends BaseTask {
-    public BaseProjectTask(ProjectInstances projectInstances) {
-        super(projectInstances);
+    public BaseProjectTask(Managers managers) {
+        super(managers);
     }
 }

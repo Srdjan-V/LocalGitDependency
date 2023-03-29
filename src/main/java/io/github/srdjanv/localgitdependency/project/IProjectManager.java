@@ -2,12 +2,12 @@ package io.github.srdjanv.localgitdependency.project;
 
 import org.gradle.api.Project;
 
-public interface IProjectManager extends Managers {
+public interface IProjectManager extends Manager {
     static IProjectManager createProject(Project project) {
-        return new ProjectInstances(project).getProjectManager();
+        return new ManagersInstances(project).getProjectManager();
     }
-    static IProjectManager createInstance(ProjectInstances projectInstances) {
-        return new ProjectManager(projectInstances);
+    static IProjectManager createInstance(Managers managers) {
+        return new ProjectManager(managers);
     }
     void startPlugin();
 }

@@ -10,60 +10,54 @@ import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.property.IPropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 
-import java.lang.reflect.Method;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 class ProjectManager extends ManagerBase implements IProjectManager {
-    private static final List<ManagerRunner> PROJECT_RUNNERS;
+    private static final List<ManagerRunner<?>> PROJECT_RUNNERS;
 
     static {
-        PROJECT_RUNNERS = new LinkedList<>();
-        try {
-            PROJECT_RUNNERS.add(new ManagerRunner(
-                    managers -> managers.getPropertyManager().createEssentialDirectories(),
-                    IPropertyManager.class.getDeclaredMethod("createEssentialDirectories")
-            ));
-            PROJECT_RUNNERS.add(new ManagerRunner(
-                    managers -> managers.getCleanupManager().init(),
-                    ICleanupManager.class.getDeclaredMethod("init")
-            ));
-            PROJECT_RUNNERS.add(new ManagerRunner(
-                    managers -> managers.getPersistenceManager().loadPersistentData(),
-                    IPersistenceManager.class.getDeclaredMethod("loadPersistentData")
-            ));
-            PROJECT_RUNNERS.add(new ManagerRunner(
-                    managers -> managers.getGitManager().initRepos(),
-                    IGitManager.class.getDeclaredMethod("initRepos")
-            ));
-            PROJECT_RUNNERS.add(new ManagerRunner(
-                    managers -> managers.getGradleManager().initGradleAPI(),
-                    IGradleManager.class.getDeclaredMethod("initGradleAPI")
-            ));
-            PROJECT_RUNNERS.add(new ManagerRunner(
-                    managers -> managers.getPersistenceManager().savePersistentData(),
-                    IPersistenceManager.class.getDeclaredMethod("savePersistentData")
-            ));
-            PROJECT_RUNNERS.add(new ManagerRunner(
-                    managers -> managers.getGradleManager().buildDependencies(),
-                    IGradleManager.class.getDeclaredMethod("buildDependencies")
-            ));
-            PROJECT_RUNNERS.add(new ManagerRunner(
-                    managers -> managers.getDependencyManager().addBuiltDependencies(),
-                    IDependencyManager.class.getDeclaredMethod("addBuiltDependencies")
-            ));
-            PROJECT_RUNNERS.add(new ManagerRunner(
-                    managers -> managers.getTasksManager().initTasks(),
-                    ITasksManager.class.getDeclaredMethod("initTasks")
-            ));
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+        PROJECT_RUNNERS = new ArrayList<>();
+        PROJECT_RUNNERS.add(ManagerRunner.<IPropertyManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getPropertyManager);
+            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("createEssentialDirectories"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<ICleanupManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getCleanupManager);
+            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("init"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<IPersistenceManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getPersistenceManager);
+            managerRunner.setTask(clazz-> clazz.getDeclaredMethod("loadPersistentData"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<IGitManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getGitManager);
+            managerRunner.setTask(clazz-> clazz.getDeclaredMethod("initRepos"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<IGradleManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getGradleManager);
+            managerRunner.setTask(clazz-> clazz.getDeclaredMethod("initGradleAPI"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<IPersistenceManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getPersistenceManager);
+            managerRunner.setTask(clazz-> clazz.getDeclaredMethod("savePersistentData"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<IGradleManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getGradleManager);
+            managerRunner.setTask(clazz-> clazz.getDeclaredMethod("buildDependencies"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getDependencyManager);
+            managerRunner.setTask(clazz-> clazz.getDeclaredMethod("addBuiltDependencies"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<ITasksManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getTasksManager);
+            managerRunner.setTask(clazz-> clazz.getDeclaredMethod("initTasks"));
+        }));
     }
 
-    ProjectManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+    ProjectManager(Managers managers) {
+        super(managers);
     }
 
     @Override
@@ -75,28 +69,13 @@ class ProjectManager extends ManagerBase implements IProjectManager {
         String name = getProject().getName();
         String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
 
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         PluginLogger.startInfo("{} starting {} tasks", formattedName, Constants.EXTENSION_NAME);
-        PROJECT_RUNNERS.forEach(projectRunner -> projectRunner.runAndLog(getProjectInstances()));
-        long spent = System.currentTimeMillis() - start;
+        for (ManagerRunner<?> projectRunner : PROJECT_RUNNERS) {
+            projectRunner.runAndLog(getProjectManagers());
+        }
+        final long spent = System.currentTimeMillis() - start;
         PluginLogger.startInfo("{} finished {} tasks in {} ms", formattedName, Constants.EXTENSION_NAME, spent);
     }
 
-    private static class ManagerRunner {
-        private final Consumer<Managers> task;
-        private final Method method;
-
-        public ManagerRunner(Consumer<Managers> task, Method method) {
-            this.task = task;
-            this.method = method;
-        }
-
-        public void runAndLog(Managers managers) {
-            long start = System.currentTimeMillis();
-            PluginLogger.info("{}: Starting task {}", method.getDeclaringClass().getSimpleName(), method.getName());
-            task.accept(managers);
-            long spent = System.currentTimeMillis() - start;
-            PluginLogger.info("{}: Finished task {} in {} ms", method.getDeclaringClass().getSimpleName(), method.getName(), spent);
-        }
-    }
 }

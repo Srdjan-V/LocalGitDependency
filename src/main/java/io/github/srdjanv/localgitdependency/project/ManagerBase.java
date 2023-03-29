@@ -10,67 +10,72 @@ import io.github.srdjanv.localgitdependency.property.IPropertyManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import org.gradle.api.Project;
 
-public abstract class ManagerBase implements Managers {
-    private final ProjectInstances projectInstances;
+public abstract class ManagerBase implements Manager {
+    private final Managers managers;
 
-    public ManagerBase(ProjectInstances projectInstances) {
-        this.projectInstances = projectInstances;
+    public ManagerBase(Managers managers) {
+        this.managers = managers;
     }
 
     protected abstract void managerConstructor();
 
-    public ProjectInstances getProjectInstances() {
-        return projectInstances;
+    public Managers getProjectManagers() {
+        return managers;
+    }
+
+    @Override
+    public String getManagerName() {
+        return this.getClass().getSimpleName();
     }
 
     @Override
     public Project getProject() {
-        return projectInstances.getProject();
+        return managers.getProject();
     }
 
     @Override
     public IProjectManager getProjectManager() {
-        return projectInstances.getProjectManager();
+        return managers.getProjectManager();
     }
 
     @Override
     public LocalGitDependencyExtension getLocalGitDependencyExtension() {
-        return projectInstances.getLocalGitDependencyExtension();
+        return managers.getLocalGitDependencyExtension();
     }
 
     @Override
     public IDependencyManager getDependencyManager() {
-        return projectInstances.getDependencyManager();
+        return managers.getDependencyManager();
     }
 
     @Override
     public IGradleManager getGradleManager() {
-        return projectInstances.getGradleManager();
+        return managers.getGradleManager();
     }
 
     @Override
     public IPropertyManager getPropertyManager() {
-        return projectInstances.getPropertyManager();
+        return managers.getPropertyManager();
     }
 
     @Override
     public IGitManager getGitManager() {
-        return projectInstances.getGitManager();
+        return managers.getGitManager();
     }
 
     @Override
     public IPersistenceManager getPersistenceManager() {
-        return projectInstances.getPersistenceManager();
+        return managers.getPersistenceManager();
     }
 
     @Override
     public ITasksManager getTasksManager() {
-        return projectInstances.getTasksManager();
+        return managers.getTasksManager();
     }
 
     @Override
     public ICleanupManager getCleanupManager() {
-        return projectInstances.getCleanupManager();
+        return managers.getCleanupManager();
     }
 
 }

@@ -1,12 +1,12 @@
 package io.github.srdjanv.localgitdependency.extentions;
 
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
+import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.MethodAccess;
 import org.gradle.internal.metaobject.MethodMixIn;
@@ -15,8 +15,8 @@ import org.gradle.internal.metaobject.MethodMixIn;
 public class LocalGitDependencyExtension extends ManagerBase implements MethodMixIn {
     private MethodAccess methodAccess;
 
-    public LocalGitDependencyExtension(ProjectInstances projectInstances) {
-        super(projectInstances);
+    public LocalGitDependencyExtension(Managers managers) {
+        super(managers);
     }
 
     @Override

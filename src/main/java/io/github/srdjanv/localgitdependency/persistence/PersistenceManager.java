@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.project.Managers;
 
 import java.io.*;
 import java.util.Objects;
@@ -16,8 +16,8 @@ class PersistenceManager extends ManagerBase implements IPersistenceManager {
     private boolean dirty;
     private Gson gson;
 
-    PersistenceManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+    PersistenceManager(Managers managers) {
+        super(managers);
     }
 
     @Override

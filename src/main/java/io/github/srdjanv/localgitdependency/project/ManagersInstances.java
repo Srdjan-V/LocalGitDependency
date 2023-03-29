@@ -14,7 +14,7 @@ import org.gradle.api.Project;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProjectInstances implements Managers {
+class ManagersInstances implements Managers {
     private final Project project;
     private final IProjectManager projectManager;
     private final IPropertyManager propertyManager;
@@ -26,7 +26,7 @@ public class ProjectInstances implements Managers {
     private final LocalGitDependencyExtension localGitDependencyExtension;
     private final ICleanupManager cleanupManager;
 
-    public ProjectInstances(Project project) {
+    ManagersInstances(Project project) {
         this.project = project;
 
         final List<ManagerBase> managerList = new ArrayList<>();

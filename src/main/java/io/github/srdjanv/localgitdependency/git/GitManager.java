@@ -2,15 +2,15 @@ package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.project.Managers;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 class GitManager extends ManagerBase implements IGitManager {
-    GitManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+    GitManager(Managers managers) {
+        super(managers);
     }
 
     @Override

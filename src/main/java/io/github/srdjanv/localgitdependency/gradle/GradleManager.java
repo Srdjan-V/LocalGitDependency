@@ -6,7 +6,7 @@ import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyIn
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.BuildLauncher;
@@ -29,8 +29,8 @@ import java.util.function.Supplier;
 class GradleManager extends ManagerBase implements IGradleManager {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
 
-    GradleManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+    GradleManager(Managers managers) {
+        super(managers);
     }
 
     @Override

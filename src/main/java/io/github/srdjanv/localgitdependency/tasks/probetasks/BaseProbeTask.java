@@ -1,12 +1,12 @@
 package io.github.srdjanv.localgitdependency.tasks.probetasks;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.project.Manager;
 
 interface BaseProbeTask {
-    default void probe(Managers managers, Dependency dependency) {
-        managers.getGradleManager().probeProject(dependency);
-        managers.getPersistenceManager().saveDependencyPersistentData(dependency);
+    default void probe(Manager manager, Dependency dependency) {
+        manager.getGradleManager().probeProject(dependency);
+        manager.getPersistenceManager().saveDependencyPersistentData(dependency);
     }
 
 }
