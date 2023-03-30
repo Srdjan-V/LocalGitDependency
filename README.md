@@ -42,25 +42,27 @@ The configuration part of this plugin is decided into 2 parts, the global config
 configuration.
 
 The global configuration constants properties that will configure some aspects of the plugin, thous aspect can be found
-in the inner Builder class
-of [DefaultProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/DefaultProperty.java).
-With the global configuration you can also configure default dependency properties(They will get overwritten by the dependency configuration),
-thous properties can be found in this
-class [CommonProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/CommonPropertyBuilder.java),
+in [GlobalBuilder class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/GlobalBuilder.java)
+.
+With the global configuration you can also configure default dependency properties(They will get overwritten by the
+dependency configuration),
+thous properties can be found
+in [CommonBuilder class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/GlobalBuilder.java)
+,
 they get shared with the dependency.
 
-The dependency properties can be found in the inner Builder class
-of [Property](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/Property.java#L28), and in
-[CommonProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/CommonPropertyBuilder.java)
+The dependency properties can be found in the
+[DependencyBuilder class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/DependencyBuilder.java)
+, and in the
+[CommonBuilder class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/GlobalBuilder.java)
 
-I will not provide a descriptions for every existing property,
-since everything you see can change and some parts probably will.
+Javadoc is included that will explain every property
 
 You can also specify how the build dependency will be added to the
 project, [available dependency types](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/depenency/Dependency.java#L137)
 
-The plugin also has default properties, they are located in this
-instance [globalProperty](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/PropertyManager.java)
+The default properties are located in
+the [PropertyManager cass](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/PropertyManager.java)
 
 ### Limitations  ###
 
@@ -70,6 +72,43 @@ you can supply the correct java version by using the `javaHomeDir` property for 
 ### Examples  ###
 
 In the projects `build.gradle` file add the following:
+
+You can use the add method to registrar dependencies, with this way the ide can tell to what object the closure will
+delegate
+
+```
+localGitDependency {
+    add("https://example.com/repository.git")
+
+    add("https://example.com/repository.git", {
+        name "test"
+    })
+
+    add(implementation, "https://example.com/repository.git")
+
+    add(implementation "https://example.com/repository.git", {
+        name "test"
+    })
+}
+```
+
+You can use the dynamic add method to registrar dependencies, this only allows for shorter declaration.
+
+```
+localGitDependency {
+    "https://example.com/repository.git"
+
+    "https://example.com/repository.git" {
+        name "test"
+    }
+
+    implementation "https://example.com/repository.git"
+
+    implementation "https://example.com/repository.git", {
+        name "test"
+    }
+}
+```
 
 ```
 localGitDependency {
@@ -118,11 +157,14 @@ localGitDependency {
 }
 ```
 
-You can change the directories that the plugin uses, the paths can be absolute or relative
+You can change the directories that the plugin uses, the paths can be absolute or relative.
+Changing global paths requires you to manually enable or disable the cleanup-manager,
+the manager will delete anything under thous directories that doesn't mach the registered dependencies
 
 ```
 localGitDependency {
     configureGlobal {
+        automaticCleanup false
         gitDir "./yourGitDir"
         persistentDir new File("./yourPersistentDir")
         mavenDir "/rootMaven"
@@ -130,66 +172,57 @@ localGitDependency {
 }
 ```
 
-You can now also add dependencies like so
+While using the jar dependency type you can use `generatedJarsToAdd` to filter what jars are going to be added as
+dependencies
 
 ```
 localGitDependency {
-    "https://example.com/repository.git"
-
-    "https://example.com/repository.git" {
-        name "test"
-    }
-
-    implementation "https://example.com/repository.git"
-
-    implementation "https://example.com/repository.git", {
-        name "test"
-    }
-}
-```
-
-While using the jar dependency type you can use `generatedJarsToAdd` to filter what jars are going to be added as dependencies
-
-```
-localGitDependency {
-    implementation "https://example.com/repository.git", {
+    add("https://example.com/repository.git", {
         generatedJarsToAdd(["1.1.0.jar", "1.1.0-sources.jar"])
-    }
+    })
 }
 ```
 
-`generatedArtifactNames` is the same as `generatedJarsToAdd` but for configuring repositories. See the java doc for more information 
+`generatedArtifactNames` is the same as `generatedJarsToAdd` but for configuring repositories. See the java doc for more
+information
 
 ```
 localGitDependency {
-    implementation "https://example.com/repository.git", {
+    add("https://example.com/repository.git", {
         generatedArtifactNames(["name", "group:name:version"])
-    }
+    })
 }
 ```
 
-It's possible to add a dependency configuration that will be used by gradle's DependencyHandler 
+It's possible to add a dependency configuration that will be used by gradle's DependencyHandler
 
 ```
 localGitDependency {
-    implementation "https://example.com/repository.git", {
+    add("https://example.com/repository.git", {
         configure {
             transitive = false
         }
-    }
+    })
 }
 ```
 
-If you don't want to configure your dependencies is such a way or don't need for the dependency to be registered
+You can specify if the dependency should be registered, setting this to false will also disable ide support
 
 ```
-dependencies {
-    implementation "example.com:repository:1.0.1"
-}
 localGitDependency {
-    implementation 'https://example.com/repository.git', {
+    add('https://example.com/repository.git', {
         registerDependencyToProject = false
-    }
+    })
+}
+```
+
+By enabling this the plugin will register the source sets, configurations, repositories and its dependencies to your project.
+Currently, repositories are not being added automatically and that's why it's disabled by default
+```
+localGitDependency {
+    add('https://example.com/repository.git', {
+        enableIdeSupport = true
+    })
 }
 ```
 
@@ -197,8 +230,8 @@ You can change for how long gradle daemons will idle by using `gradleDaemonMaxId
 
 ```
 localGitDependency {
-    implementation 'https://example.com/repository.git', {
+    add('https://example.com/repository.git', {
         gradleDaemonMaxIdleTime = 60
-    }
+    })
 }
 ```
