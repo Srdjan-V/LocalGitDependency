@@ -72,7 +72,6 @@ public interface CommonBuilder {
      */
     void persistentDir(String persistentDir);
 
-
     /**
      * Some Dependency types will publish the artifact to local maven repo.
      *
@@ -114,6 +113,8 @@ public interface CommonBuilder {
      * If you plan on editing this dependency from the same ide enable this.
      * By enabling this the plugin will register the source sets, configurations, repositories and its dependencies to your project.
      * By default, its disabled
+     * <p>
+     * Currently, repositories are not being added automatically
      *
      * @param enableIdeSupport if it should enable ide support
      */
@@ -129,7 +130,7 @@ public interface CommonBuilder {
     void registerDependencyToProject(Boolean registerDependencyToProject);
 
     /**
-     * If a repository should be added for the build dependency, this is will not do anything for the Jar dependency type
+     * If a repository should be added for the build dependency, this will not do anything for the Jar dependency type
      *
      * @param registerDependencyRepositoryToProject if it should register the dependency
      * @see Dependency.Type

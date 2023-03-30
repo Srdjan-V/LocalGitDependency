@@ -58,7 +58,6 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields impleme
         this.persistentDir = new File(persistentDir);
     }
 
-
     @Override
     public void mavenDir(File mavenDir) {
         this.mavenDir = mavenDir;
@@ -98,7 +97,6 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields impleme
     public void registerDependencyRepositoryToProject(Boolean registerDependencyRepositoryToProject) {
         this.registerDependencyRepositoryToProject = registerDependencyRepositoryToProject;
     }
-
 
     @Override
     public void generateGradleTasks(Boolean generateGradleTasks) {
