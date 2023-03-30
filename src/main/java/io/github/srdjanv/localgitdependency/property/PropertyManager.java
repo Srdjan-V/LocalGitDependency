@@ -74,7 +74,7 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
     }
 
     private void customPathsCheck(GlobalProperty globalProperty) {
-        if (globalProperty.getAutomaticCleanup() != null && globalProperty.getAutomaticCleanup()) {
+        if (globalProperty.getAutomaticCleanup() != null) {
             return;
         }
 
