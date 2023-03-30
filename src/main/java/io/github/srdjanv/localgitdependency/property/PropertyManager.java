@@ -12,7 +12,10 @@ import org.gradle.api.GradleException;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 class PropertyManager extends ManagerBase implements IPropertyManager {
     private boolean customGlobalProperty;
@@ -58,7 +61,9 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
             configureClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
             configureClosure.call();
             configureFilePaths(defaultProperty);
-            this.globalProperty = resolveGlobalProperty(new GlobalProperty(defaultProperty));
+            GlobalProperty newGlobalProperty = new GlobalProperty(defaultProperty);
+            customPathsCheck(newGlobalProperty);
+            this.globalProperty = mergersGlobalProperty(globalProperty, newGlobalProperty);
             customGlobalProperty = true;
         }
     }
@@ -68,11 +73,24 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
         return globalProperty;
     }
 
+    private void customPathsCheck(GlobalProperty globalProperty) {
+        if (globalProperty.getAutomaticCleanup() != null && globalProperty.getAutomaticCleanup()) {
+            return;
+        }
+
+        Optional<File> optional = streamEssentialDirectories(globalProperty).filter(Objects::nonNull).findAny();
+        if (optional.isPresent()) {
+            throw new GradleException("Custom global directory paths detected, automaticCleanup must explicitly be set to true or false");
+        }
+    }
+
     @Override
     public void createEssentialDirectories() {
-        Constants.checkExistsAndMkdirs(globalProperty.getPersistentDir());
-        Constants.checkExistsAndMkdirs(globalProperty.getGitDir());
-        Constants.checkExistsAndMkdirs(globalProperty.getMavenDir());
+        streamEssentialDirectories(globalProperty).forEach(Constants::checkExistsAndMkdirs);
+    }
+
+    private static Stream<File> streamEssentialDirectories(GlobalProperty property) {
+        return Stream.of(property.getPersistentDir(), property.getGitDir(), property.getMavenDir());
     }
 
     private void configureFilePaths(GlobalProperty.Builder defaultProperty) {
@@ -92,36 +110,10 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
         }
     }
 
-    //applies missing globalProperty from the defaultGlobalProperty
-    private GlobalProperty resolveGlobalProperty(GlobalProperty newGlobalProperty) {
-        GlobalProperty resolvedProperty = new GlobalProperty();
-        Class<?>[] classes = new Class[2];
-        classes[0] = CommonPropertyFields.class;
-        classes[1] = GlobalProperty.class;
-
-        for (Class<?> clazz : classes) {
-            for (Field field : clazz.getDeclaredFields()) {
-                try {
-                    field.setAccessible(true);
-                    Object globalPropertyField = field.get(newGlobalProperty);
-                    Object defaultGlobalPropertyField = field.get(globalProperty);
-
-                    if (globalPropertyField == null) {
-                        field.set(resolvedProperty, defaultGlobalPropertyField);
-                    } else {
-                        field.set(resolvedProperty, globalPropertyField);
-                    }
-
-                } catch (Exception e) {
-                    throw new GradleException(String.format("Unexpected error while reflecting %s class", clazz), e);
-                }
-            }
-        }
-
-        return resolvedProperty;
-    }
-
-    //applies missing dependencyProperty from the globalProperty
+    /**
+     * Merges the supplied dependencyDependencyProperty with the globalProperty in this manager
+     * If a field in dependencyDependencyProperty is null the field in globalProperty will be used
+     */
     @Override
     public void applyDefaultProperty(DependencyProperty dependencyDependencyProperty) {
         Class<CommonPropertyFields> clazz = CommonPropertyFields.class;
@@ -132,9 +124,40 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
                     field.set(dependencyDependencyProperty, field.get(globalProperty));
                 }
             } catch (Exception e) {
-                throw new GradleException(String.format("Unexpected error while reflecting %s class", clazz), e);
+                throw new RuntimeException(String.format("Unexpected error while reflecting %s class", clazz), e);
             }
         }
     }
 
+
+    /**
+     * Merges 2 properties GlobalProperties, if a field in newGlobalProperty is null the field in defaultGlobalPropertyValues will be used
+     */
+    private static GlobalProperty mergersGlobalProperty(GlobalProperty defaultGlobalPropertyValues, GlobalProperty newGlobalProperty) {
+        GlobalProperty resolvedProperty = new GlobalProperty();
+        Class<?>[] classes = new Class[2];
+        classes[0] = CommonPropertyFields.class;
+        classes[1] = GlobalProperty.class;
+
+        for (Class<?> clazz : classes) {
+            for (Field field : clazz.getDeclaredFields()) {
+                try {
+                    field.setAccessible(true);
+                    Object newGlobalPropertyField = field.get(newGlobalProperty);
+                    Object defaultGlobalPropertyField = field.get(defaultGlobalPropertyValues);
+
+                    if (newGlobalPropertyField == null) {
+                        field.set(resolvedProperty, defaultGlobalPropertyField);
+                    } else {
+                        field.set(resolvedProperty, newGlobalPropertyField);
+                    }
+
+                } catch (Exception e) {
+                    throw new RuntimeException(String.format("Unexpected error while reflecting %s class", clazz), e);
+                }
+            }
+        }
+
+        return resolvedProperty;
+    }
 }
