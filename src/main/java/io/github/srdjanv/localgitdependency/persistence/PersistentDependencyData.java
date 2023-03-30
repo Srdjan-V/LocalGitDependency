@@ -12,10 +12,42 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PersistentDependencyData {
-    String workingDirSHA1;
-    String initFileSHA1;
-    Dependency.Type dependencyType;
-    DependencyInfoModelSerializable projectProbe;
+    private String workingDirSHA1;
+    private String initFileSHA1;
+    private Dependency.Type dependencyType;
+    private DependencyInfoModelSerializable projectProbe;
+
+    public String getWorkingDirSHA1() {
+        return workingDirSHA1;
+    }
+
+    void setWorkingDirSHA1(String workingDirSHA1) {
+        this.workingDirSHA1 = workingDirSHA1;
+    }
+
+    public String getInitFileSHA1() {
+        return initFileSHA1;
+    }
+
+    void setInitFileSHA1(String initFileSHA1) {
+        this.initFileSHA1 = initFileSHA1;
+    }
+
+    public Dependency.Type getDependencyType() {
+        return dependencyType;
+    }
+
+    void setDependencyType(Dependency.Type dependencyType) {
+        this.dependencyType = dependencyType;
+    }
+
+    public DependencyInfoModelSerializable getProjectProbe() {
+        return projectProbe;
+    }
+
+    void setProjectProbe(DependencyInfoModelSerializable projectProbe) {
+        this.projectProbe = projectProbe;
+    }
 
     public static class DependencyInfoModelSerializable implements LocalGitDependencyInfoModel {
         public String version = Constants.PROJECT_VERSION;
@@ -48,7 +80,6 @@ public class PersistentDependencyData {
         }
 
         @Override
-
         public String getProjectId() {
             return projectId;
         }
@@ -119,16 +150,37 @@ public class PersistentDependencyData {
 
     public static class SourceSetSerializable implements SourceSet {
         private final String name;
+        private final String classpathConfigurationName;
+        private final List<String> repositoryClasspathDependencies;
+        private final List<String> fileClasspathDependencies;
         private final List<String> sources;
 
         public SourceSetSerializable(SourceSet sourceSet) {
             this.name = sourceSet.getName();
             this.sources = sourceSet.getSources();
+            this.classpathConfigurationName = sourceSet.classpathConfigurationName();
+            this.repositoryClasspathDependencies = sourceSet.getRepositoryClasspathDependencies();
+            this.fileClasspathDependencies = sourceSet.getFileClasspathDependencies();
         }
 
         @Override
         public String getName() {
             return name;
+        }
+
+        @Override
+        public String classpathConfigurationName() {
+            return classpathConfigurationName;
+        }
+
+        @Override
+        public List<String> getRepositoryClasspathDependencies() {
+            return repositoryClasspathDependencies;
+        }
+
+        @Override
+        public List<String> getFileClasspathDependencies() {
+            return fileClasspathDependencies;
         }
 
         @Override

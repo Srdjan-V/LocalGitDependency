@@ -1,12 +1,12 @@
 package io.github.srdjanv.localgitdependency.extentions;
 
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.DefaultProperty;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
+import io.github.srdjanv.localgitdependency.property.GlobalBuilder;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.MethodAccess;
 import org.gradle.internal.metaobject.MethodMixIn;
@@ -15,8 +15,8 @@ import org.gradle.internal.metaobject.MethodMixIn;
 public class LocalGitDependencyExtension extends ManagerBase implements MethodMixIn {
     private MethodAccess methodAccess;
 
-    public LocalGitDependencyExtension(ProjectInstances projectInstances) {
-        super(projectInstances);
+    public LocalGitDependencyExtension(Managers managers) {
+        super(managers);
     }
 
     @Override
@@ -45,8 +45,8 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
     }
 
     public void configureGlobal(
-            @DelegatesTo(value = DefaultProperty.Builder.class, strategy = Closure.DELEGATE_FIRST)
-            Closure<DefaultProperty.Builder> configureClosure) {
+            @DelegatesTo(value = GlobalBuilder.class, strategy = Closure.DELEGATE_FIRST)
+            Closure<GlobalBuilder> configureClosure) {
         getPropertyManager().globalProperty(configureClosure);
     }
 
@@ -55,8 +55,8 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
     }
 
     public void add(String dependencyURL,
-                    @DelegatesTo(value = Property.Builder.class, strategy = Closure.DELEGATE_FIRST)
-                    Closure<Property.Builder> configureClosure) {
+                    @DelegatesTo(value = DependencyBuilder.class, strategy = Closure.DELEGATE_FIRST)
+                    Closure<DependencyBuilder> configureClosure) {
         add(null, dependencyURL, configureClosure);
     }
 
@@ -65,8 +65,8 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
     }
 
     public void add(String configurationName, String dependencyURL,
-                    @DelegatesTo(value = Property.Builder.class, strategy = Closure.DELEGATE_FIRST)
-                    Closure<Property.Builder> configureClosure) {
+                    @DelegatesTo(value = DependencyBuilder.class, strategy = Closure.DELEGATE_FIRST)
+                    Closure<DependencyBuilder> configureClosure) {
         getDependencyManager().registerDependency(configurationName, dependencyURL, configureClosure);
     }
 
@@ -122,7 +122,7 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
 
             if (arguments.length == 1) {
                 if (arguments[0] instanceof Closure) {
-                    add(name, (Closure<Property.Builder>) arguments[0]);
+                    add(name, (Closure) arguments[0]);
                     return DynamicInvokeResult.found();
                 }
             }

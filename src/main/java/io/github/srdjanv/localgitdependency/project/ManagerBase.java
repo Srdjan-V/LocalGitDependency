@@ -1,76 +1,82 @@
 package io.github.srdjanv.localgitdependency.project;
 
-import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
-import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
+import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
+import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
-import io.github.srdjanv.localgitdependency.git.GitManager;
-import io.github.srdjanv.localgitdependency.gradle.GradleManager;
-import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
-import io.github.srdjanv.localgitdependency.property.PropertyManager;
-import io.github.srdjanv.localgitdependency.tasks.TasksManager;
+import io.github.srdjanv.localgitdependency.git.IGitManager;
+import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
+import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
+import io.github.srdjanv.localgitdependency.property.IPropertyManager;
+import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import org.gradle.api.Project;
 
-public abstract class ManagerBase implements Managers {
-    private final ProjectInstances projectInstances;
+public abstract class ManagerBase implements Manager {
+    private final Managers managers;
 
-    public ManagerBase(ProjectInstances projectInstances) {
-        this.projectInstances = projectInstances;
+    public ManagerBase(Managers managers) {
+        this.managers = managers;
     }
 
     protected abstract void managerConstructor();
 
-    public ProjectInstances getProjectInstances() {
-        return projectInstances;
+    @Override
+    public Managers getProjectManagers() {
+        return managers;
+    }
+
+    @Override
+    public String getManagerName() {
+        return this.getClass().getSimpleName();
     }
 
     @Override
     public Project getProject() {
-        return projectInstances.getProject();
+        return managers.getProject();
     }
 
     @Override
-    public ProjectManager getProjectManager() {
-        return projectInstances.getProjectManager();
+    public IProjectManager getProjectManager() {
+        return managers.getProjectManager();
     }
 
     @Override
     public LocalGitDependencyExtension getLocalGitDependencyExtension() {
-        return projectInstances.getLocalGitDependencyExtension();
+        return managers.getLocalGitDependencyExtension();
     }
 
     @Override
-    public DependencyManager getDependencyManager() {
-        return projectInstances.getDependencyManager();
+    public IDependencyManager getDependencyManager() {
+        return managers.getDependencyManager();
     }
 
     @Override
-    public GradleManager getGradleManager() {
-        return projectInstances.getGradleManager();
+    public IGradleManager getGradleManager() {
+        return managers.getGradleManager();
     }
 
     @Override
-    public PropertyManager getPropertyManager() {
-        return projectInstances.getPropertyManager();
+    public IPropertyManager getPropertyManager() {
+        return managers.getPropertyManager();
     }
 
     @Override
-    public GitManager getGitManager() {
-        return projectInstances.getGitManager();
+    public IGitManager getGitManager() {
+        return managers.getGitManager();
     }
 
     @Override
-    public PersistenceManager getPersistenceManager() {
-        return projectInstances.getPersistenceManager();
+    public IPersistenceManager getPersistenceManager() {
+        return managers.getPersistenceManager();
     }
 
     @Override
-    public TasksManager getTasksManager() {
-        return projectInstances.getTasksManager();
+    public ITasksManager getTasksManager() {
+        return managers.getTasksManager();
     }
 
     @Override
-    public CleanupManager getCleanupManager() {
-        return projectInstances.getCleanupManager();
+    public ICleanupManager getCleanupManager() {
+        return managers.getCleanupManager();
     }
 
 }

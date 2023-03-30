@@ -1,24 +1,24 @@
 package io.github.srdjanv.localgitdependency.project;
 
-import io.github.srdjanv.localgitdependency.cleanup.CleanupManager;
-import io.github.srdjanv.localgitdependency.depenency.DependencyManager;
+import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
+import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtension;
-import io.github.srdjanv.localgitdependency.git.GitManager;
-import io.github.srdjanv.localgitdependency.gradle.GradleManager;
-import io.github.srdjanv.localgitdependency.persistence.PersistenceManager;
-import io.github.srdjanv.localgitdependency.property.PropertyManager;
-import io.github.srdjanv.localgitdependency.tasks.TasksManager;
+import io.github.srdjanv.localgitdependency.git.IGitManager;
+import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
+import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
+import io.github.srdjanv.localgitdependency.property.IPropertyManager;
+import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import org.gradle.api.Project;
 
 public interface Managers {
     Project getProject();
-    ProjectManager getProjectManager();
-    PropertyManager getPropertyManager();
-    DependencyManager getDependencyManager();
-    GitManager getGitManager();
-    GradleManager getGradleManager();
-    PersistenceManager getPersistenceManager();
-    TasksManager getTasksManager();
+    IProjectManager getProjectManager();
+    IPropertyManager getPropertyManager();
+    IDependencyManager getDependencyManager();
+    IGitManager getGitManager();
+    IGradleManager getGradleManager();
+    IPersistenceManager getPersistenceManager();
+    ITasksManager getTasksManager();
     LocalGitDependencyExtension getLocalGitDependencyExtension();
-    CleanupManager getCleanupManager();
+    ICleanupManager getCleanupManager();
 }

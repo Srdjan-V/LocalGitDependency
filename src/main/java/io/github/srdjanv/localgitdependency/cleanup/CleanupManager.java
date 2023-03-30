@@ -3,8 +3,8 @@ package io.github.srdjanv.localgitdependency.cleanup;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.DefaultProperty;
+import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,18 +12,19 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.BiPredicate;
 
-public class CleanupManager extends ManagerBase {
+class CleanupManager extends ManagerBase implements ICleanupManager {
 
-    public CleanupManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+    CleanupManager(Managers managers) {
+        super(managers);
     }
 
     @Override
     protected void managerConstructor() {
     }
 
+    @Override
     public void init() {
-        DefaultProperty props = getPropertyManager().getGlobalProperty();
+        GlobalProperty props = getPropertyManager().getGlobalProperty();
 
         if (!props.getAutomaticCleanup()) {
             ManagerLogger.info("Skipping cleanup");

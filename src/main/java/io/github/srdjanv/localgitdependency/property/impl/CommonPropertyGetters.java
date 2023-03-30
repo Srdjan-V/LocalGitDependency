@@ -1,4 +1,4 @@
-package io.github.srdjanv.localgitdependency.property;
+package io.github.srdjanv.localgitdependency.property.impl;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import org.jetbrains.annotations.Nullable;
@@ -48,8 +48,8 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return tryGeneratingJavaDocJar;
     }
 
-    public Boolean getAddDependencySourcesToProject() {
-        return addDependencySourcesToProject;
+    public Boolean getEnableIdeSupport() {
+        return enableIdeSupport;
     }
 
     public Boolean getRegisterDependencyToProject() {

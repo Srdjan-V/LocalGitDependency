@@ -5,11 +5,15 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
+import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,19 +22,20 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class DependencyManager extends ManagerBase {
+class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
 
-    public DependencyManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+    DependencyManager(Managers managers) {
+        super(managers);
     }
 
     @Override
     protected void managerConstructor() {
     }
 
-    public void registerDependency(String configurationName, String dependencyURL, Closure<Property.Builder> configureClosure) {
-        Property.Builder dependencyPropertyBuilder = new Property.Builder(dependencyURL);
+    @Override
+    public void registerDependency(String configurationName, String dependencyURL, Closure<DependencyBuilder> configureClosure) {
+        DependencyProperty.Builder dependencyPropertyBuilder = new DependencyProperty.Builder(dependencyURL);
 
         if (configureClosure != null) {
             configureClosure.setDelegate(dependencyPropertyBuilder);
@@ -38,12 +43,13 @@ public class DependencyManager extends ManagerBase {
             configureClosure.call();
         }
 
-        Property dependencyProperty = new Property(dependencyPropertyBuilder);
-        getPropertyManager().applyDefaultProperty(dependencyProperty);
+        DependencyProperty dependencyDependencyProperty = new DependencyProperty(dependencyPropertyBuilder);
+        getPropertyManager().applyDefaultProperty(dependencyDependencyProperty);
 
-        dependencies.add(new Dependency(configurationName, dependencyProperty));
+        dependencies.add(new Dependency(configurationName, dependencyDependencyProperty));
     }
 
+    @Override
     public void addBuiltDependencies() {
         boolean addRepositoryMavenProjectLocal = false;
         boolean addRepositoryMavenLocal = false;
@@ -65,8 +71,8 @@ public class DependencyManager extends ManagerBase {
         SourceSetContainer sourceSetContainer = project.getRootProject().getExtensions().getByType(SourceSetContainer.class);
 
         for (Dependency dependency : dependencies) {
-            if (dependency.isAddDependencySourcesToProject()) {
-                addSourceSets(sourceSetContainer, dependency);
+            if (dependency.isEnableIdeSupport()) {
+                enableIdeSupport(project.getRootProject(), sourceSetContainer, dependency);
             }
             switch (dependency.getDependencyType()) {
                 case MavenLocal:
@@ -214,17 +220,29 @@ public class DependencyManager extends ManagerBase {
         project.getDependencies().add(dependency.getConfigurationName(), dependency.getPersistentInfo().getProbeData().getProjectId(), configureClosure);
     }
 
-    private void addSourceSets(SourceSetContainer sourceSetContainer, Dependency dependency) {
-        ManagerLogger.info("Dependency: {} adding sourceSets", dependency.getName());
+    // TODO: 21/03/2023 improve
+    private void enableIdeSupport(Project project, SourceSetContainer sourceSetContainer, Dependency dependency) {
+        ManagerLogger.info("Dependency: {} enabled ide support", dependency.getName());
 
         for (PersistentDependencyData.SourceSetSerializable source : dependency.getPersistentInfo().getProbeData().getSources()) {
-            sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
+            NamedDomainObjectProvider<SourceSet> sourceSetNamedDomainObjectProvider = sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
                 sourceSet.java(dependencySet -> dependencySet.srcDir(source.getSources()));
             });
+
+            SourceSet sourceSet = sourceSetNamedDomainObjectProvider.get();
+            for (String classpathDependency : source.getRepositoryClasspathDependencies()) {
+                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(), classpathDependency);
+            }
+
+            if (!source.getFileClasspathDependencies().isEmpty()) {
+                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(), project.getLayout().files(source.getFileClasspathDependencies()));
+            }
         }
     }
 
+    @Override
+    @Unmodifiable
     public Set<Dependency> getDependencies() {
-        return dependencies;
+        return Collections.unmodifiableSet(dependencies);
     }
 }

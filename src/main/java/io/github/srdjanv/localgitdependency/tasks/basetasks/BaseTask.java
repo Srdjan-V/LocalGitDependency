@@ -1,12 +1,12 @@
 package io.github.srdjanv.localgitdependency.tasks.basetasks;
 
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.project.Managers;
 import org.gradle.api.DefaultTask;
 
 abstract class BaseTask extends DefaultTask {
-    protected final ProjectInstances projectInstances;
+    protected final Managers managers;
 
-    public BaseTask(ProjectInstances projectInstances) {
-        this.projectInstances = projectInstances;
+    public BaseTask(Managers managers) {
+        this.managers = managers;
     }
 }

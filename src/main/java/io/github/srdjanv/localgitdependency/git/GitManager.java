@@ -2,22 +2,22 @@ package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
+import io.github.srdjanv.localgitdependency.project.Managers;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class GitManager extends ManagerBase {
-    public GitManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+class GitManager extends ManagerBase implements IGitManager {
+    GitManager(Managers managers) {
+        super(managers);
     }
 
     @Override
     protected void managerConstructor() {
-
     }
 
+    @Override
     public void initRepos() {
         List<List<Exception>> gitExceptions = null;
         for (Dependency dependency : getDependencyManager().getDependencies()) {
@@ -37,6 +37,7 @@ public class GitManager extends ManagerBase {
         }
     }
 
+    @Override
     public GitReport initRepo(Dependency dependency) {
         try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
             gitObjectWrapper.setup();
@@ -44,28 +45,11 @@ public class GitManager extends ManagerBase {
         }
     }
 
+    @Override
     public GitReport runRepoCommand(Dependency dependency, Consumer<GitTasks> task) {
         try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
             task.accept(gitObjectWrapper);
             return gitObjectWrapper.getGitReport();
-        }
-    }
-
-    public static class GitReport {
-        private final List<Exception> gitExceptions;
-        private final boolean hasGitExceptions;
-
-        public GitReport(List<Exception> gitExceptions) {
-            this.gitExceptions = gitExceptions;
-            this.hasGitExceptions = gitExceptions != null;
-        }
-
-        public List<Exception> getGitExceptions() {
-            return gitExceptions;
-        }
-
-        public boolean isHasGitExceptions() {
-            return hasGitExceptions;
         }
     }
 

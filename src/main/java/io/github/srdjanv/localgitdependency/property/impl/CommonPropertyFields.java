@@ -1,4 +1,4 @@
-package io.github.srdjanv.localgitdependency.property;
+package io.github.srdjanv.localgitdependency.property.impl;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
@@ -18,7 +18,7 @@ public abstract class CommonPropertyFields {
     Dependency.Type dependencyType;
     Boolean tryGeneratingSourceJar;
     Boolean tryGeneratingJavaDocJar;
-    Boolean addDependencySourcesToProject;
+    Boolean enableIdeSupport;
     Boolean registerDependencyToProject;
     Boolean registerDependencyRepositoryToProject;
     Boolean generateGradleTasks;

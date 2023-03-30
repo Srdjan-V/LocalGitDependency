@@ -5,7 +5,7 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +21,7 @@ public class Dependency {
     private final String configurationName;
     private final List<String> generatedJarsToAdd;
     private final List<String> generatedArtifactNames;
-    private final boolean addDependencySourcesToProject;
+    private final boolean enableIdeSupport;
     private final boolean registerDependencyToProject;
     private final boolean registerDependencyRepositoryToProject;
     private final boolean generateGradleTasks;
@@ -32,33 +32,33 @@ public class Dependency {
     private final PersistentInfo persistentInfo;
     private Closure<?> configureClosure;
 
-    public Dependency(String configurationName, Property dependencyProperty) {
-        this.name = dependencyProperty.getName() == null ? getNameFromUrl(dependencyProperty.getUrl()) : dependencyProperty.getName();
-        this.configurationName = configurationName == null ? dependencyProperty.getConfiguration() : configurationName;
-        this.generatedJarsToAdd = dependencyProperty.getGeneratedJarsToAdd();
-        this.generatedArtifactNames = dependencyProperty.getGeneratedArtifactNames();
-        this.addDependencySourcesToProject = dependencyProperty.getAddDependencySourcesToProject();
-        this.registerDependencyToProject = dependencyProperty.getRegisterDependencyToProject();
-        this.registerDependencyRepositoryToProject = dependencyProperty.getRegisterDependencyRepositoryToProject();
-        this.generateGradleTasks = dependencyProperty.getGenerateGradleTasks();
-        this.configureClosure = dependencyProperty.getConfigureClosure();
-        this.dependencyType = dependencyProperty.getDependencyType();
+    public Dependency(String configurationName, DependencyProperty dependencyDependencyProperty) {
+        this.name = dependencyDependencyProperty.getName() == null ? getNameFromUrl(dependencyDependencyProperty.getUrl()) : dependencyDependencyProperty.getName();
+        this.configurationName = configurationName == null ? dependencyDependencyProperty.getConfiguration() : configurationName;
+        this.generatedJarsToAdd = dependencyDependencyProperty.getGeneratedJarsToAdd();
+        this.generatedArtifactNames = dependencyDependencyProperty.getGeneratedArtifactNames();
+        this.enableIdeSupport = dependencyDependencyProperty.getEnableIdeSupport();
+        this.registerDependencyToProject = dependencyDependencyProperty.getRegisterDependencyToProject();
+        this.registerDependencyRepositoryToProject = dependencyDependencyProperty.getRegisterDependencyRepositoryToProject();
+        this.generateGradleTasks = dependencyDependencyProperty.getGenerateGradleTasks();
+        this.configureClosure = dependencyDependencyProperty.getConfigureClosure();
+        this.dependencyType = dependencyDependencyProperty.getDependencyType();
         switch (dependencyType) {
             case MavenProjectLocal:
-                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyProperty.getMavenDir());
+                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyDependencyProperty.getMavenDir());
                 break;
 
             case MavenProjectDependencyLocal:
-                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyProperty.getMavenDir(), name);
+                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyDependencyProperty.getMavenDir(), name);
                 break;
 
             default:
                 this.mavenFolder = null;
         }
 
-        this.gitInfo = new GitInfo(dependencyProperty, this);
-        this.gradleInfo = new GradleInfo(dependencyProperty, this);
-        this.persistentInfo = new PersistentInfo(dependencyProperty, this);
+        this.gitInfo = new GitInfo(dependencyDependencyProperty, this);
+        this.gradleInfo = new GradleInfo(dependencyDependencyProperty, this);
+        this.persistentInfo = new PersistentInfo(dependencyDependencyProperty, this);
         validate();
     }
 
@@ -82,8 +82,8 @@ public class Dependency {
         return generatedArtifactNames;
     }
 
-    public boolean isAddDependencySourcesToProject() {
-        return addDependencySourcesToProject;
+    public boolean isEnableIdeSupport() {
+        return enableIdeSupport;
     }
 
     public boolean isRegisterDependencyToProject() {

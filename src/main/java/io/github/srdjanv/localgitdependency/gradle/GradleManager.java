@@ -6,8 +6,8 @@ import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyIn
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
-import io.github.srdjanv.localgitdependency.project.ProjectInstances;
-import io.github.srdjanv.localgitdependency.property.DefaultProperty;
+import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.BuildLauncher;
 import org.gradle.tooling.GradleConnector;
@@ -26,11 +26,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class GradleManager extends ManagerBase {
+class GradleManager extends ManagerBase implements IGradleManager {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
 
-    public GradleManager(ProjectInstances projectInstances) {
-        super(projectInstances);
+    GradleManager(Managers managers) {
+        super(managers);
     }
 
     @Override
@@ -54,6 +54,7 @@ public class GradleManager extends ManagerBase {
         return gradleConnector;
     }
 
+    @Override
     public void initGradleAPI() {
         validateMainInitScript();
         for (Dependency dependency : getDependencyManager().getDependencies()) {
@@ -65,6 +66,7 @@ public class GradleManager extends ManagerBase {
         }
     }
 
+    @Override
     public void buildDependencies() {
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (dependency.getGitInfo().hasRefreshed() || dependency.getPersistentInfo().hasDependencyTypeChanged()) {
@@ -74,6 +76,7 @@ public class GradleManager extends ManagerBase {
         cleanCache();
     }
 
+    @Override
     public void buildDependency(Dependency dependency) {
         long start = System.currentTimeMillis();
         ManagerLogger.info("Started building dependency: {}", dependency.getName());
@@ -107,7 +110,8 @@ public class GradleManager extends ManagerBase {
         ManagerLogger.info("Finished building in {} ms", spent);
     }
 
-    private void probeProject(Dependency dependency) {
+    @Override
+    public void probeProject(Dependency dependency) {
         long start = System.currentTimeMillis();
         ManagerLogger.info("Started probing dependency: {} for information", dependency.getName());
 
@@ -230,7 +234,7 @@ public class GradleManager extends ManagerBase {
     }
 
     private void validateMainInitScript() {
-        DefaultProperty globalProperty = getPropertyManager().getGlobalProperty();
+        GlobalProperty globalProperty = getPropertyManager().getGlobalProperty();
         File mainInit = Constants.concatFile.apply(globalProperty.getPersistentDir(), Constants.MAIN_INIT_SCRIPT_GRADLE);
         validateScript(
                 mainInit,

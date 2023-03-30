@@ -1,13 +1,13 @@
 package io.github.srdjanv.localgitdependency.persistence;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import org.gradle.internal.impldep.org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.File;
 import java.util.Objects;
 
 public class PersistentInfo {
@@ -18,41 +18,44 @@ public class PersistentInfo {
     private boolean dependencyTypeChanged;
     private boolean dirty;
 
-    public PersistentInfo(Property dependencyProperty, Dependency dependency) {
+    public PersistentInfo(DependencyProperty dependencyDependencyProperty, Dependency dependency) {
         this.dependency = dependency;
-        this.persistentFile = Constants.persistentJsonFile.apply(dependencyProperty.getPersistentDir(), dependency.getName());
+        this.persistentFile = Constants.persistentJsonFile.apply(dependencyDependencyProperty.getPersistentDir(), dependency.getName());
         this.persistentDependencyData = new PersistentDependencyData();
-        try {
-            loadFromJson();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public boolean hasDependencyTypeChanged() {
         return dependencyTypeChanged;
     }
 
+    @NotNull
+    public File getPersistentFile() {
+        return persistentFile;
+    }
+
+    @NotNull
     public Dependency getDependency() {
         return dependency;
     }
 
+    @Nullable
     public String getWorkingDirSHA1() {
-        return persistentDependencyData.workingDirSHA1;
+        return persistentDependencyData.getWorkingDirSHA1();
     }
 
     public void setWorkingDirSHA1(String workingDirSHA1) {
-        this.dirty = true;
-        this.persistentDependencyData.workingDirSHA1 = workingDirSHA1;
+        setDirty();
+        persistentDependencyData.setWorkingDirSHA1(workingDirSHA1);
     }
 
+    @Nullable
     public String getInitFileSHA1() {
-        return persistentDependencyData.initFileSHA1;
+        return persistentDependencyData.getInitFileSHA1();
     }
 
     public void setInitFileSHA1(String initFileSHA1) {
-        this.dirty = true;
-        this.persistentDependencyData.initFileSHA1 = initFileSHA1;
+        setDirty();
+        persistentDependencyData.setInitFileSHA1(initFileSHA1);
     }
 
     public boolean isValidModel() {
@@ -60,44 +63,45 @@ public class PersistentInfo {
     }
 
     public PersistentDependencyData.DependencyInfoModelSerializable getProbeData() {
-        return persistentDependencyData.projectProbe;
+        return persistentDependencyData.getProjectProbe();
     }
 
     public void setProbeData(LocalGitDependencyInfoModel defaultLocalGitDependencyInfoModel) {
-        this.dirty = true;
-        this.validModel = true;
-        this.persistentDependencyData.projectProbe = new PersistentDependencyData.DependencyInfoModelSerializable(defaultLocalGitDependencyInfoModel);
+        setDirty();
+        setValidModel();
+        persistentDependencyData.setProjectProbe(new PersistentDependencyData.DependencyInfoModelSerializable(defaultLocalGitDependencyInfoModel));
     }
 
-    private void loadFromJson() throws IOException {
-        Gson gson = new GsonBuilder().create();
-        if (!persistentFile.exists()) return;
-        PersistentDependencyData persistentProperty = gson.fromJson(new BufferedReader(new FileReader(persistentFile)), PersistentDependencyData.class);
-        if (persistentProperty == null) return;
-        this.persistentDependencyData.workingDirSHA1 = persistentProperty.workingDirSHA1;
-        this.persistentDependencyData.projectProbe = persistentProperty.projectProbe;
-        this.persistentDependencyData.initFileSHA1 = persistentProperty.initFileSHA1;
-
-        if (persistentProperty.projectProbe != null && Objects.equals(persistentProperty.projectProbe.version, Constants.PROJECT_VERSION)) {
-            validModel = true;
-        }
-
-        if (persistentProperty.dependencyType != this.getDependency().getDependencyType()) {
-            persistentDependencyData.dependencyType = this.getDependency().getDependencyType();
-            dependencyTypeChanged = true;
-            dirty = true;
-        }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PersistentInfo gitInfo = (PersistentInfo) o;
+        return Objects.equals(gitInfo.getDependency().getName(), getDependency().getName());
     }
 
-    public void saveToPersistentFile() {
-        if (dirty) {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            try (PrintWriter pw = new PrintWriter(persistentFile)) {
-                pw.write(gson.toJson(persistentDependencyData));
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            dirty = false;
-        }
+    @Override
+    public int hashCode() {
+        return Objects.hash(dependency.getName());
+    }
+
+    void setValidModel() {
+        validModel = true;
+    }
+
+    void setDependencyTypeChanged() {
+        dependencyTypeChanged = true;
+    }
+
+    void setDirty() {
+        dirty = true;
+    }
+
+    PersistentDependencyData getPersistentDependencyData() {
+        return persistentDependencyData;
+    }
+
+    boolean isDirty() {
+        return dirty;
     }
 }

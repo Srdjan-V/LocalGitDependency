@@ -2,10 +2,11 @@ package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.property.Property;
+import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Objects;
 
 import static org.eclipse.jgit.lib.Constants.*;
 
@@ -18,28 +19,28 @@ public class GitInfo {
     private final boolean keepGitUpdated;
     private boolean refreshed;
 
-    public GitInfo(Property dependencyProperty, Dependency dependency) {
+    public GitInfo(DependencyProperty dependencyDependencyProperty, Dependency dependency) {
         this.dependency = dependency;
-        this.url = dependencyProperty.getUrl();
+        this.url = dependencyDependencyProperty.getUrl();
 
-        if (dependencyProperty.getTargetType() == null) {
+        if (dependencyDependencyProperty.getTargetType() == null) {
             targetType = TargetType.BRANCH;
             target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + MASTER;
         } else {
-            switch (dependencyProperty.getTargetType()) {
+            switch (dependencyDependencyProperty.getTargetType()) {
                 case COMMIT:
-                    targetType = dependencyProperty.getTargetType();
-                    target = dependencyProperty.getTarget();
+                    targetType = dependencyDependencyProperty.getTargetType();
+                    target = dependencyDependencyProperty.getTarget();
                     break;
 
                 case TAG:
-                    targetType = dependencyProperty.getTargetType();
-                    target = R_TAGS + dependencyProperty.getTarget();
+                    targetType = dependencyDependencyProperty.getTargetType();
+                    target = R_TAGS + dependencyDependencyProperty.getTarget();
                     break;
 
                 case BRANCH:
                     targetType = TargetType.BRANCH;
-                    target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + dependencyProperty.getTarget();
+                    target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + dependencyDependencyProperty.getTarget();
                     break;
 
                 default:
@@ -47,8 +48,8 @@ public class GitInfo {
             }
         }
 
-        this.dir = Constants.concatFile.apply(dependencyProperty.getGitDir(), dependency.getName());
-        this.keepGitUpdated = dependencyProperty.getKeepGitUpdated();
+        this.dir = Constants.concatFile.apply(dependencyDependencyProperty.getGitDir(), dependency.getName());
+        this.keepGitUpdated = dependencyDependencyProperty.getKeepGitUpdated();
     }
 
     @NotNull
@@ -85,6 +86,19 @@ public class GitInfo {
 
     public void setRefreshed() {
         refreshed = true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GitInfo gitInfo = (GitInfo) o;
+        return Objects.equals(gitInfo.getDependency().getName(), getDependency().getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dependency.getName());
     }
 
     public enum TargetType {
