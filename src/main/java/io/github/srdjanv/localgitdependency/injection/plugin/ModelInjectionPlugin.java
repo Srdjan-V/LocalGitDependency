@@ -18,7 +18,7 @@ public class ModelInjectionPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         if (project == project.getRootProject()) {
-            registry.register(new LocalGitDependencyInfoModelBuilder());
+            registry.register(new LocalGitDependencyJsonInfoModelBuilder());
         }
     }
 

@@ -1,10 +1,10 @@
-package io.github.srdjanv.localgitdependency.injection.model;
+package io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata;
 
 import java.util.List;
 
-public interface SourceSet {
+public interface SourceSetDataGetters {
     String getName();
-    String classpathConfigurationName();
+    String getClasspathConfigurationName();
     List<String> getRepositoryClasspathDependencies();
     List<String> getFileClasspathDependencies();
     List<String> getSources();

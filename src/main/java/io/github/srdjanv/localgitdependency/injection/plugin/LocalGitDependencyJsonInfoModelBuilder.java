@@ -1,11 +1,14 @@
 package io.github.srdjanv.localgitdependency.injection.plugin;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
-import io.github.srdjanv.localgitdependency.injection.model.imp.DefaultLocalGitDependencyInfoModel;
-import io.github.srdjanv.localgitdependency.injection.model.imp.DefaultPublishingObject;
-import io.github.srdjanv.localgitdependency.injection.model.imp.DefaultSourceSet;
-import io.github.srdjanv.localgitdependency.injection.model.imp.DefaultTaskObject;
+import io.github.srdjanv.localgitdependency.injection.model.DefaultLocalGitDependencyJsonInfoModel;
+import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
+import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeDataGetters;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -21,6 +24,7 @@ import org.gradle.api.publish.maven.internal.publication.DefaultMavenPublication
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.tooling.provider.model.ToolingModelBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,8 +33,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 // TODO: 09/03/2023 Rewrite the logic
-public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
-    private static final String MODEL_NAME = LocalGitDependencyInfoModel.class.getName();
+public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuilder {
+    private static final String MODEL_NAME = LocalGitDependencyJsonInfoModel.class.getName();
 
     @Override
     public boolean canBuild(String modelName) {
@@ -38,12 +42,12 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
     }
 
     @Override
-    public Object buildAll(String modelName, Project project) {
+    public @NotNull Object buildAll(@NotNull String modelName, Project project) {
         boolean hasJavaPlugin = project.getExtensions().findByName("java") != null;
         boolean hasMavenPublishPlugin = project.getExtensions().findByName("maven-publish") != null;
 
-        List<DefaultTaskObject> appropriateTasks = queueAppropriateTasks(project, hasJavaPlugin);
-        DefaultPublishingObject defaultPublicationObject = queueAppropriateMavenPublications(project, appropriateTasks, hasMavenPublishPlugin);
+        List<TaskData> appropriateTasks = queueAppropriateTasks(project, hasJavaPlugin);
+        PublicationData publicationData = queueAppropriateMavenPublications(project, appropriateTasks, hasMavenPublishPlugin);
         int[] gradleVersion = Arrays.stream(project.getGradle().getGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
         JavaVersion javaVersion = null;
         boolean canProjectUseWithSourcesJar = true;
@@ -66,21 +70,28 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
             }
         }
 
-        return new DefaultLocalGitDependencyInfoModel(
-                project.getGroup() + ":" + project.getName() + ":" + project.getVersion(),
-                project.getGradle().getGradleVersion(),
-                javaVersion,
-                canProjectUseWithSourcesJar,
-                canProjectUseWithJavadocJar,
-                hasJavaPlugin,
-                hasMavenPublishPlugin,
-                appropriateTasks,
-                defaultPublicationObject,
-                getSources(project));
+        final JavaVersion finalJavaVersion = javaVersion;
+        final boolean finalCanProjectUseWithSourcesJar = canProjectUseWithSourcesJar;
+        final boolean finalCanProjectUseWithJavadocJar = canProjectUseWithJavadocJar;
+        ProjectProbeDataGetters projectProbeData = ProjectProbeData.create(probe -> {
+            probe.setVersion(Constants.PROJECT_VERSION);
+            probe.setProjectId(project.getGroup() + ":" + project.getName() + ":" + project.getVersion());
+            probe.setProjectGradleVersion(project.getGradle().getGradleVersion());
+            probe.setJavaVersion(finalJavaVersion);
+            probe.setCanProjectUseWithSourcesJar(finalCanProjectUseWithSourcesJar);
+            probe.setCanProjectUseWithJavadocJar(finalCanProjectUseWithJavadocJar);
+            probe.setHasJavaPlugin(hasJavaPlugin);
+            probe.setHasMavenPublishPlugin(hasMavenPublishPlugin);
+            probe.setTaskData(appropriateTasks);
+            probe.setPublicationData(publicationData);
+            probe.setSourceSetData(getSources(project));
+        });
+
+        return new DefaultLocalGitDependencyJsonInfoModel(DataParser.projectProbeDataJson((ProjectProbeData) projectProbeData));
     }
 
-    private static List<DefaultTaskObject> queueAppropriateTasks(Project project, boolean hasJavaPlugin) {
-        List<DefaultTaskObject> defaultTaskObjectList = new ArrayList<>(2);
+    private static List<TaskData> queueAppropriateTasks(Project project, boolean hasJavaPlugin) {
+        List<TaskData> defaultTaskObjectList = new ArrayList<>(2);
         String sourceTaskName = Constants.JarSourceTaskName.apply(project.getName());
         String javaDocTaskName = Constants.JarJavaDocTaskName.apply(project.getName());
 
@@ -96,13 +107,21 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
             }
         }
 
-        defaultTaskObjectList.add(new DefaultTaskObject(sourceTaskName, "sources"));
-        defaultTaskObjectList.add(new DefaultTaskObject(javaDocTaskName, "javadoc"));
+        final String finalSourceTaskName = sourceTaskName;
+        defaultTaskObjectList.add(TaskData.create(data -> {
+            data.setName(finalSourceTaskName);
+            data.setClassifier("sources");
+        }));
+        final String finalJavaDocTaskName = javaDocTaskName;
+        defaultTaskObjectList.add(TaskData.create(data -> {
+            data.setName(finalJavaDocTaskName);
+            data.setClassifier("javadoc");
+        }));
         return defaultTaskObjectList;
     }
 
 
-    private static DefaultPublishingObject queueAppropriateMavenPublications(Project project, List<DefaultTaskObject> appropriateTasks, boolean hasMavenPublishPlugin) {
+    private static PublicationData queueAppropriateMavenPublications(Project project, List<TaskData> appropriateTasks, boolean hasMavenPublishPlugin) {
         String publicationName = Constants.MavenPublicationName.apply(project.getName());
         String repositoryName = Constants.MavenRepositoryName.apply(project.getName());
 
@@ -133,11 +152,17 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
 
         }
 
-        return new DefaultPublishingObject(repositoryName, publicationName, appropriateTasks);
+        final String finalRepositoryName = repositoryName;
+        final String finalPublicationName = publicationName;
+        return PublicationData.create(data -> {
+            data.setRepositoryName(finalRepositoryName);
+            data.setPublicationName(finalPublicationName);
+            data.setTasks(appropriateTasks);
+        });
     }
 
-    private static List<DefaultSourceSet> getSources(Project project) {
-        List<DefaultSourceSet> sourceSets = new ArrayList<>();
+    private static List<SourceSetData> getSources(Project project) {
+        List<SourceSetData> sourceSets = new ArrayList<>();
         SourceSetContainer sourceContainer;
         try {
             sourceContainer = project.getExtensions().getByType(SourceSetContainer.class);
@@ -165,7 +190,14 @@ public class LocalGitDependencyInfoModelBuilder implements ToolingModelBuilder {
                 }
                 classpathDependencies.add(dependency.getGroup() + ":" + dependency.getName() + ":" + dependency.getVersion());
             }
-            sourceSets.add(new DefaultSourceSet(sourceSet.getName(), sourceSet.getCompileClasspathConfigurationName(), paths, classpathDependencies, fileClasspathDependencies));
+
+            sourceSets.add(SourceSetData.create(data -> {
+                data.setName(sourceSet.getName());
+                data.setClasspathConfigurationName(sourceSet.getCompileClasspathConfigurationName());
+                data.setSources(paths);
+                data.setRepositoryClasspathDependencies(classpathDependencies);
+                data.setFileClasspathDependencies(fileClasspathDependencies);
+            }));
         }
 
         return sourceSets;

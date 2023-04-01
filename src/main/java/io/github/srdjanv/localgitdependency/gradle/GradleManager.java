@@ -2,9 +2,11 @@ package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyInfoModel;
+import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
-import io.github.srdjanv.localgitdependency.persistence.PersistentDependencyData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeDataGetters;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationDataGetters;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskDataGetters;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
@@ -90,16 +92,16 @@ class GradleManager extends ManagerBase implements IGradleManager {
             case MavenLocal:
                 buildGradleProject(dependency,
                         Constants.PublicationTaskName.apply(
-                                dependency.getPersistentInfo().getProbeData().getAppropriatePublication().getPublicationName()));
+                                dependency.getPersistentInfo().getProbeData().getPublicationData().getPublicationName()));
                 break;
 
             case MavenProjectDependencyLocal:
             case MavenProjectLocal:
-                PersistentDependencyData.PublicationObjectSerializable publicationObjectSerializable = dependency.getPersistentInfo().getProbeData().getAppropriatePublication();
+                PublicationDataGetters publicationData = dependency.getPersistentInfo().getProbeData().getPublicationData();
                 buildGradleProject(dependency,
                         Constants.FilePublicationTaskName.apply(
-                                publicationObjectSerializable.getPublicationName(),
-                                publicationObjectSerializable.getRepositoryName()));
+                                publicationData.getPublicationName(),
+                                publicationData.getRepositoryName()));
                 break;
 
             default:
@@ -120,10 +122,10 @@ class GradleManager extends ManagerBase implements IGradleManager {
 
         DefaultGradleConnector connector = getGradleConnector(dependency);
         try (ProjectConnection connection = connector.connect()) {
-            ModelBuilder<LocalGitDependencyInfoModel> customModelBuilder = connection.model(LocalGitDependencyInfoModel.class);
+            ModelBuilder<LocalGitDependencyJsonInfoModel> customModelBuilder = connection.model(LocalGitDependencyJsonInfoModel.class);
             customModelBuilder.withArguments("--init-script", mainInit.getAbsolutePath());
-            LocalGitDependencyInfoModel localGitDependencyInfoModel = customModelBuilder.get();
-            dependency.getPersistentInfo().setProbeData(localGitDependencyInfoModel);
+            LocalGitDependencyJsonInfoModel jsonInfoModel = customModelBuilder.get();
+            dependency.getPersistentInfo().setProbeData(jsonInfoModel.getJson());
         }
 
         long spent = System.currentTimeMillis() - start;
@@ -145,25 +147,25 @@ class GradleManager extends ManagerBase implements IGradleManager {
 
     private String createDependencyInitScript(Dependency dependency) {
         // TODO: 18/02/2023 work on this
-        PersistentDependencyData.DependencyInfoModelSerializable model = dependency.getPersistentInfo().getProbeData();
-        int[] gradleVersion = Arrays.stream(model.projectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+        ProjectProbeDataGetters data = dependency.getPersistentInfo().getProbeData();
+        int[] gradleVersion = Arrays.stream(data.getProjectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
 
         final Consumer<GradleInit> configuration;
         if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
             configuration = gradleInit -> gradleInit.setJavaJars(jars -> {
                 if (dependency.getGradleInfo().isTryGeneratingSourceJar() &&
-                        dependency.getPersistentInfo().getProbeData().canProjectUseWithSourcesJar()) {
+                        data.isCanProjectUseWithSourcesJar()) {
                     jars.add(GradleInit.JavaJars.sources());
                 }
                 if (dependency.getGradleInfo().isTryGeneratingJavaDocJar() &&
-                        dependency.getPersistentInfo().getProbeData().canProjectUseWithJavadocJar()) {
+                        data.isCanProjectUseWithJavadocJar()) {
                     jars.add(GradleInit.JavaJars.javadoc());
                 }
             });
         } else {
-            PersistentDependencyData.PublicationObjectSerializable publicationObject = dependency.getPersistentInfo().getProbeData().getAppropriatePublication();
+            PublicationDataGetters publicationObject = dependency.getPersistentInfo().getProbeData().getPublicationData();
             List<GradleInit.Task> tasks = new ArrayList<>();
-            for (PersistentDependencyData.TaskObjectSerializable taskSerializable : publicationObject.getTasks()) {
+            for (TaskDataGetters taskSerializable : publicationObject.getTasks()) {
                 switch (taskSerializable.getClassifier()) {
                     case "sources":
                         if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {
@@ -206,9 +208,9 @@ class GradleManager extends ManagerBase implements IGradleManager {
         configurations.add(configuration);
         configurations.add(gradleInit -> {
             gradleInit.setPublishing(p -> p.add(new GradleInit.Publication(
-                    dependency.getPersistentInfo().getProbeData().getAppropriatePublication().getRepositoryName(),
+                    dependency.getPersistentInfo().getProbeData().getPublicationData().getRepositoryName(),
                     dependency.getMavenFolder(),
-                    dependency.getPersistentInfo().getProbeData().getAppropriatePublication().getPublicationName())));
+                    dependency.getPersistentInfo().getProbeData().getPublicationData().getPublicationName())));
         });
 
         return GradleInit.crateInitProject(configurations);

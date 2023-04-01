@@ -1,4 +1,4 @@
-package io.github.srdjanv.localgitdependency.injection.model.repositories;
+package io.github.srdjanv.localgitdependency.persistence.data.probe.repositories;
 
 import java.io.File;
 import java.util.Set;
