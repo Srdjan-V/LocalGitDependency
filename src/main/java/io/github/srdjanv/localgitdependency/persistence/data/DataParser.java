@@ -3,6 +3,7 @@ package io.github.srdjanv.localgitdependency.persistence.data;
 import com.google.gson.*;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeDataGetters;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.RepositoryTypeAdapter;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -16,7 +17,13 @@ public class DataParser {
     private DataParser() {
     }
 
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    public static final Gson gson;
+
+    static {
+        GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting();
+        gsonBuilder.registerTypeAdapterFactory(RepositoryTypeAdapter.FACTORY);
+        gson = gsonBuilder.create();
+    }
 
     public static ProjectProbeDataGetters parseJson(String json) {
         try {
@@ -26,12 +33,15 @@ public class DataParser {
             }
         } catch (JsonSyntaxException ignore) {
         }
-        return new ProjectProbeData();
+       throw new RuntimeException("Invalid gradle probe data");
     }
 
     public static String projectProbeDataJson(ProjectProbeData projectProbeData) {
         if (validDataForClass(ProjectProbeData.class, projectProbeData)) {
-            Gson gson = new GsonBuilder().create();
+            Gson gson;
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapterFactory(RepositoryTypeAdapter.FACTORY);
+            gson = gsonBuilder.create();
             return gson.toJson(projectProbeData);
         }
 

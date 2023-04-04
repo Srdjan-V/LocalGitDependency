@@ -89,4 +89,8 @@ public class Constants {
     public static final Function<String, String> RepositoryFlatDir = name -> name + "FlatDir";
     public static final Function<String, String> RepositoryMavenProjectDependencyLocal = name -> name + "Repo";
 
+    public static final String Maven = "MAVEN";
+    public static final String Ivy = "IVY";
+    public static final String FlatDir = "FLAT_DIR";
+
 }

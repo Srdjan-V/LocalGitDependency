@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe;
 
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationDataGetters;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.common.IRepository;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetDataGetters;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskDataGetters;
 import org.gradle.api.JavaVersion;
@@ -19,4 +20,5 @@ public interface ProjectProbeDataGetters {
     List<? extends TaskDataGetters> getTaskData();
     List<? extends SourceSetDataGetters> getSourceSetData();
     PublicationDataGetters getPublicationData();
+    List<? extends IRepository> getRepositoryList();
 }

@@ -2,6 +2,7 @@ package io.github.srdjanv.localgitdependency.persistence.data.probe;
 
 import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.common.Repository;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import org.gradle.api.JavaVersion;
@@ -21,6 +22,7 @@ public class ProjectProbeData implements ProjectProbeDataGetters, ProjectProbeDa
     private List<TaskData> appropriateTasks;
     private List<SourceSetData> defaultSourceSets;
     private PublicationData publicationObject;
+    private List<Repository> repositoryList;
 
     public ProjectProbeData() {
     }
@@ -139,5 +141,15 @@ public class ProjectProbeData implements ProjectProbeDataGetters, ProjectProbeDa
     @Override
     public void setPublicationData(PublicationData publicationData) {
         this.publicationObject = publicationData;
+    }
+
+    @Override
+    public List<Repository> getRepositoryList() {
+        return repositoryList;
+    }
+
+    @Override
+    public void setRepositoryList(List<Repository> repositoryList) {
+        this.repositoryList = repositoryList;
     }
 }

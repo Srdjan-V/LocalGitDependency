@@ -29,12 +29,12 @@ public class GitInfo {
         } else {
             switch (dependencyDependencyProperty.getTargetType()) {
                 case COMMIT:
-                    targetType = dependencyDependencyProperty.getTargetType();
+                    targetType = TargetType.COMMIT;
                     target = dependencyDependencyProperty.getTarget();
                     break;
 
                 case TAG:
-                    targetType = dependencyDependencyProperty.getTargetType();
+                    targetType = TargetType.TAG;
                     target = R_TAGS + dependencyDependencyProperty.getTarget();
                     break;
 

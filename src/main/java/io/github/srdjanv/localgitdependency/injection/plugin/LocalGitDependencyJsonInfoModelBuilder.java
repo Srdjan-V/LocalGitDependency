@@ -4,9 +4,10 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.injection.model.DefaultLocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeDataGetters;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeDataGetters;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.RepositoryDataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import org.gradle.api.JavaVersion;
@@ -85,6 +86,7 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
             probe.setTaskData(appropriateTasks);
             probe.setPublicationData(publicationData);
             probe.setSourceSetData(getSources(project));
+            probe.setRepositoryList(RepositoryDataParser.create(project));
         });
 
         return new DefaultLocalGitDependencyJsonInfoModel(DataParser.projectProbeDataJson((ProjectProbeData) projectProbeData));
