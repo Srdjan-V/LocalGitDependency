@@ -99,13 +99,13 @@ public class PluginDependencyTests {
         String repo;
         switch (dependencyWrapper.getDependency().getDependencyType()) {
             case JarFlatDir:
-                repo = Constants.RepositoryFlatDir.apply(dependencyWrapper.getDependency().getName());
+                repo = Constants.RepositoryFlatDir.apply(dependencyWrapper.getDependency());
                 break;
             case MavenLocal:
                 repo = "MavenLocal";
                 break;
             case MavenProjectDependencyLocal:
-                repo = Constants.RepositoryMavenProjectDependencyLocal.apply(dependencyWrapper.getDependency().getName());
+                repo = Constants.RepositoryMavenProjectDependencyLocal.apply(dependencyWrapper.getDependency());
                 break;
             case MavenProjectLocal:
                 repo = Constants.RepositoryMavenProjectLocal;

@@ -109,7 +109,7 @@ class PersistenceManager extends ManagerBase implements IPersistenceManager {
                 case ProjectProbeData: {
                     ProjectProbeData probeData = (ProjectProbeData) dataWrapper.getData();
                     persistentInfo.setProjectProbeData(probeData);
-                    if (Objects.equals(probeData.getVersion(), Constants.PROJECT_VERSION)) {
+                    if (dataWrapper.isValid() && Objects.equals(probeData.getVersion(), Constants.PROJECT_VERSION)) {
                         persistentInfo.setValidModel();
                     }
                     break;

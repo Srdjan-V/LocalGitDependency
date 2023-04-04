@@ -91,17 +91,14 @@ class GradleManager extends ManagerBase implements IGradleManager {
 
             case MavenLocal:
                 buildGradleProject(dependency,
-                        Constants.PublicationTaskName.apply(
-                                dependency.getPersistentInfo().getProbeData().getPublicationData().getPublicationName()));
+                        Constants.PublicationTaskName.apply(dependency.getPersistentInfo().getProbeData().getPublicationData()));
                 break;
 
             case MavenProjectDependencyLocal:
             case MavenProjectLocal:
                 PublicationDataGetters publicationData = dependency.getPersistentInfo().getProbeData().getPublicationData();
                 buildGradleProject(dependency,
-                        Constants.FilePublicationTaskName.apply(
-                                publicationData.getPublicationName(),
-                                publicationData.getRepositoryName()));
+                        Constants.FilePublicationTaskName.apply(publicationData));
                 break;
 
             default:

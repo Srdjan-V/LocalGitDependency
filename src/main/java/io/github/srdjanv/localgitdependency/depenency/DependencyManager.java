@@ -125,7 +125,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
 
         String mavenRepo = dependency.getMavenFolder().getAbsolutePath();
         addRepository(project, dependency, mavenRepo, project.getRepositories().maven(mavenArtifactRepository -> {
-            mavenArtifactRepository.setName(Constants.RepositoryMavenProjectDependencyLocal.apply(dependency.getName()));
+            mavenArtifactRepository.setName(Constants.RepositoryMavenProjectDependencyLocal.apply(dependency));
             mavenArtifactRepository.setUrl(mavenRepo);
         }));
         addRepositoryDependency(project, dependency);
@@ -140,7 +140,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         }
 
         addRepository(project, dependency, libs.getAbsolutePath(), project.getRepositories().flatDir(flatDir -> {
-            flatDir.setName(Constants.RepositoryFlatDir.apply(dependency.getName()));
+            flatDir.setName(Constants.RepositoryFlatDir.apply(dependency));
             flatDir.dir(libs);
         }));
         addRepositoryDependency(project, dependency);

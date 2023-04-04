@@ -26,14 +26,11 @@ public class DataParser {
     }
 
     public static ProjectProbeDataGetters parseJson(String json) {
-        try {
-            ProjectProbeData data = gson.fromJson(json, ProjectProbeData.class);
-            if (validDataForClass(ProjectProbeData.class, data)) {
-                return data;
-            }
-        } catch (JsonSyntaxException ignore) {
+        ProjectProbeData data = gson.fromJson(json, ProjectProbeData.class);
+        if (validDataForClass(ProjectProbeData.class, data)) {
+            return data;
         }
-       throw new RuntimeException("Invalid gradle probe data");
+        throw new RuntimeException("Invalid gradle probe data");
     }
 
     public static String projectProbeDataJson(ProjectProbeData projectProbeData) {
@@ -49,7 +46,7 @@ public class DataParser {
     }
 
     public static boolean validDataForClass(Class<?> clazz, Object data) {
-        if(data == null) {
+        if (data == null) {
             return false;
         }
 
@@ -121,7 +118,7 @@ public class DataParser {
 
             try {
                 jsonArray = jsonElement.getAsJsonArray();
-            } catch (IllegalStateException ignore){
+            } catch (IllegalStateException ignore) {
                 for (DataLayout.DataMapper<?> dataMapper : layout.getDataMappers()) {
                     arrayList.add(DataWrapper.create(dataMapper));
                 }

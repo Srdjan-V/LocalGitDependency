@@ -94,8 +94,8 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
 
     private static List<TaskData> queueAppropriateTasks(Project project, boolean hasJavaPlugin) {
         List<TaskData> defaultTaskObjectList = new ArrayList<>(2);
-        String sourceTaskName = Constants.JarSourceTaskName.apply(project.getName());
-        String javaDocTaskName = Constants.JarJavaDocTaskName.apply(project.getName());
+        String sourceTaskName = Constants.JarSourceTaskName.apply(project);
+        String javaDocTaskName = Constants.JarJavaDocTaskName.apply(project);
 
         if (hasJavaPlugin) {
             for (Task task : project.getTasks()) {
@@ -124,8 +124,8 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
 
 
     private static PublicationData queueAppropriateMavenPublications(Project project, List<TaskData> appropriateTasks, boolean hasMavenPublishPlugin) {
-        String publicationName = Constants.MavenPublicationName.apply(project.getName());
-        String repositoryName = Constants.MavenRepositoryName.apply(project.getName());
+        String publicationName = Constants.MavenPublicationName.apply(project);
+        String repositoryName = Constants.MavenRepositoryName.apply(project);
 
         if (hasMavenPublishPlugin) {
             DefaultPublishingExtension publishingExtension = project.getExtensions().getByType(DefaultPublishingExtension.class);
