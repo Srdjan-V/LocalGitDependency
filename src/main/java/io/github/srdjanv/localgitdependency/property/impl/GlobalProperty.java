@@ -1,7 +1,7 @@
 package io.github.srdjanv.localgitdependency.property.impl;
 
 import io.github.srdjanv.localgitdependency.property.GlobalBuilder;
-import io.github.srdjanv.localgitdependency.property.IPropertyManager;
+import io.github.srdjanv.localgitdependency.util.BuilderUtil;
 
 /**
  * Property's used for global configuration
@@ -15,7 +15,7 @@ public class GlobalProperty extends CommonPropertyGetters {
         keepMainInitScriptUpdated = builder.keepMainInitScriptUpdated;
         generateDefaultGradleTasks = builder.generateDefaultGradleTasks;
         automaticCleanup = builder.automaticCleanup;
-        IPropertyManager.instantiateCommonPropertyFieldsInstance(this, builder);
+        BuilderUtil.instantiateObjectWithBuilder(this, builder, CommonPropertyFields.class);
     }
 
     public GlobalProperty() {

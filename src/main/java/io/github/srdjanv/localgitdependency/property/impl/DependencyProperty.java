@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.property.impl;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
-import io.github.srdjanv.localgitdependency.property.IPropertyManager;
+import io.github.srdjanv.localgitdependency.util.BuilderUtil;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class DependencyProperty extends CommonPropertyGetters {
         generatedJarsToAdd = builder.generatedJarsToAdd;
         generatedArtifactNames = builder.generatedArtifactNames;
         configureClosure = builder.configureClosure;
-        IPropertyManager.instantiateCommonPropertyFieldsInstance(this, builder);
+        BuilderUtil.instantiateObjectWithBuilder(this, builder, CommonPropertyFields.class);
     }
 
     public String getUrl() {

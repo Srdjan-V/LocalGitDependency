@@ -5,7 +5,6 @@ import io.github.srdjanv.localgitdependency.injection.model.DefaultLocalGitDepen
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeDataGetters;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.RepositoryDataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
@@ -74,22 +73,22 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
         final JavaVersion finalJavaVersion = javaVersion;
         final boolean finalCanProjectUseWithSourcesJar = canProjectUseWithSourcesJar;
         final boolean finalCanProjectUseWithJavadocJar = canProjectUseWithJavadocJar;
-        ProjectProbeDataGetters projectProbeData = ProjectProbeData.create(probe -> {
-            probe.setVersion(Constants.PROJECT_VERSION);
-            probe.setProjectId(project.getGroup() + ":" + project.getName() + ":" + project.getVersion());
-            probe.setProjectGradleVersion(project.getGradle().getGradleVersion());
-            probe.setJavaVersion(finalJavaVersion);
-            probe.setCanProjectUseWithSourcesJar(finalCanProjectUseWithSourcesJar);
-            probe.setCanProjectUseWithJavadocJar(finalCanProjectUseWithJavadocJar);
-            probe.setHasJavaPlugin(hasJavaPlugin);
-            probe.setHasMavenPublishPlugin(hasMavenPublishPlugin);
-            probe.setTaskData(appropriateTasks);
-            probe.setPublicationData(publicationData);
-            probe.setSourceSetData(getSources(project));
-            probe.setRepositoryList(RepositoryDataParser.create(project));
-        });
 
-        return new DefaultLocalGitDependencyJsonInfoModel(DataParser.projectProbeDataJson((ProjectProbeData) projectProbeData));
+        ProjectProbeData.Builder builder = new ProjectProbeData.Builder();
+        builder.setVersion(Constants.PROJECT_VERSION);
+        builder.setProjectId(project.getGroup() + ":" + project.getName() + ":" + project.getVersion());
+        builder.setProjectGradleVersion(project.getGradle().getGradleVersion());
+        builder.setJavaVersion(finalJavaVersion);
+        builder.setCanProjectUseWithSourcesJar(finalCanProjectUseWithSourcesJar);
+        builder.setCanProjectUseWithJavadocJar(finalCanProjectUseWithJavadocJar);
+        builder.setHasJavaPlugin(hasJavaPlugin);
+        builder.setHasMavenPublishPlugin(hasMavenPublishPlugin);
+        builder.setTaskData(appropriateTasks);
+        builder.setPublicationData(publicationData);
+        builder.setSourceSetsData(getSources(project));
+        builder.setRepositoryList(RepositoryDataParser.create(project));
+
+        return new DefaultLocalGitDependencyJsonInfoModel(DataParser.projectProbeDataJson(builder.create()));
     }
 
     private static List<TaskData> queueAppropriateTasks(Project project, boolean hasJavaPlugin) {
@@ -109,16 +108,15 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
             }
         }
 
-        final String finalSourceTaskName = sourceTaskName;
-        defaultTaskObjectList.add(TaskData.create(data -> {
-            data.setName(finalSourceTaskName);
-            data.setClassifier("sources");
-        }));
-        final String finalJavaDocTaskName = javaDocTaskName;
-        defaultTaskObjectList.add(TaskData.create(data -> {
-            data.setName(finalJavaDocTaskName);
-            data.setClassifier("javadoc");
-        }));
+        defaultTaskObjectList.add(new TaskData.Builder().
+                setName(sourceTaskName).
+                setClassifier("sources").
+                create());
+
+        defaultTaskObjectList.add(new TaskData.Builder().
+                setName(javaDocTaskName).
+                setClassifier("javadoc").
+                create());
         return defaultTaskObjectList;
     }
 
@@ -154,13 +152,11 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
 
         }
 
-        final String finalRepositoryName = repositoryName;
-        final String finalPublicationName = publicationName;
-        return PublicationData.create(data -> {
-            data.setRepositoryName(finalRepositoryName);
-            data.setPublicationName(finalPublicationName);
-            data.setTasks(appropriateTasks);
-        });
+        return new PublicationData.Builder().
+                setRepositoryName(repositoryName).
+                setPublicationName(publicationName).
+                setTasks(appropriateTasks).
+                create();
     }
 
     private static List<SourceSetData> getSources(Project project) {
@@ -193,13 +189,13 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
                 classpathDependencies.add(dependency.getGroup() + ":" + dependency.getName() + ":" + dependency.getVersion());
             }
 
-            sourceSets.add(SourceSetData.create(data -> {
-                data.setName(sourceSet.getName());
-                data.setClasspathConfigurationName(sourceSet.getCompileClasspathConfigurationName());
-                data.setSources(paths);
-                data.setRepositoryClasspathDependencies(classpathDependencies);
-                data.setFileClasspathDependencies(fileClasspathDependencies);
-            }));
+            sourceSets.add(new SourceSetData.Builder().
+                    setName(sourceSet.getName()).
+                    setClasspathConfigurationName(sourceSet.getCompileClasspathConfigurationName()).
+                    setSources(paths).
+                    setRepositoryClasspathDependencies(classpathDependencies).
+                    setFileClasspathDependencies(fileClasspathDependencies).
+                    create());
         }
 
         return sourceSets;

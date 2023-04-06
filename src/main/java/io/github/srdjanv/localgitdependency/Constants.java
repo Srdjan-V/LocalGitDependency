@@ -1,7 +1,7 @@
 package io.github.srdjanv.localgitdependency;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationDataGetters;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
@@ -34,13 +34,13 @@ public class Constants {
     //Name generators
     public final static Function<Project, String> MavenPublicationName = s -> "InitScriptPublicationForProject" + s.getName();
     public final static Function<Project, String> MavenRepositoryName = s -> "InitScriptRepositoryForProject" + s.getName();
-    public final static Function<PublicationDataGetters, String> PublicationTaskName = p -> {
+    public final static Function<PublicationData, String> PublicationTaskName = p -> {
         String publicationName = p.getPublicationName();
 
         return "publish" + publicationName.substring(0, 1).toUpperCase() + publicationName.substring(1) +
                 "PublicationToMavenLocal";
     };
-    public final static Function<PublicationDataGetters, String> FilePublicationTaskName = p -> {
+    public final static Function<PublicationData, String> FilePublicationTaskName = p -> {
         String publicationName = p.getPublicationName();
         String repositoryName = p.getRepositoryName();
 

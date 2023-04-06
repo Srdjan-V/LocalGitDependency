@@ -2,51 +2,53 @@ package io.github.srdjanv.localgitdependency.persistence.data.probe.publicationd
 
 import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
+import io.github.srdjanv.localgitdependency.util.BuilderUtil;
 
 import java.util.List;
-import java.util.function.Consumer;
 
-public class PublicationData implements PublicationDataGetters, PublicationDataSetters, NonNullData {
-    private String repositoryName;
-    private String publicationName;
-    private List<TaskData> tasks;
+public class PublicationData extends PublicationDataFields implements NonNullData {
 
     public PublicationData() {
     }
 
-    public static PublicationData create(Consumer<PublicationDataSetters> configuration) {
-        PublicationData instance = new PublicationData();
-        configuration.accept(instance);
-        return instance;
+    public PublicationData(Builder builder) {
+        BuilderUtil.instantiateObjectWithBuilder(this, builder, PublicationDataFields.class);
     }
 
-    @Override
+    public static class Builder extends PublicationDataFields {
+        public Builder() {
+        }
+
+        public Builder setRepositoryName(String repositoryName) {
+            this.repositoryName = repositoryName;
+            return this;
+        }
+
+        public Builder setPublicationName(String publicationName) {
+            this.publicationName = publicationName;
+            return this;
+        }
+
+        public Builder setTasks(List<TaskData> tasks) {
+            this.tasks = tasks;
+            return this;
+        }
+
+        public PublicationData create() {
+            return new PublicationData(this);
+        }
+    }
+
     public String getRepositoryName() {
         return repositoryName;
     }
 
-    @Override
-    public void setRepositoryName(String repositoryName) {
-        this.repositoryName = repositoryName;
-    }
-
-    @Override
     public String getPublicationName() {
         return publicationName;
     }
 
-    @Override
-    public void setPublicationName(String publicationName) {
-        this.publicationName = publicationName;
-    }
-
-    @Override
     public List<TaskData> getTasks() {
         return tasks;
     }
 
-    @Override
-    public void setTasks(List<TaskData> tasks) {
-        this.tasks = tasks;
-    }
 }

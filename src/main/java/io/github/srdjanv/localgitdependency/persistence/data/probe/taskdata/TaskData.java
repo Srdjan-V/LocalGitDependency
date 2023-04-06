@@ -1,39 +1,40 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata;
 
 import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
+import io.github.srdjanv.localgitdependency.util.BuilderUtil;
 
-import java.util.function.Consumer;
-
-public class TaskData implements TaskDataGetters, TaskDataSetters, NonNullData {
-    private String name;
-    private String classifier;
-
+public class TaskData extends TaskDataFields implements NonNullData {
     public TaskData() {
     }
 
-    public static TaskData create(Consumer<TaskDataSetters> configuration) {
-        TaskData instance = new TaskData();
-        configuration.accept(instance);
-        return instance;
+    private TaskData(Builder builder) {
+        BuilderUtil.instantiateObjectWithBuilder(this, builder, TaskDataFields.class);
     }
 
-    @Override
+    public static class Builder extends TaskDataFields {
+
+        public Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setClassifier(String classifier) {
+            this.classifier = classifier;
+            return this;
+        }
+
+        public TaskData create() {
+            return new TaskData(this);
+        }
+
+    }
+
     public String getName() {
         return name;
     }
 
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
     public String getClassifier() {
         return classifier;
     }
 
-    @Override
-    public void setClassifier(String classifier) {
-        this.classifier = classifier;
-    }
 }

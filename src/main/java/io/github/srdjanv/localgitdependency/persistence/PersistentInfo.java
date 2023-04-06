@@ -5,7 +5,6 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeDataGetters;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.gradle.internal.impldep.org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -65,7 +64,7 @@ public class PersistentInfo {
         return validModel;
     }
 
-    public ProjectProbeDataGetters getProbeData() {
+    public ProjectProbeData getProbeData() {
         return projectProbeData;
     }
 

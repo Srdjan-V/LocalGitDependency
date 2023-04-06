@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.depenency;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetDataGetters;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
@@ -224,7 +224,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     private void enableIdeSupport(Project project, SourceSetContainer sourceSetContainer, Dependency dependency) {
         ManagerLogger.info("Dependency: {} enabled ide support", dependency.getName());
 
-        for (SourceSetDataGetters source : dependency.getPersistentInfo().getProbeData().getSourceSetData()) {
+        for (SourceSetData source : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
             NamedDomainObjectProvider<SourceSet> sourceSetNamedDomainObjectProvider = sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
                 sourceSet.java(dependencySet -> dependencySet.srcDir(source.getSources()));
             });

@@ -4,9 +4,9 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeDataGetters;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationDataGetters;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskDataGetters;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
@@ -96,7 +96,7 @@ class GradleManager extends ManagerBase implements IGradleManager {
 
             case MavenProjectDependencyLocal:
             case MavenProjectLocal:
-                PublicationDataGetters publicationData = dependency.getPersistentInfo().getProbeData().getPublicationData();
+                PublicationData publicationData = dependency.getPersistentInfo().getProbeData().getPublicationData();
                 buildGradleProject(dependency,
                         Constants.FilePublicationTaskName.apply(publicationData));
                 break;
@@ -144,7 +144,7 @@ class GradleManager extends ManagerBase implements IGradleManager {
 
     private String createDependencyInitScript(Dependency dependency) {
         // TODO: 18/02/2023 work on this
-        ProjectProbeDataGetters data = dependency.getPersistentInfo().getProbeData();
+        ProjectProbeData data = dependency.getPersistentInfo().getProbeData();
         int[] gradleVersion = Arrays.stream(data.getProjectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
 
         final Consumer<GradleInit> configuration;
@@ -160,9 +160,9 @@ class GradleManager extends ManagerBase implements IGradleManager {
                 }
             });
         } else {
-            PublicationDataGetters publicationObject = dependency.getPersistentInfo().getProbeData().getPublicationData();
+            PublicationData publicationObject = dependency.getPersistentInfo().getProbeData().getPublicationData();
             List<GradleInit.Task> tasks = new ArrayList<>();
-            for (TaskDataGetters taskSerializable : publicationObject.getTasks()) {
+            for (TaskData taskSerializable : publicationObject.getTasks()) {
                 switch (taskSerializable.getClassifier()) {
                     case "sources":
                         if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {

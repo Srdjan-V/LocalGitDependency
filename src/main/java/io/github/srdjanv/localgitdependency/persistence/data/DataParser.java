@@ -2,7 +2,6 @@ package io.github.srdjanv.localgitdependency.persistence.data;
 
 import com.google.gson.*;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeDataGetters;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.RepositoryTypeAdapter;
 
 import java.io.*;
@@ -25,7 +24,7 @@ public class DataParser {
         gson = gsonBuilder.create();
     }
 
-    public static ProjectProbeDataGetters parseJson(String json) {
+    public static ProjectProbeData parseJson(String json) {
         ProjectProbeData data = gson.fromJson(json, ProjectProbeData.class);
         if (validDataForClass(ProjectProbeData.class, data)) {
             return data;
@@ -55,39 +54,44 @@ public class DataParser {
         }
 
         try {
-            for (Field declaredField : clazz.getDeclaredFields()) {
-                declaredField.setAccessible(true);
+            Class<?> clazzIterator = clazz;
+            do {
+                for (Field declaredField : clazzIterator.getDeclaredFields()) {
+                    declaredField.setAccessible(true);
 
-                //simple data for class like string
-                if (declaredField.get(data) == null) {
-                    return false;
-                }
+                    //simple data for class like string
+                    if (declaredField.get(data) == null) {
+                        return false;
+                    }
 
-                //inner objects that implement NonNullData
-                if (!validDataForClass(declaredField.getType(), declaredField.get(data))) {
-                    return false;
-                }
+                    //inner objects that implement NonNullData
+                    if (!validDataForClass(declaredField.getType(), declaredField.get(data))) {
+                        return false;
+                    }
 
-                //inner List objects with a generic type that implement NonNullData
-                if (declaredField.getType() == List.class) {
-                    Type genericType = declaredField.getGenericType();
-                    if (genericType instanceof ParameterizedType) {
-                        ParameterizedType parameterizedType = (ParameterizedType) genericType;
-                        Type type = parameterizedType.getActualTypeArguments()[0];
-                        if (type instanceof Class) {
-                            Class<?> listClazz = (Class<?>) type;
-                            List<?> list = (List<?>) declaredField.get(data);
+                    //inner List objects with a generic type that implement NonNullData
+                    if (declaredField.getType() == List.class) {
+                        Type genericType = declaredField.getGenericType();
+                        if (genericType instanceof ParameterizedType) {
+                            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+                            Type type = parameterizedType.getActualTypeArguments()[0];
+                            if (type instanceof Class) {
+                                Class<?> listClazz = (Class<?>) type;
+                                List<?> list = (List<?>) declaredField.get(data);
 
-                            for (Object o : list) {
-                                if (!validDataForClass(listClazz, o)) {
-                                    return false;
+                                for (Object o : list) {
+                                    if (!validDataForClass(listClazz, o)) {
+                                        return false;
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-            }
+                }
+                clazzIterator = clazzIterator.getSuperclass();
+            } while (clazzIterator != Object.class);
+
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
