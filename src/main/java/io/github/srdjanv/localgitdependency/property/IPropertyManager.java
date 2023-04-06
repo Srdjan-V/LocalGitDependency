@@ -12,7 +12,7 @@ public interface IPropertyManager extends Manager {
         return new PropertyManager(managers);
     }
 
-    void globalProperty(Closure<GlobalBuilder> configureClosure);
+    void globalProperty(@SuppressWarnings("rawtypes") Closure configureClosure);
     GlobalProperty getGlobalProperty();
     @TaskDescription("create essential directories")
     void createEssentialDirectories();

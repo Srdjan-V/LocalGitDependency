@@ -51,7 +51,7 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
     }
 
     @Override
-    public void globalProperty(Closure<GlobalBuilder> configureClosure) {
+    public void globalProperty(@SuppressWarnings("rawtypes") Closure configureClosure) {
         if (configureClosure != null) {
             if (customGlobalProperty) {
                 throw new GradleException("You can't change the globalProperty once they are set");
