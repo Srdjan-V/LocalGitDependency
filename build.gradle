@@ -27,8 +27,28 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
     //implementation 'com.google.guava:guava:31.1-jre'
 
+    //enables java 17 features on java 8
+    annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+    compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
 }
+
+configure([tasks.compileJava]) {
+    sourceCompatibility = 17 // for the IDE support
+    options.release = 8
+
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configure([tasks.javadoc]) {
+    javadocTool.set(javaToolchains.javadocToolFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    })
+}
+
 
 tasks.named('test') {
     useJUnitPlatform()
@@ -61,6 +81,7 @@ gradlePlugin {
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens
+
 task filterTokens(type: Sync) {
 
     inputs.property 'version', version
