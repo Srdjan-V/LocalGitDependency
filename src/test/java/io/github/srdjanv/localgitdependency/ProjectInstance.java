@@ -1,5 +1,7 @@
 package io.github.srdjanv.localgitdependency;
 
+import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
+import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 
@@ -53,5 +55,9 @@ public class ProjectInstance {
         project.getPluginManager().apply("java");
 
         return project;
+    }
+
+    public static IProjectManager getManager(Project project) {
+        return project.getExtensions().findByType(LocalGitDependencyManagerInstance.class).getManager();
     }
 }

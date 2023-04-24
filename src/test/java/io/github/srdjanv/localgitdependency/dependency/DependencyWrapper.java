@@ -1,7 +1,6 @@
 package io.github.srdjanv.localgitdependency.dependency;
 
 import groovy.lang.Closure;
-import io.github.srdjanv.localgitdependency.LocalGitDependencyPlugin;
 import io.github.srdjanv.localgitdependency.ProjectInstance;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
@@ -104,7 +103,7 @@ public class DependencyWrapper {
     }
 
     public void onlyRegisterDependencyAndRunTests() {
-        projectManager = LocalGitDependencyPlugin.getProject(ProjectInstance.createProject());
+        projectManager = ProjectInstance.getManager(ProjectInstance.createProject());
         setState(State.OnlyDependencyRegistered);
         checkDependencyState();
 
@@ -115,7 +114,7 @@ public class DependencyWrapper {
     }
 
     public void startPluginAndRunTests() {
-        projectManager = LocalGitDependencyPlugin.getProject(ProjectInstance.createProject());
+        projectManager = ProjectInstance.getManager(ProjectInstance.createProject());
         setState(State.Complete);
         checkDependencyState();
 
