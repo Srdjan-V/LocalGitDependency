@@ -2,6 +2,9 @@ package io.github.srdjanv.localgitdependency.persistence.data.probe.repositoryda
 
 import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.RepositoryWrapper;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.common.UrlRepository;
+import org.gradle.api.Action;
+import org.gradle.api.artifacts.repositories.IvyArtifactRepository;
+import org.gradle.util.GradleVersion;
 
 import java.util.List;
 import java.util.Map;
@@ -42,5 +45,27 @@ public class IvyRepository extends UrlRepository implements IIvyRepository {
     @Override
     public boolean isM2Compatible() {
         return m2Compatible;
+    }
+
+    @Override
+    public Action<? super IvyArtifactRepository> configureAction() {
+        return ivy -> {
+            ivy.setName(getName());
+
+            if (!getMetadataSources().isEmpty()) {
+                if (GradleVersion.version("4.5").compareTo(GradleVersion.current()) >= 0) {
+                    ivy.metadataSources(sources -> {
+                        for (String metadataSource : getMetadataSources()) {
+                            switch (metadataSource) {
+                                case "gradleMetadata" -> sources.gradleMetadata();
+                                case "ivyDescriptor" -> sources.ivyDescriptor();
+                                case "artifact" -> sources.artifact();
+                                case "ignoreGradleMetadataRedirection" -> sources.ignoreGradleMetadataRedirection();
+                            }
+                        }
+                    });
+                }
+            }
+        };
     }
 }
