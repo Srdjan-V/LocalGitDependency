@@ -58,6 +58,6 @@ public class ProjectInstance {
     }
 
     public static IProjectManager getManager(Project project) {
-        return project.getExtensions().findByType(LocalGitDependencyManagerInstance.class).getManager();
+        return project.getExtensions().findByType(LocalGitDependencyManagerInstance.class).getProjectManager();
     }
 }
