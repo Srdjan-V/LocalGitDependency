@@ -32,6 +32,11 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
             return this;
         }
 
+        public Builder setArchivesBaseName(String archivesBaseName) {
+            this.archivesBaseName = archivesBaseName;
+            return this;
+        }
+
         public Builder setProjectGradleVersion(String projectGradleVersion) {
             this.projectGradleVersion = projectGradleVersion;
 
@@ -94,6 +99,9 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
 
     public String getProjectId() {
         return projectId;
+    }
+    public String getArchivesBaseName() {
+        return archivesBaseName;
     }
 
     public String getProjectGradleVersion() {

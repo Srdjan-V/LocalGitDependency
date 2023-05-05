@@ -11,6 +11,7 @@ import java.util.List;
 class ProjectProbeDataFields {
     String version;
     String projectId;
+    String archivesBaseName;
     String projectGradleVersion;
     JavaVersion javaVersion;
     boolean canProjectUseWithSourcesJar;

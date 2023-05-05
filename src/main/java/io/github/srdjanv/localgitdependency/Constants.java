@@ -4,6 +4,7 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 
 import java.io.File;
 import java.util.function.BiFunction;
@@ -47,8 +48,24 @@ public class Constants {
         return "publish" + publicationName.substring(0, 1).toUpperCase() + publicationName.substring(1) + "PublicationTo" +
                 repositoryName.substring(0, 1).toUpperCase() + repositoryName.substring(1) + "Repository";
     };
-    public final static Function<Project, String> JarSourceTaskName = s -> "InitScriptSourceTaskForProject" + s.getName();
-    public final static Function<Project, String> JarJavaDocTaskName = s -> "InitScriptJavaDocTaskForProject" + s.getName();
+    public final static Function<Project, String> JarSourceTaskName = project -> {
+        var sourceTaskName = "InitScriptSourceTaskForProject" + project.getName();
+        for (Task task : project.getTasks()) {
+            while (task.getName().equals(sourceTaskName)) {
+                sourceTaskName = sourceTaskName + "Extended";
+            }
+        }
+        return sourceTaskName;
+    };
+    public final static Function<Project, String> JarJavaDocTaskName = project -> {
+        var javaDocTaskName = "InitScriptJavaDocTaskForProject" + project.getName();
+        for (Task task : project.getTasks()) {
+            while (task.getName().equals(javaDocTaskName)) {
+                javaDocTaskName = javaDocTaskName + "Extended";
+            }
+        }
+        return javaDocTaskName;
+    };
     public static final Function<Dependency, String> RepositoryFlatDir = dependency -> dependency.getName() + "FlatDir";
     public static final Function<Dependency, String> RepositoryMavenProjectDependencyLocal = dependency -> dependency.getName() + "Repo";
 

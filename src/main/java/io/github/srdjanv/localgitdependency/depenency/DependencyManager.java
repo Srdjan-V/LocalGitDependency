@@ -13,6 +13,7 @@ import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.jetbrains.annotations.Unmodifiable;
@@ -218,15 +219,29 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         for (SourceSetData source : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
             NamedDomainObjectProvider<SourceSet> sourceSetNamedDomainObjectProvider = sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
                 sourceSet.java(dependencySet -> dependencySet.srcDir(source.getSources()));
+                sourceSet.resources(dependencySet -> dependencySet.srcDir(source.getResources()));
             });
 
-            SourceSet sourceSet = sourceSetNamedDomainObjectProvider.get();
-            for (String classpathDependency : source.getRepositoryClasspathDependencies()) {
-                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(), classpathDependency);
-            }
+            if (!source.getCompileClasspath().isEmpty()) {
+                SourceSet sourceSet = sourceSetNamedDomainObjectProvider.get();
 
-            if (!source.getFileClasspathDependencies().isEmpty()) {
-                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(), project.getLayout().files(source.getFileClasspathDependencies()));
+                FileCollection fileCollection;
+                if (source.getDependentSourceSets().isEmpty()) {
+                    fileCollection = project.getLayout().files(source.getCompileClasspath());
+                } else {
+                    var pathSet = new HashSet<String>();
+                    for (String dependentSourceSetName : source.getDependentSourceSets()) {
+                        for (SourceSetData data : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
+                            if (data.getName().equals(dependentSourceSetName)) {
+                                pathSet.addAll(data.getSources());
+                                pathSet.addAll(data.getResources());
+                            }
+                        }
+                    }
+                    fileCollection = project.getLayout().files(source.getCompileClasspath(), pathSet);
+                }
+
+                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(), fileCollection);
             }
         }
 

@@ -9,27 +9,25 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationda
 import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.RepositoryDataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
-import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.UnknownDomainObjectException;
-import org.gradle.api.artifacts.Dependency;
-import org.gradle.api.artifacts.FileCollectionDependency;
-import org.gradle.api.file.FileCollection;
-import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
+import org.gradle.api.plugins.BasePluginExtension;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.publish.internal.DefaultPublishingExtension;
 import org.gradle.api.publish.maven.internal.publication.DefaultMavenPublication;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.tooling.provider.model.ToolingModelBuilder;
+import org.gradle.util.GradleVersion;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 // TODO: 09/03/2023 Rewrite the logic
@@ -43,45 +41,52 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
 
     @Override
     public @NotNull Object buildAll(@NotNull String modelName, Project project) {
-        boolean hasJavaPlugin = project.getExtensions().findByName("java") != null;
-        boolean hasMavenPublishPlugin = project.getExtensions().findByName("maven-publish") != null;
-
-        List<TaskData> appropriateTasks = queueAppropriateTasks(project, hasJavaPlugin);
-        PublicationData publicationData = queueAppropriateMavenPublications(project, appropriateTasks, hasMavenPublishPlugin);
-        int[] gradleVersion = Arrays.stream(project.getGradle().getGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
-        JavaVersion javaVersion = null;
-        boolean canProjectUseWithSourcesJar = true;
-        boolean canProjectUseWithJavadocJar = true;
-        if (hasJavaPlugin) {
-            JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
-            javaVersion = javaPluginExtension.getSourceCompatibility();
-
-            if (gradleVersion[0] >= 7 && gradleVersion[1] >= 1) {
-                SourceSet main = javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-                for (Task task : project.getTasks()) {
-                    if (task.getName().equals(main.getSourcesJarTaskName())) {
-                        canProjectUseWithSourcesJar = false;
-                    }
-
-                    if (task.getName().equals(main.getJavadocJarTaskName())) {
-                        canProjectUseWithJavadocJar = false;
-                    }
-                }
-            }
+        var javaPlugin = project.getExtensions().findByName("java");
+        if (javaPlugin == null) {
+            throw new RuntimeException();
         }
 
-        final JavaVersion finalJavaVersion = javaVersion;
-        final boolean finalCanProjectUseWithSourcesJar = canProjectUseWithSourcesJar;
-        final boolean finalCanProjectUseWithJavadocJar = canProjectUseWithJavadocJar;
+        boolean hasMavenPublishPlugin = project.getExtensions().findByName("maven-publish") != null;
+        JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+
+        List<TaskData> appropriateTasks = queueAppropriateTasks(project);
+        PublicationData publicationData = queueAppropriateMavenPublications(project, appropriateTasks, hasMavenPublishPlugin);
+
+        var gradleVersion = GradleVersion.version(project.getGradle().getGradleVersion());
+        boolean canProjectUseWithSourcesJar = true;
+        boolean canProjectUseWithJavadocJar = true;
+        String archivesBaseName;
+        String projectId = project.getGroup() + ":" + project.getName() + ":" + project.getVersion();
+        if (gradleVersion.compareTo(GradleVersion.version("7.1")) >= 0) {
+            SourceSet main = javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+            for (Task task : project.getTasks()) {
+                if (task.getName().equals(main.getSourcesJarTaskName())) {
+                    canProjectUseWithSourcesJar = false;
+                }
+
+                if (task.getName().equals(main.getJavadocJarTaskName())) {
+                    canProjectUseWithJavadocJar = false;
+                }
+            }
+
+            var base = project.getExtensions().getByType(BasePluginExtension.class);
+            archivesBaseName = base.getArchivesName().getOrElse(projectId);
+        } else {
+            // TODO: 05/05/2023
+            // @SuppressWarnings("deprecation") var base = project.getExtensions().getByType(BasePluginConvention.class);
+            // archivesBaseName = base.getArchivesBaseName();
+            archivesBaseName = projectId;
+        }
 
         ProjectProbeData.Builder builder = new ProjectProbeData.Builder();
         builder.setVersion(Constants.PROJECT_VERSION);
-        builder.setProjectId(project.getGroup() + ":" + project.getName() + ":" + project.getVersion());
+        builder.setProjectId(projectId);
+        builder.setArchivesBaseName(archivesBaseName);
         builder.setProjectGradleVersion(project.getGradle().getGradleVersion());
-        builder.setJavaVersion(finalJavaVersion);
-        builder.setCanProjectUseWithSourcesJar(finalCanProjectUseWithSourcesJar);
-        builder.setCanProjectUseWithJavadocJar(finalCanProjectUseWithJavadocJar);
-        builder.setHasJavaPlugin(hasJavaPlugin);
+        builder.setJavaVersion(javaPluginExtension.getTargetCompatibility());
+        builder.setCanProjectUseWithSourcesJar(canProjectUseWithSourcesJar);
+        builder.setCanProjectUseWithJavadocJar(canProjectUseWithJavadocJar);
+        builder.setHasJavaPlugin(true);
         builder.setHasMavenPublishPlugin(hasMavenPublishPlugin);
         builder.setTaskData(appropriateTasks);
         builder.setPublicationData(publicationData);
@@ -91,22 +96,10 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
         return new DefaultLocalGitDependencyJsonInfoModel(DataParser.projectProbeDataJson(builder.create()));
     }
 
-    private static List<TaskData> queueAppropriateTasks(Project project, boolean hasJavaPlugin) {
+    private static List<TaskData> queueAppropriateTasks(Project project) {
         List<TaskData> defaultTaskObjectList = new ArrayList<>(2);
         String sourceTaskName = Constants.JarSourceTaskName.apply(project);
         String javaDocTaskName = Constants.JarJavaDocTaskName.apply(project);
-
-        if (hasJavaPlugin) {
-            for (Task task : project.getTasks()) {
-                while (task.getName().equals(sourceTaskName)) {
-                    sourceTaskName = sourceTaskName + System.currentTimeMillis();
-                }
-
-                while (task.getName().equals(javaDocTaskName)) {
-                    javaDocTaskName = javaDocTaskName + System.currentTimeMillis();
-                }
-            }
-        }
 
         defaultTaskObjectList.add(new TaskData.Builder().
                 setName(sourceTaskName).
@@ -169,32 +162,39 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
         }
 
         for (SourceSet sourceSet : sourceContainer) {
-            SourceDirectorySet sourceDirectorySet = sourceSet.getJava();
-            List<String> paths = new ArrayList<>();
-            List<String> classpathDependencies = new ArrayList<>();
-            List<String> fileClasspathDependencies = new ArrayList<>();
+            List<String> sourcePaths = new ArrayList<>();
+            List<String> resourcePaths = new ArrayList<>();
+            List<String> compileClasspath = new ArrayList<>();
+            Set<String> dependentSourceSets = new HashSet<>();
 
-            for (File file : sourceDirectorySet.getSourceDirectories().getFiles()) {
-                paths.add(file.getAbsolutePath());
+            for (File file : sourceSet.getJava().getSourceDirectories().getFiles()) {
+                sourcePaths.add(file.getAbsolutePath());
             }
 
-            for (Dependency dependency : project.getConfigurations().getByName(sourceSet.getCompileClasspathConfigurationName()).getAllDependencies()) {
-                if (dependency instanceof FileCollectionDependency) {
-                    FileCollection files = ((FileCollectionDependency) dependency).getFiles();
-                    for (File file : files.getFiles()) {
-                        fileClasspathDependencies.add(file.getAbsolutePath());
+            for (File file : sourceSet.getResources().getSourceDirectories().getFiles()) {
+                resourcePaths.add(file.getAbsolutePath());
+            }
+
+            topFor:
+            for (File file : sourceSet.getCompileClasspath()) {
+                var absolutePath = file.getAbsolutePath();
+
+                for (SourceSet source : sourceContainer) {
+                    if (absolutePath.contains(source.getName()) && absolutePath.contains("build") && (absolutePath.contains("classes") || absolutePath.contains("resources"))) {
+                        dependentSourceSets.add(source.getName());
+                        continue topFor;
                     }
-                    continue;
                 }
-                classpathDependencies.add(dependency.getGroup() + ":" + dependency.getName() + ":" + dependency.getVersion());
+
+                compileClasspath.add(absolutePath);
             }
 
-            sourceSets.add(new SourceSetData.Builder().
+            sourceSets.add(SourceSetData.builder().
                     setName(sourceSet.getName()).
-                    setClasspathConfigurationName(sourceSet.getCompileClasspathConfigurationName()).
-                    setSources(paths).
-                    setRepositoryClasspathDependencies(classpathDependencies).
-                    setFileClasspathDependencies(fileClasspathDependencies).
+                    setDependentSourceSets(dependentSourceSets).
+                    setCompileClasspath(compileClasspath).
+                    setSources(sourcePaths).
+                    setResources(resourcePaths).
                     create());
         }
 

@@ -16,11 +16,9 @@ import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ModelBuilder;
 import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
+import org.gradle.util.GradleVersion;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
@@ -145,10 +143,10 @@ class GradleManager extends ManagerBase implements IGradleManager {
     private String createDependencyInitScript(Dependency dependency) {
         // TODO: 18/02/2023 work on this
         ProjectProbeData data = dependency.getPersistentInfo().getProbeData();
-        int[] gradleVersion = Arrays.stream(data.getProjectGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+        var gradleVersion = GradleVersion.version(data.getProjectGradleVersion());
 
         final Consumer<GradleInit> configuration;
-        if (gradleVersion[0] >= 6 && gradleVersion[1] >= 0) {
+        if (gradleVersion.compareTo(GradleVersion.version("6.0")) >= 0) {
             configuration = gradleInit -> gradleInit.setJavaJars(jars -> {
                 if (dependency.getGradleInfo().isTryGeneratingSourceJar() &&
                         data.isCanProjectUseWithSourcesJar()) {
@@ -289,7 +287,7 @@ class GradleManager extends ManagerBase implements IGradleManager {
                 sha1.update(buffer, 0, read);
             }
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Error while checking %s file integrity", file.getName()), e);
+            throw new UncheckedIOException(String.format("Error while checking %s file integrity", file.getName()), e);
         }
 
         return sha1.toObjectId().getName();
@@ -305,7 +303,7 @@ class GradleManager extends ManagerBase implements IGradleManager {
         try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(Files.newOutputStream(file.toPath()))) {
             bufferedOutputStream.write(text.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
