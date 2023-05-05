@@ -1,26 +1,27 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
-import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
+import io.github.srdjanv.localgitdependency.property.impl.Artifact;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Dependency {
     private final String name;
-    private final String configurationName;
-    private final List<String> generatedJarsToAdd;
-    private final List<String> generatedArtifactNames;
+    private final Map<String, List<Artifact>> configurations;
     private final boolean enableIdeSupport;
     private final boolean registerDependencyToProject;
     private final boolean registerDependencyRepositoryToProject;
@@ -30,35 +31,31 @@ public class Dependency {
     private final GitInfo gitInfo;
     private final GradleInfo gradleInfo;
     private final PersistentInfo persistentInfo;
-    private Closure<?> configureClosure;
 
-    public Dependency(String configurationName, DependencyProperty dependencyDependencyProperty) {
-        this.name = dependencyDependencyProperty.getName() == null ? getNameFromUrl(dependencyDependencyProperty.getUrl()) : dependencyDependencyProperty.getName();
-        this.configurationName = configurationName == null ? dependencyDependencyProperty.getConfiguration() : configurationName;
-        this.generatedJarsToAdd = dependencyDependencyProperty.getGeneratedJarsToAdd();
-        this.generatedArtifactNames = dependencyDependencyProperty.getGeneratedArtifactNames();
-        this.enableIdeSupport = dependencyDependencyProperty.getEnableIdeSupport();
-        this.registerDependencyToProject = dependencyDependencyProperty.getRegisterDependencyToProject();
-        this.registerDependencyRepositoryToProject = dependencyDependencyProperty.getRegisterDependencyRepositoryToProject();
-        this.generateGradleTasks = dependencyDependencyProperty.getGenerateGradleTasks();
-        this.configureClosure = dependencyDependencyProperty.getConfigureClosure();
-        this.dependencyType = dependencyDependencyProperty.getDependencyType();
+    public Dependency(Map<String, List<Artifact>> configurations, DependencyProperty dependencyConfig) {
+        this.name = dependencyConfig.getName() == null ? getNameFromUrl(dependencyConfig.getUrl()) : dependencyConfig.getName();
+        this.configurations = Collections.unmodifiableMap(configurations);
+        this.enableIdeSupport = dependencyConfig.getEnableIdeSupport();
+        this.registerDependencyToProject = dependencyConfig.getRegisterDependencyToProject();
+        this.registerDependencyRepositoryToProject = dependencyConfig.getRegisterDependencyRepositoryToProject();
+        this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks();
+        this.dependencyType = dependencyConfig.getDependencyType();
         switch (dependencyType) {
             case MavenProjectLocal:
-                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyDependencyProperty.getMavenDir());
+                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyConfig.getMavenDir());
                 break;
 
             case MavenProjectDependencyLocal:
-                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyDependencyProperty.getMavenDir(), name);
+                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyConfig.getMavenDir(), name);
                 break;
 
             default:
                 this.mavenFolder = null;
         }
 
-        this.gitInfo = new GitInfo(dependencyDependencyProperty, this);
-        this.gradleInfo = new GradleInfo(dependencyDependencyProperty, this);
-        this.persistentInfo = new PersistentInfo(dependencyDependencyProperty, this);
+        this.gitInfo = new GitInfo(dependencyConfig, this);
+        this.gradleInfo = new GradleInfo(dependencyConfig, this);
+        this.persistentInfo = new PersistentInfo(dependencyConfig, this);
         validate();
     }
 
@@ -68,18 +65,9 @@ public class Dependency {
     }
 
     @NotNull
-    public String getConfigurationName() {
-        return configurationName;
-    }
-
-    @Nullable
-    public List<String> getGeneratedJarsToAdd() {
-        return generatedJarsToAdd;
-    }
-
-    @Nullable
-    public List<String> getGeneratedArtifactNames() {
-        return generatedArtifactNames;
+    @Unmodifiable
+    public Map<String, List<Artifact>> getConfigurations() {
+        return configurations;
     }
 
     public boolean isEnableIdeSupport() {
@@ -96,13 +84,6 @@ public class Dependency {
 
     public boolean isGenerateGradleTasks() {
         return generateGradleTasks;
-    }
-
-    @Nullable
-    public Closure<?> getAndClearConfigureClosure() {
-        Closure<?> configureClosureHolder = configureClosure;
-        configureClosure = null;
-        return configureClosureHolder;
     }
 
     @NotNull

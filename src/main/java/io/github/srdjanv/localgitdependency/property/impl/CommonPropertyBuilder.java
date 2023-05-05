@@ -15,11 +15,6 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields impleme
     }
 
     @Override
-    public void configuration(String configuration) {
-        this.configuration = configuration;
-    }
-
-    @Override
     public void keepGitUpdated(Boolean keepGitUpdated) {
         this.keepGitUpdated = keepGitUpdated;
     }

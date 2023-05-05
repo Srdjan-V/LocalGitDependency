@@ -6,11 +6,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 
 public abstract class CommonPropertyGetters extends CommonPropertyFields {
-
-    public String getConfiguration() {
-        return configuration;
-    }
-
     public Boolean getKeepGitUpdated() {
         return keepGitUpdated;
     }

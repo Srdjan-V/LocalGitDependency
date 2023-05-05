@@ -16,5 +16,5 @@ public interface IPropertyManager extends Manager {
     GlobalProperty getGlobalProperty();
     @TaskDescription("create essential directories")
     void createEssentialDirectories();
-    void applyDefaultProperty(DependencyProperty dependencyDependencyProperty);
+    void applyDefaultProperty(DependencyProperty dependencyProperty);
 }

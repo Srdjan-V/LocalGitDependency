@@ -7,8 +7,6 @@ import java.io.File;
 public abstract class CommonPropertyFields {
     CommonPropertyFields() {
     }
-
-    String configuration;
     Boolean keepGitUpdated;
     Boolean keepDependencyInitScriptUpdated;
     File gitDir;

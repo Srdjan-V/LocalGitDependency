@@ -28,7 +28,6 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
     @Override
     protected void managerConstructor() {
         GlobalProperty.Builder builder = new GlobalProperty.Builder();
-        builder.configuration(Constants.JAVA_IMPLEMENTATION);
         File defaultDir = Constants.defaultDir.apply(getProject());
         builder.persistentDir(Constants.defaultPersistentDir.apply(defaultDir));
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
@@ -111,24 +110,23 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
     }
 
     /**
-     * Merges the supplied dependencyDependencyProperty with the globalProperty in this manager
-     * If a field in dependencyDependencyProperty is null the field in globalProperty will be used
+     * Merges the supplied dependencyProperty with the globalProperty in this manager
+     * If a field in dependencyProperty is null the field in globalProperty will be used
      */
     @Override
-    public void applyDefaultProperty(DependencyProperty dependencyDependencyProperty) {
+    public void applyDefaultProperty(DependencyProperty dependencyProperty) {
         Class<CommonPropertyFields> clazz = CommonPropertyFields.class;
         for (Field field : clazz.getDeclaredFields()) {
             try {
                 field.setAccessible(true);
-                if (field.get(dependencyDependencyProperty) == null) {
-                    field.set(dependencyDependencyProperty, field.get(globalProperty));
+                if (field.get(dependencyProperty) == null) {
+                    field.set(dependencyProperty, field.get(globalProperty));
                 }
             } catch (Exception e) {
                 throw new RuntimeException(String.format("Unexpected error while reflecting %s class", clazz), e);
             }
         }
     }
-
 
     /**
      * Merges 2 properties GlobalProperties, if a field in newGlobalProperty is null the field in defaultGlobalPropertyValues will be used

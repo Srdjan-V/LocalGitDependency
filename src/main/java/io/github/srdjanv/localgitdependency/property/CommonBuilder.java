@@ -7,14 +7,6 @@ import java.io.File;
 public interface CommonBuilder {
 
     /**
-     * To what configuration the dependency is going to be added
-     *
-     * @param configuration Configuration name
-     * @see org.gradle.api.artifacts.ConfigurationContainer
-     */
-    void configuration(String configuration);
-
-    /**
      * This will try to keep the gir repo of the dependency updated
      *
      * @param keepGitUpdated True if the plugin should update the git repo if the target commit changes
