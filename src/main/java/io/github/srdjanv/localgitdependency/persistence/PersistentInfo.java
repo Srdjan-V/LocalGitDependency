@@ -21,9 +21,9 @@ public class PersistentInfo {
     private boolean dependencyTypeChanged;
     private boolean dirty;
 
-    public PersistentInfo(DependencyProperty dependencyDependencyProperty, Dependency dependency) {
+    public PersistentInfo(DependencyProperty dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
-        this.persistentFile = Constants.persistentJsonFile.apply(dependencyDependencyProperty.getPersistentDir(), dependency.getName());
+        this.persistentFile = Constants.persistentJsonFile.apply(dependencyConfig.getPersistentDir(), dependency.getName());
     }
 
     public boolean hasDependencyTypeChanged() {

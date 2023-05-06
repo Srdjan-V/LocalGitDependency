@@ -84,11 +84,6 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields impleme
     }
 
     @Override
-    public void registerDependencyToProject(Boolean registerDependencyToProject) {
-        this.registerDependencyToProject = registerDependencyToProject;
-    }
-
-    @Override
     public void registerDependencyRepositoryToProject(Boolean registerDependencyRepositoryToProject) {
         this.registerDependencyRepositoryToProject = registerDependencyRepositoryToProject;
     }

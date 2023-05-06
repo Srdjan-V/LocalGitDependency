@@ -5,9 +5,6 @@ import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
 import io.github.srdjanv.localgitdependency.util.BuilderUtil;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * Property's that only a dependency can have
  */
@@ -17,7 +14,7 @@ public class DependencyProperty extends CommonPropertyGetters {
     private final String target;
     private final GitInfo.TargetType targetType;
     private final String configuration;
-    private final Map<String, List<Closure>> configurations;
+    private final Closure[] configurations;
     public DependencyProperty(Builder builder) {
         url = builder.url;
         name = builder.name;
@@ -48,7 +45,7 @@ public class DependencyProperty extends CommonPropertyGetters {
         return configuration;
     }
 
-    public Map<String, List<Closure>> getConfigurations() {
+    public Closure[] getConfigurations() {
         return configurations;
     }
 
@@ -58,7 +55,7 @@ public class DependencyProperty extends CommonPropertyGetters {
         private String target;
         private GitInfo.TargetType targetType;
         private String configuration;
-        private Map<String, List<Closure>> configurations;
+        private Closure[] configurations;
 
         public Builder(String url) {
             this.url = url;
@@ -70,7 +67,7 @@ public class DependencyProperty extends CommonPropertyGetters {
         }
 
         @Override
-        public void configuration(Map<String, List<Closure>> configurations) {
+        public void configuration(Closure... configurations) {
             this.configurations = configurations;
         }
 

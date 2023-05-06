@@ -111,15 +111,6 @@ public interface CommonBuilder {
     void enableIdeSupport(Boolean enableIdeSupport);
 
     /**
-     * If the built dependencies should be added as dependencies.
-     * You can manually add the dependency manually
-     *
-     * @param registerDependencyToProject if it should register the dependency
-     * @see org.gradle.api.artifacts.dsl.DependencyHandler
-     */
-    void registerDependencyToProject(Boolean registerDependencyToProject);
-
-    /**
      * If a repository should be added for the build dependency, this will not do anything for the Jar dependency type
      *
      * @param registerDependencyRepositoryToProject if it should register the dependency
@@ -132,7 +123,6 @@ public interface CommonBuilder {
      * Custom tasks can be generated for this dependency
      *
      * @param generateGradleTasks if it should create custom tasks
-     * @see org.gradle.api.artifacts.dsl.DependencyHandler
      */
     void generateGradleTasks(Boolean generateGradleTasks);
 

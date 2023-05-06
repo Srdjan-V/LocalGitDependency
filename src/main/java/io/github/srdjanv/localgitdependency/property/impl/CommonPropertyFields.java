@@ -17,7 +17,6 @@ public abstract class CommonPropertyFields {
     Boolean tryGeneratingSourceJar;
     Boolean tryGeneratingJavaDocJar;
     Boolean enableIdeSupport;
-    Boolean registerDependencyToProject;
     Boolean registerDependencyRepositoryToProject;
     Boolean generateGradleTasks;
     Integer gradleDaemonMaxIdleTime;

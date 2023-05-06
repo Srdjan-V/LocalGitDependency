@@ -47,10 +47,6 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
         return enableIdeSupport;
     }
 
-    public Boolean getRegisterDependencyToProject() {
-        return registerDependencyToProject;
-    }
-
     public Boolean getRegisterDependencyRepositoryToProject() {
         return registerDependencyRepositoryToProject;
     }

@@ -1,9 +1,7 @@
 package io.github.srdjanv.localgitdependency.property;
 
 import groovy.lang.Closure;
-
-import java.util.List;
-import java.util.Map;
+import groovy.lang.DelegatesTo;
 
 public interface DependencyBuilder extends CommonBuilder {
 
@@ -18,6 +16,7 @@ public interface DependencyBuilder extends CommonBuilder {
     void configuration(String configuration);
 
     // TODO: 05/05/2023 fix doc 
+
     /**
      * The map key represents the configuration and the list represents the generated artifacts
      * <p>
@@ -36,7 +35,8 @@ public interface DependencyBuilder extends CommonBuilder {
      * @see io.github.srdjanv.localgitdependency.depenency.Dependency.Type
      */
 
-    void configuration(Map<String, List<Closure>> configurations);
+    void configuration(@DelegatesTo(value = ArtifactBuilder.class,
+            strategy = Closure.DELEGATE_FIRST) Closure... configurations);
 
     /**
      * Sets the name of the dependency, it will also be used as the directory name

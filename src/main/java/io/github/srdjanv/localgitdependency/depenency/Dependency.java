@@ -14,16 +14,14 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Dependency {
     private final String name;
-    private final Map<String, List<Artifact>> configurations;
+    private final List<Artifact> configurations;
     private final boolean enableIdeSupport;
-    private final boolean registerDependencyToProject;
     private final boolean registerDependencyRepositoryToProject;
     private final boolean generateGradleTasks;
     private final Type dependencyType;
@@ -32,11 +30,10 @@ public class Dependency {
     private final GradleInfo gradleInfo;
     private final PersistentInfo persistentInfo;
 
-    public Dependency(Map<String, List<Artifact>> configurations, DependencyProperty dependencyConfig) {
+    public Dependency(List<Artifact> configurations, DependencyProperty dependencyConfig) {
         this.name = dependencyConfig.getName() == null ? getNameFromUrl(dependencyConfig.getUrl()) : dependencyConfig.getName();
-        this.configurations = Collections.unmodifiableMap(configurations);
+        this.configurations = Collections.unmodifiableList(configurations);
         this.enableIdeSupport = dependencyConfig.getEnableIdeSupport();
-        this.registerDependencyToProject = dependencyConfig.getRegisterDependencyToProject();
         this.registerDependencyRepositoryToProject = dependencyConfig.getRegisterDependencyRepositoryToProject();
         this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks();
         this.dependencyType = dependencyConfig.getDependencyType();
@@ -66,16 +63,12 @@ public class Dependency {
 
     @NotNull
     @Unmodifiable
-    public Map<String, List<Artifact>> getConfigurations() {
+    public List<Artifact> getConfigurations() {
         return configurations;
     }
 
     public boolean isEnableIdeSupport() {
         return enableIdeSupport;
-    }
-
-    public boolean isRegisterDependencyToProject() {
-        return registerDependencyToProject;
     }
 
     public boolean isRegisterDependencyRepositoryToProject() {

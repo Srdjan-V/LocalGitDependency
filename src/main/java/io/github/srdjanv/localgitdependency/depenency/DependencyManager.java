@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class DependencyManager extends ManagerBase implements IDependencyManager {
@@ -52,22 +53,20 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         DependencyProperty dependencyDependencyProperty = new DependencyProperty(dependencyPropertyBuilder);
         getPropertyManager().applyDefaultProperty(dependencyDependencyProperty);
 
-        var configurations = new HashMap<String, List<Artifact>>();
+        var configurations = new ArrayList<Artifact>();
         if (dependencyDependencyProperty.getConfigurations() == null) {
-            configurations.put(dependencyDependencyProperty.getConfiguration(), new ArrayList<>());
+            if (dependencyDependencyProperty.getConfiguration() != null) {
+                var artifactBuilder = new Artifact.Builder();
+                artifactBuilder.configuration(dependencyDependencyProperty.getConfiguration());
+                configurations.add(new Artifact(artifactBuilder));
+            }
         } else {
-            for (Map.Entry<String, List<Closure>> stringListEntry : dependencyDependencyProperty.getConfigurations().entrySet()) {
-                var list = new ArrayList<Artifact>();
-                if (stringListEntry.getValue() != null) {
-                    for (Closure closure : stringListEntry.getValue()) {
-                        var builder = new Artifact.Builder();
-                        closure.setDelegate(builder);
-                        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-                        closure.call();
-                        list.add(new Artifact(builder));
-                    }
-                }
-                configurations.put(stringListEntry.getKey(), list);
+            for (var artifactClosure : dependencyDependencyProperty.getConfigurations()) {
+                var builder = new Artifact.Builder();
+                artifactClosure.setDelegate(builder);
+                artifactClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
+                artifactClosure.call();
+                configurations.add(new Artifact(builder));
             }
         }
 
@@ -168,21 +167,20 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
 
         final Map<String, Object[]> dependencies = new HashMap<>();
         try (Stream<Path> jars = Files.list(libs)) {
-            for (var stringListEntry : dependency.getConfigurations().entrySet()) {
-                if (!stringListEntry.getValue().isEmpty()) {
+            List<Path> paths = jars.collect(Collectors.toList());
+            for (var artifact : dependency.getConfigurations()) {
+                if (!artifact.getArtifactProperty().isEmpty()) {
                     List<Path> validJars = new ArrayList<>();
-                    jars.forEach(jar -> {
-                        for (Artifact artifact : stringListEntry.getValue()) {
-                            for (Artifact.Property property : artifact.getArtifactProperty()) {
-                                if (property.include() && jar.getFileName().toString().contains(property.notation())) {
-                                    validJars.add(jar);
-                                }
+                    for (Path path : paths) {
+                        for (Artifact.Property property : artifact.getArtifactProperty()) {
+                            if (property.include() && path.getFileName().toString().contains(property.notation())) {
+                                validJars.add(path);
                             }
                         }
-                    });
-                    dependencies.put(stringListEntry.getKey(), validJars.toArray());
+                    }
+                    dependencies.put(artifact.getConfiguration(), validJars.toArray());
                 } else {
-                    dependencies.put(stringListEntry.getKey(), jars.toArray());
+                    dependencies.put(artifact.getConfiguration(), jars.toArray());
                 }
             }
         } catch (IOException exception) {
@@ -194,12 +192,11 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         if (dependencies.size() == 0) {
             ManagerLogger.error("Dependency: {}, no libs where found", dependency.getName());
             return;
-        } else {
-            ManagerLogger.info("Adding Jar Dependency: {}", dependency.getName());
-            ManagerLogger.info(dependencies.toString());
         }
 
+        ManagerLogger.info("Adding Jar Dependency: {}", dependency.getName());
         for (Map.Entry<String, Object[]> stringEntry : dependencies.entrySet()) {
+            ManagerLogger.info("Configuration {}, jars {}", stringEntry.getKey(), Arrays.toString(stringEntry.getValue()));
             getProject().getDependencies().add(stringEntry.getKey(), getProject().getLayout().files(stringEntry.getValue()));
         }
     }
@@ -214,29 +211,27 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     private void addRepositoryDependency(Dependency dependency) {
-        if (!dependency.isRegisterDependencyToProject()) {
-            ManagerLogger.info("Skipping dependency registration for {}", dependency.getName());
-            return;
-        }
-
-        ManagerLogger.info("Adding Dependency {}, from {}", dependency.getName(), dependency.getDependencyType());
-
-        var configurations = dependency.getConfigurations();
         String[] projectID = dependency.getPersistentInfo().getProbeData().getProjectId().split(":");
-        for (Map.Entry<String, List<Artifact>> stringListEntry : configurations.entrySet()) {
-            if (stringListEntry.getValue().isEmpty()) {
-                getProject().getDependencies().add(stringListEntry.getKey(), dependency.getPersistentInfo().getProbeData().getProjectId());
+        var configurations = dependency.getConfigurations();
+        for (var artifact : configurations) {
+            if (artifact.getArtifactProperty().isEmpty()) {
+                getProject().getDependencies().add(artifact.getConfiguration(), dependency.getPersistentInfo().getProbeData().getProjectId());
                 continue;
             }
 
-            for (Artifact artifact : stringListEntry.getValue()) {
-                for (Artifact.Property property : artifact.getArtifactProperty()) {
-                    if (!property.include()) continue;
-                    if (property.notation().contains(":")) {
-                        getProject().getDependencies().add(stringListEntry.getKey(), property.notation(), property.closure());
-                    } else {
-                        getProject().getDependencies().add(stringListEntry.getKey(), projectID[0] + ":" + property.notation() + ":" + projectID[2], property.closure());
-                    }
+            for (Artifact.Property property : artifact.getArtifactProperty()) {
+                if (!property.include()) {
+                    ManagerLogger.info("Skipping dependency registration for {}", dependency.getName());
+                    continue;
+                }
+                if (property.notation().contains(":")) {
+                    ManagerLogger.info("Adding Dependency {}, from {}", property.notation(), dependency.getDependencyType());
+                    getProject().getDependencies().add(artifact.getConfiguration(), property.notation(), property.closure());
+                } else {
+                    var notation = projectID[0] + ":" + property.notation() + ":" + projectID[2];
+
+                    ManagerLogger.info("Adding Dependency {}, from {}", notation, dependency.getDependencyType());
+                    getProject().getDependencies().add(artifact.getConfiguration(), notation, property.closure());
                 }
             }
         }

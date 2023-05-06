@@ -37,7 +37,7 @@ public class Artifact {
                 properties.add(prop);
             }
         }
-
+        artifactProperty.addAll(properties);
     }
 
     @NotNull

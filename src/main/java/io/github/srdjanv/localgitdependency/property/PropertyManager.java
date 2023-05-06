@@ -42,7 +42,6 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
         builder.tryGeneratingSourceJar(false);
         builder.tryGeneratingJavaDocJar(false);
         builder.enableIdeSupport(true);
-        builder.registerDependencyToProject(true);
         builder.registerDependencyRepositoryToProject(true);
         builder.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
 
