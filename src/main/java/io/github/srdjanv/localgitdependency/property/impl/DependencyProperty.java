@@ -15,6 +15,8 @@ public class DependencyProperty extends CommonPropertyGetters {
     private final GitInfo.TargetType targetType;
     private final String configuration;
     private final Closure[] configurations;
+    private final Closure[] mappings;
+
     public DependencyProperty(Builder builder) {
         url = builder.url;
         name = builder.name;
@@ -22,6 +24,7 @@ public class DependencyProperty extends CommonPropertyGetters {
         targetType = builder.targetType;
         configuration = builder.configuration;
         configurations = builder.configurations;
+        mappings = builder.mappings;
         BuilderUtil.instantiateObjectWithBuilder(this, builder, CommonPropertyFields.class);
     }
 
@@ -49,6 +52,10 @@ public class DependencyProperty extends CommonPropertyGetters {
         return configurations;
     }
 
+    public Closure[] getMappings() {
+        return mappings;
+    }
+
     public static class Builder extends CommonPropertyBuilder implements DependencyBuilder {
         private final String url;
         private String name;
@@ -56,6 +63,7 @@ public class DependencyProperty extends CommonPropertyGetters {
         private GitInfo.TargetType targetType;
         private String configuration;
         private Closure[] configurations;
+        private Closure[] mappings;
 
         public Builder(String url) {
             this.url = url;
@@ -69,6 +77,11 @@ public class DependencyProperty extends CommonPropertyGetters {
         @Override
         public void configuration(Closure... configurations) {
             this.configurations = configurations;
+        }
+
+        @Override
+        public void mapSourceSets(Closure... mappings) {
+            this.mappings = mappings;
         }
 
         @Override

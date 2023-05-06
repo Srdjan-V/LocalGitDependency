@@ -6,6 +6,7 @@ import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.property.impl.Artifact;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import io.github.srdjanv.localgitdependency.property.impl.SourceSetMapper;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,6 +22,7 @@ import java.util.regex.Pattern;
 public class Dependency {
     private final String name;
     private final List<Artifact> configurations;
+    private final List<SourceSetMapper> mappers;
     private final boolean enableIdeSupport;
     private final boolean registerDependencyRepositoryToProject;
     private final boolean generateGradleTasks;
@@ -30,9 +32,10 @@ public class Dependency {
     private final GradleInfo gradleInfo;
     private final PersistentInfo persistentInfo;
 
-    public Dependency(List<Artifact> configurations, DependencyProperty dependencyConfig) {
+    public Dependency(List<Artifact> configurations, List<SourceSetMapper> mappers, DependencyProperty dependencyConfig) {
         this.name = dependencyConfig.getName() == null ? getNameFromUrl(dependencyConfig.getUrl()) : dependencyConfig.getName();
         this.configurations = Collections.unmodifiableList(configurations);
+        this.mappers = Collections.unmodifiableList(mappers);
         this.enableIdeSupport = dependencyConfig.getEnableIdeSupport();
         this.registerDependencyRepositoryToProject = dependencyConfig.getRegisterDependencyRepositoryToProject();
         this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks();
@@ -65,6 +68,12 @@ public class Dependency {
     @Unmodifiable
     public List<Artifact> getConfigurations() {
         return configurations;
+    }
+
+    @NotNull
+    @Unmodifiable
+    public List<SourceSetMapper> getSourceSetMappers() {
+        return mappers;
     }
 
     public boolean isEnableIdeSupport() {

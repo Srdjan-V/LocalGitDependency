@@ -38,6 +38,9 @@ public interface DependencyBuilder extends CommonBuilder {
     void configuration(@DelegatesTo(value = ArtifactBuilder.class,
             strategy = Closure.DELEGATE_FIRST) Closure... configurations);
 
+    void mapSourceSets(@DelegatesTo(value = SourceSetMapperBuilder.class,
+            strategy = Closure.DELEGATE_FIRST) Closure... mappings);
+
     /**
      * Sets the name of the dependency, it will also be used as the directory name
      *

@@ -12,9 +12,9 @@ import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.impl.Artifact;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
-import org.gradle.api.NamedDomainObjectProvider;
+import io.github.srdjanv.localgitdependency.property.impl.SourceSetMapper;
+import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.jetbrains.annotations.Unmodifiable;
@@ -45,32 +45,37 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         dependencyPropertyBuilder.configuration(configurationName);
 
         if (configureClosure != null) {
-            configureClosure.setDelegate(dependencyPropertyBuilder);
-            configureClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
-            configureClosure.call();
+            ClosureUtil.delegate(configureClosure, dependencyPropertyBuilder);
         }
 
-        DependencyProperty dependencyDependencyProperty = new DependencyProperty(dependencyPropertyBuilder);
-        getPropertyManager().applyDefaultProperty(dependencyDependencyProperty);
+        DependencyProperty dependencyProperty = new DependencyProperty(dependencyPropertyBuilder);
+        getPropertyManager().applyDefaultProperty(dependencyProperty);
 
         var configurations = new ArrayList<Artifact>();
-        if (dependencyDependencyProperty.getConfigurations() == null) {
-            if (dependencyDependencyProperty.getConfiguration() != null) {
+        if (dependencyProperty.getConfigurations() == null) {
+            if (dependencyProperty.getConfiguration() != null) {
                 var artifactBuilder = new Artifact.Builder();
-                artifactBuilder.configuration(dependencyDependencyProperty.getConfiguration());
+                artifactBuilder.configuration(dependencyProperty.getConfiguration());
                 configurations.add(new Artifact(artifactBuilder));
             }
         } else {
-            for (var artifactClosure : dependencyDependencyProperty.getConfigurations()) {
+            for (var artifactClosure : dependencyProperty.getConfigurations()) {
                 var builder = new Artifact.Builder();
-                artifactClosure.setDelegate(builder);
-                artifactClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
-                artifactClosure.call();
+                ClosureUtil.delegate(artifactClosure, builder);
                 configurations.add(new Artifact(builder));
             }
         }
 
-        dependencies.add(new Dependency(configurations, dependencyDependencyProperty));
+        var mappings = new ArrayList<SourceSetMapper>();
+        if (dependencyProperty.getMappings() != null) {
+            for (var mappingClosure : dependencyProperty.getMappings()) {
+                var builder = new SourceSetMapper.Builder();
+                ClosureUtil.delegate(mappingClosure, builder);
+                mappings.add(new SourceSetMapper(builder));
+            }
+        }
+
+        dependencies.add(new Dependency(configurations, mappings, dependencyProperty));
     }
 
     @Override
@@ -242,32 +247,52 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         ManagerLogger.info("Dependency: {} enabling ide support", dependency.getName());
 
         var project = getProject().getRootProject();
-        for (SourceSetData source : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
-            NamedDomainObjectProvider<SourceSet> sourceSetNamedDomainObjectProvider = sourceSetContainer.register(dependency.getName() + "-" + source.getName(), sourceSet -> {
-                sourceSet.java(dependencySet -> dependencySet.srcDir(source.getSources()));
-                sourceSet.resources(dependencySet -> dependencySet.srcDir(source.getResources()));
+        for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
+            sourceSetContainer.register(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
+                sourceSetConf.java(dependencySet -> dependencySet.srcDir(sourceSetData.getSources()));
+                sourceSetConf.resources(dependencySet -> dependencySet.srcDir(sourceSetData.getResources()));
             });
+        }
+        for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
+            SourceSet sourceSet = sourceSetContainer.getByName(getSourceSetName(dependency, sourceSetData));
 
-            if (!source.getCompileClasspath().isEmpty()) {
-                SourceSet sourceSet = sourceSetNamedDomainObjectProvider.get();
+            if (!sourceSetData.getCompileClasspath().isEmpty()) {
+                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(),
+                        project.getLayout().files(sourceSetData.getCompileClasspath()));
+            }
 
-                FileCollection fileCollection;
-                if (source.getDependentSourceSets().isEmpty()) {
-                    fileCollection = project.getLayout().files(source.getCompileClasspath());
-                } else {
-                    var pathSet = new HashSet<String>();
-                    for (String dependentSourceSetName : source.getDependentSourceSets()) {
-                        for (SourceSetData data : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
-                            if (data.getName().equals(dependentSourceSetName)) {
-                                pathSet.addAll(data.getSources());
-                                pathSet.addAll(data.getResources());
-                            }
+            if (!sourceSetData.getDependentSourceSets().isEmpty()) {
+                var depSets = new ArrayList<SourceSet>();
+
+                for (String dependentSourceSetName : sourceSetData.getDependentSourceSets()) {
+                    for (SourceSetData data : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
+                        if (data.getName().equals(dependentSourceSetName)) {
+                            depSets.add(sourceSetContainer.getByName(getSourceSetName(dependency, dependentSourceSetName)));
                         }
                     }
-                    fileCollection = project.getLayout().files(source.getCompileClasspath(), pathSet);
                 }
+                //sourceSet.setCompileClasspath(sourceSet.getCompileClasspath().plus(project.getLayout().files(path)));
+                for (SourceSet depSet : depSets) {
+                    sourceSet.setCompileClasspath(sourceSet.getCompileClasspath().plus(depSet.getOutput()));
+                }
+                for (SourceSetMapper sourceSetMapper : dependency.getSourceSetMappers()) {
+                    for (String s : sourceSetMapper.getDependencySet()) {
+                        if (sourceSetData.getName().equals(s)) {
+                            var projectSet = sourceSetContainer.getByName(sourceSetMapper.getProjectSet());
 
-                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(), fileCollection);
+                            for (SourceSet depSet : depSets) {
+                                projectSet.setCompileClasspath(projectSet.getCompileClasspath().plus(depSet.getOutput()));
+                            }
+
+                            /*projectSet.java(java -> {
+                                java.srcDir(pathSources);
+                            });
+                            projectSet.resources(java -> {
+                                java.srcDir(pathResources);
+                            });*/
+                        }
+                    }
+                }
             }
         }
 
@@ -301,6 +326,14 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                 }
             }
         }
+    }
+
+    private String getSourceSetName(Dependency dependency, SourceSetData sourceSetData) {
+        return dependency.getName() + "-" + sourceSetData.getName();
+    }
+
+    private String getSourceSetName(Dependency dependency, String name) {
+        return dependency.getName() + "-" + name;
     }
 
     @Override
