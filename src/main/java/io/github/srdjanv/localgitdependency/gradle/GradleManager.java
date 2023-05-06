@@ -11,17 +11,17 @@ import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
 import org.eclipse.jgit.util.sha1.SHA1;
-import org.gradle.tooling.BuildLauncher;
-import org.gradle.tooling.GradleConnector;
-import org.gradle.tooling.ModelBuilder;
-import org.gradle.tooling.ProjectConnection;
+import org.gradle.tooling.*;
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import org.gradle.util.GradleVersion;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -69,7 +69,8 @@ class GradleManager extends ManagerBase implements IGradleManager {
     @Override
     public void buildDependencies() {
         for (Dependency dependency : getDependencyManager().getDependencies()) {
-            if (dependency.getGitInfo().hasRefreshed() || dependency.getPersistentInfo().hasDependencyTypeChanged()) {
+            if (dependency.getGitInfo().hasRefreshed() || dependency.getPersistentInfo().hasDependencyTypeChanged()
+                    || !dependency.getPersistentInfo().getBuildStatus()) {
                 buildDependency(dependency);
             }
         }
@@ -131,12 +132,25 @@ class GradleManager extends ManagerBase implements IGradleManager {
         DefaultGradleConnector connector = getGradleConnector(dependency);
         try (ProjectConnection connection = connector.connect()) {
             BuildLauncher build = connection.newBuild();
+            build.setStandardOutput(System.out);
+            build.setStandardError(System.err);
             build.withArguments("--init-script", dependency.getGradleInfo().getInitScript().getAbsolutePath());
             if (dependency.getGradleInfo().getJavaHome() != null) {
                 build.setJavaHome(dependency.getGradleInfo().getJavaHome());
             }
             build.forTasks(task);
-            build.run();
+            build.run(new ResultHandler<>() {
+                @Override
+                public void onComplete(Void result) {
+                   dependency.getPersistentInfo().setBuildStatus(true);
+                }
+
+                @Override
+                public void onFailure(GradleConnectionException failure) {
+                    dependency.getPersistentInfo().setBuildStatus(false);
+                    throw failure;
+                }
+            });
         }
     }
 

@@ -7,6 +7,7 @@ public class DependencyData implements DependencyDataGetter, DependencyDataSette
     private String workingDirSHA1;
     private String initFileSHA1;
     private Dependency.Type dependencyType;
+    private Boolean buildSuccessful;
 
     @Override
     public String getWorkingDirSHA1() {
@@ -36,5 +37,15 @@ public class DependencyData implements DependencyDataGetter, DependencyDataSette
     @Override
     public void setDependencyType(Dependency.Type dependencyType) {
         this.dependencyType = dependencyType;
+    }
+
+    @Override
+    public Boolean getBuildSuccessful() {
+        return buildSuccessful;
+    }
+
+    @Override
+    public void setBuildSuccessful(boolean buildSuccessful) {
+        this.buildSuccessful = buildSuccessful;
     }
 }

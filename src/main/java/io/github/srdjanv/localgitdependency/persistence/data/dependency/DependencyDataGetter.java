@@ -6,5 +6,5 @@ public interface DependencyDataGetter {
     String getWorkingDirSHA1();
     String getInitFileSHA1();
     Dependency.Type getDependencyType();
-
+    Boolean getBuildSuccessful();
 }

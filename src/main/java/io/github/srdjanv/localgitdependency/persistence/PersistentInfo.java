@@ -71,7 +71,18 @@ public class PersistentInfo {
     public void setProbeData(String jsonData) {
         setDirty();
         setValidModel();
-        projectProbeData = ((ProjectProbeData) DataParser.parseJson(jsonData));
+        projectProbeData = DataParser.parseJson(jsonData);
+    }
+
+    public void setBuildStatus(boolean status) {
+        if (dependencyData.getBuildSuccessful() != null && status != dependencyData.getBuildSuccessful()) {
+            setDirty();
+            dependencyData.setBuildSuccessful(status);
+        }
+    }
+
+    public boolean getBuildStatus() {
+        return dependencyData.getBuildSuccessful();
     }
 
     @Override
@@ -109,10 +120,6 @@ public class PersistentInfo {
 
     DependencyData getDependencyData() {
         return dependencyData;
-    }
-
-    ProjectProbeData getProjectProbeData() {
-        return projectProbeData;
     }
 
     boolean isDirty() {

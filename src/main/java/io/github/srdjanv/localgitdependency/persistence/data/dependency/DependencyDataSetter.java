@@ -6,4 +6,5 @@ public interface DependencyDataSetter {
     void setWorkingDirSHA1(String workingDirSHA1);
     void setInitFileSHA1(String initFileSHA1);
     void setDependencyType(Dependency.Type dependencyType);
+    void setBuildSuccessful(boolean buildSuccessful);
 }
