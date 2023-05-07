@@ -174,17 +174,21 @@ class GradleManager extends ManagerBase implements IGradleManager {
         } else {
             PublicationData publicationObject = dependency.getPersistentInfo().getProbeData().getPublicationData();
             List<GradleInit.Task> tasks = new ArrayList<>();
-            for (TaskData taskSerializable : publicationObject.getTasks()) {
-                switch (taskSerializable.getClassifier()) {
+            for (final String taskName : publicationObject.getTasks()) {
+                TaskData taskData = dependency.getPersistentInfo().getProbeData().getArtifactTasks().
+                        stream().filter(taskData1 -> taskData1.getName().equals(taskName)).
+                        findAny().orElseThrow(IllegalStateException::new);
+
+                switch (taskData.getClassifier()) {
                     case "sources":
                         if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {
-                            tasks.add(new GradleInit.Task(taskSerializable.getName(), "sourceSets.main.allJava", taskSerializable.getClassifier(), true));
+                            tasks.add(new GradleInit.Task(taskData.getName(), "sourceSets.main.allJava", taskData.getClassifier(), true));
                         }
                         break;
 
                     case "javadoc":
                         if (dependency.getGradleInfo().isTryGeneratingJavaDocJar()) {
-                            tasks.add(new GradleInit.Task(taskSerializable.getName(), "sourceSets.main.allJava", taskSerializable.getClassifier(), true));
+                            tasks.add(new GradleInit.Task(taskData.getName(), "sourceSets.main.allJava", taskData.getClassifier(), true));
                         }
                 }
             }

@@ -41,7 +41,7 @@ public class DataParser {
             return gson.toJson(projectProbeData);
         }
 
-        throw new RuntimeException();
+        throw new IllegalStateException("Incomplete data");
     }
 
     public static boolean validDataForClass(Class<?> clazz, Object data) {

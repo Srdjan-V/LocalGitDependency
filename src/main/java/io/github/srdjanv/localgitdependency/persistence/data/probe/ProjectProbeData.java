@@ -58,18 +58,8 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
             return this;
         }
 
-        public Builder setHasJavaPlugin(boolean hasJavaPlugin) {
-            this.hasJavaPlugin = hasJavaPlugin;
-            return this;
-        }
-
-        public Builder setHasMavenPublishPlugin(boolean hasMavenPublishPlugin) {
-            this.hasMavenPublishPlugin = hasMavenPublishPlugin;
-            return this;
-        }
-
-        public Builder setTaskData(List<TaskData> taskData) {
-            this.taskData = taskData;
+        public Builder setArtifactTasks(List<TaskData> artifactTasks) {
+            this.artifactTasks = artifactTasks;
             return this;
         }
 
@@ -120,16 +110,8 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
         return canProjectUseWithJavadocJar;
     }
 
-    public boolean isHasJavaPlugin() {
-        return hasJavaPlugin;
-    }
-
-    public boolean isHasMavenPublishPlugin() {
-        return hasMavenPublishPlugin;
-    }
-
-    public List<TaskData> getTaskData() {
-        return taskData;
+    public List<TaskData> getArtifactTasks() {
+        return artifactTasks;
     }
 
     public List<SourceSetData> getSourceSetsData() {

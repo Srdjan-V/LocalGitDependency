@@ -14,12 +14,10 @@ class ProjectProbeDataFields {
     String archivesBaseName;
     String projectGradleVersion;
     JavaVersion javaVersion;
-    boolean canProjectUseWithSourcesJar;
-    boolean canProjectUseWithJavadocJar;
-    boolean hasJavaPlugin;
-    boolean hasMavenPublishPlugin;
-    List<TaskData> taskData;
-    List<SourceSetData> sourceSetsData;
+    Boolean canProjectUseWithSourcesJar;
+    Boolean canProjectUseWithJavadocJar;
     PublicationData publicationData;
+    List<TaskData> artifactTasks;
+    List<SourceSetData> sourceSetsData;
     List<Repository> repositoryList;
 }

@@ -1,7 +1,6 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata;
 
 import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import io.github.srdjanv.localgitdependency.util.BuilderUtil;
 
 import java.util.List;
@@ -15,8 +14,12 @@ public class PublicationData extends PublicationDataFields implements NonNullDat
         BuilderUtil.instantiateObjectWithBuilder(this, builder, PublicationDataFields.class);
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder extends PublicationDataFields {
-        public Builder() {
+        private Builder() {
         }
 
         public Builder setRepositoryName(String repositoryName) {
@@ -29,7 +32,7 @@ public class PublicationData extends PublicationDataFields implements NonNullDat
             return this;
         }
 
-        public Builder setTasks(List<TaskData> tasks) {
+        public Builder setTasks(List<String> tasks) {
             this.tasks = tasks;
             return this;
         }
@@ -47,7 +50,7 @@ public class PublicationData extends PublicationDataFields implements NonNullDat
         return publicationName;
     }
 
-    public List<TaskData> getTasks() {
+    public List<String> getTasks() {
         return tasks;
     }
 

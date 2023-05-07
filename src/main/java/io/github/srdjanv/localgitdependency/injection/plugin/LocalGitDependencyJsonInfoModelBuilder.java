@@ -12,12 +12,12 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.Task
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.UnknownDomainObjectException;
-import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.plugins.BasePluginConvention;
 import org.gradle.api.plugins.BasePluginExtension;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.publish.internal.DefaultPublishingExtension;
-import org.gradle.api.publish.maven.internal.publication.DefaultMavenPublication;
+import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.tooling.provider.model.ToolingModelBuilder;
@@ -31,9 +31,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// TODO: 09/03/2023 Rewrite the logic
 public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuilder {
     private static final String MODEL_NAME = LocalGitDependencyJsonInfoModel.class.getName();
+    private Project project;
+    private ProjectProbeData.Builder builder;
 
     @Override
     public boolean canBuild(String modelName) {
@@ -44,20 +45,36 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
     public @NotNull Object buildAll(@NotNull String modelName, Project project) {
         var javaPlugin = project.getExtensions().findByName("java");
         if (javaPlugin == null) {
-            throw new RuntimeException();
+            throw new IllegalStateException("This project is not using java");
         }
 
-        boolean hasMavenPublishPlugin = project.getExtensions().findByName("maven-publish") != null;
-        JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+        this.project = project;
+        builder = new ProjectProbeData.Builder();
+        builder.setVersion(Constants.PROJECT_VERSION);
 
-        List<TaskData> appropriateTasks = queueAppropriateTasks(project);
-        PublicationData publicationData = queueAppropriateMavenPublications(project, appropriateTasks, hasMavenPublishPlugin);
+        //remove
+        builder.setRepositoryList(RepositoryDataParser.create(project));
 
-        var gradleVersion = GradleVersion.version(project.getGradle().getGradleVersion());
+
+        buildBasicProjectData();
+        List<String> artifactTasksNames = buildArtifactTasks();
+        buildMavenPublicationData(artifactTasksNames);
+        buildSources();
+
+        var projectProbeData = builder.create();
+        var json = DataParser.projectProbeDataJson(projectProbeData);
+        return new DefaultLocalGitDependencyJsonInfoModel(json);
+    }
+
+    private void buildBasicProjectData() {
+        final JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+        final String projectId = project.getGroup() + ":" + project.getName() + ":" + project.getVersion();
+
         boolean canProjectUseWithSourcesJar = true;
         boolean canProjectUseWithJavadocJar = true;
         String archivesBaseName;
-        String projectId = project.getGroup() + ":" + project.getName() + ":" + project.getVersion();
+
+        var gradleVersion = GradleVersion.version(project.getGradle().getGradleVersion());
         if (gradleVersion.compareTo(GradleVersion.version("7.1")) >= 0) {
             SourceSet main = javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
             for (Task task : project.getTasks()) {
@@ -81,87 +98,97 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
             }
         }
 
-        ProjectProbeData.Builder builder = new ProjectProbeData.Builder();
-        builder.setVersion(Constants.PROJECT_VERSION);
-        builder.setProjectId(projectId);
-        builder.setArchivesBaseName(archivesBaseName);
-        builder.setProjectGradleVersion(project.getGradle().getGradleVersion());
-        builder.setJavaVersion(javaPluginExtension.getTargetCompatibility());
-        builder.setCanProjectUseWithSourcesJar(canProjectUseWithSourcesJar);
-        builder.setCanProjectUseWithJavadocJar(canProjectUseWithJavadocJar);
-        builder.setHasJavaPlugin(true);
-        builder.setHasMavenPublishPlugin(hasMavenPublishPlugin);
-        builder.setTaskData(appropriateTasks);
-        builder.setPublicationData(publicationData);
-        builder.setSourceSetsData(getSources(project));
-        builder.setRepositoryList(RepositoryDataParser.create(project));
-
-        return new DefaultLocalGitDependencyJsonInfoModel(DataParser.projectProbeDataJson(builder.create()));
+        builder.setCanProjectUseWithSourcesJar(canProjectUseWithSourcesJar)
+                .setCanProjectUseWithJavadocJar(canProjectUseWithJavadocJar)
+                .setProjectId(projectId)
+                .setArchivesBaseName(archivesBaseName)
+                .setJavaVersion(javaPluginExtension.getTargetCompatibility())
+                .setProjectGradleVersion(project.getGradle().getGradleVersion());
     }
 
-    private static List<TaskData> queueAppropriateTasks(Project project) {
-        List<TaskData> defaultTaskObjectList = new ArrayList<>(2);
-        String sourceTaskName = Constants.JarSourceTaskName.apply(project);
-        String javaDocTaskName = Constants.JarJavaDocTaskName.apply(project);
+    private List<String> buildArtifactTasks() {
+        List<TaskData> artifactTasks = new ArrayList<>(2);
 
-        defaultTaskObjectList.add(new TaskData.Builder().
-                setName(sourceTaskName).
-                setClassifier("sources").
-                create());
+        {
+            var sourceTaskName = "InitScriptSourceTaskForProject" + project.getName();
+            for (Task task : project.getTasks()) {
+                while (task.getName().equals(sourceTaskName)) {
+                    sourceTaskName = sourceTaskName + Math.random();
+                }
+            }
 
-        defaultTaskObjectList.add(new TaskData.Builder().
-                setName(javaDocTaskName).
-                setClassifier("javadoc").
-                create());
-        return defaultTaskObjectList;
+            artifactTasks.add(TaskData.builder().
+                    setName(sourceTaskName).
+                    setClassifier("sources").
+                    create());
+        }
+
+        {
+            var javaDocTaskName = "InitScriptJavaDocTaskForProject" + project.getName();
+            for (Task task : project.getTasks()) {
+                while (task.getName().equals(javaDocTaskName)) {
+                    javaDocTaskName = javaDocTaskName + Math.random();
+                }
+            }
+
+
+            artifactTasks.add(TaskData.builder().
+                    setName(javaDocTaskName).
+                    setClassifier("javadoc").
+                    create());
+        }
+        builder.setArtifactTasks(artifactTasks);
+        return artifactTasks.stream().map(TaskData::getName).collect(Collectors.toList());
     }
 
+    private void buildMavenPublicationData(List<String> artifactTasksNames) {
+        var publicationName = "InitScriptPublicationForProject" + project.getName();
+        var repositoryName = "InitScriptRepositoryForProject" + project.getName();
 
-    private static PublicationData queueAppropriateMavenPublications(Project project, List<TaskData> appropriateTasks, boolean hasMavenPublishPlugin) {
-        String publicationName = Constants.MavenPublicationName.apply(project);
-        String repositoryName = Constants.MavenRepositoryName.apply(project);
-
+        var hasMavenPublishPlugin = project.getExtensions().findByName("maven-publish") != null;
         if (hasMavenPublishPlugin) {
             DefaultPublishingExtension publishingExtension = project.getExtensions().getByType(DefaultPublishingExtension.class);
 
-            List<DefaultMavenPublication> mavenPublications = publishingExtension.getPublications().stream()
-                    .filter(publication -> publication instanceof DefaultMavenPublication)
-                    .map(publication -> (DefaultMavenPublication) publication)
+            List<MavenPublication> mavenPublications = publishingExtension.getPublications().stream()
+                    .filter(publication -> publication instanceof MavenPublication)
+                    .map(publication -> (MavenPublication) publication)
                     .collect(Collectors.toList());
 
-            for (DefaultMavenPublication publication : mavenPublications) {
+            for (MavenPublication publication : mavenPublications) {
                 while (publication.getName().equals(publicationName)) {
-                    publicationName = publicationName + System.currentTimeMillis();
+                    publicationName = publicationName + Math.random();
                 }
             }
 
-            List<DefaultMavenArtifactRepository> mavenArtifactRepositories = publishingExtension.getRepositories().stream()
-                    .filter(repository -> repository instanceof DefaultMavenArtifactRepository)
-                    .map(repository -> (DefaultMavenArtifactRepository) repository)
+            List<MavenArtifactRepository> mavenArtifactRepositories = publishingExtension.getRepositories().stream()
+                    .filter(repository -> repository instanceof MavenArtifactRepository)
+                    .map(repository -> (MavenArtifactRepository) repository)
                     .collect(Collectors.toList());
 
-            for (DefaultMavenArtifactRepository repository : mavenArtifactRepositories) {
+            for (MavenArtifactRepository repository : mavenArtifactRepositories) {
                 while (repository.getName().equals(repositoryName)) {
-                    repositoryName = repositoryName + System.currentTimeMillis();
+                    repositoryName = repositoryName + Math.random();
                 }
             }
-
         }
 
-        return new PublicationData.Builder().
+        var publicationData = PublicationData.builder().
                 setRepositoryName(repositoryName).
                 setPublicationName(publicationName).
-                setTasks(appropriateTasks).
+                setTasks(artifactTasksNames).
                 create();
+
+        builder.setPublicationData(publicationData);
     }
 
-    private static List<SourceSetData> getSources(Project project) {
+    private void buildSources() {
         List<SourceSetData> sourceSets = new ArrayList<>();
         SourceSetContainer sourceContainer;
         try {
             sourceContainer = project.getExtensions().getByType(SourceSetContainer.class);
         } catch (UnknownDomainObjectException ignore) {
-            return sourceSets;
+            builder.setSourceSetsData(sourceSets);
+            return;
         }
 
         for (SourceSet sourceSet : sourceContainer) {
@@ -201,7 +228,7 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
                     create());
         }
 
-        return sourceSets;
+        builder.setSourceSetsData(sourceSets);
     }
 
 }

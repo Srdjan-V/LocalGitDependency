@@ -11,7 +11,12 @@ public class TaskData extends TaskDataFields implements NonNullData {
         BuilderUtil.instantiateObjectWithBuilder(this, builder, TaskDataFields.class);
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
     public static class Builder extends TaskDataFields {
+        private Builder() {
+        }
 
         public Builder setName(String name) {
             this.name = name;
