@@ -15,10 +15,6 @@ public class InjectionTest {
     void testInjectionPlugin() {
         Project project = ProjectInstance.createProject();
 
-        project.getRepositories().add(project.getRepositories().mavenCentral());
-        project.getRepositories().add(project.getRepositories().mavenLocal());
-        project.getRepositories().add(project.getRepositories().gradlePluginPortal());
-
         project.getDependencies().add(Constants.JAVA_IMPLEMENTATION, "org.jetbrains:annotations:24.0.1");
         project.getDependencies().add(Constants.JAVA_IMPLEMENTATION, "com.google.code.gson:gson:2.10.1");
 
@@ -31,7 +27,6 @@ public class InjectionTest {
         ThrowingSupplier<ProjectProbeData> throwingSupplier = () -> DataParser.parseJson(json);
         ProjectProbeData data = Assertions.assertDoesNotThrow(throwingSupplier, "Invalid Json Data");
 
-        Assertions.assertEquals(3, data.getRepositoryList().size());
         Assertions.assertEquals(2, data.getSourceSetsData().get(0).getCompileClasspath().size());
     }
 

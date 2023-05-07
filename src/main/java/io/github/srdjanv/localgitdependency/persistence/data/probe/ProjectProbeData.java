@@ -2,7 +2,6 @@ package io.github.srdjanv.localgitdependency.persistence.data.probe;
 
 import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.common.Repository;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import io.github.srdjanv.localgitdependency.util.BuilderUtil;
@@ -72,12 +71,6 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
             this.publicationData = publicationData;
             return this;
         }
-
-        public Builder setRepositoryList(List<Repository> repositoryList) {
-            this.repositoryList = repositoryList;
-            return this;
-        }
-
         public ProjectProbeData create() {
             return new ProjectProbeData(this);
         }
@@ -120,9 +113,5 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
 
     public PublicationData getPublicationData() {
         return publicationData;
-    }
-
-    public List<Repository> getRepositoryList() {
-        return repositoryList;
     }
 }

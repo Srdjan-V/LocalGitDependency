@@ -3,10 +3,6 @@ package io.github.srdjanv.localgitdependency.depenency;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.common.Repository;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.flatdir.IFlatDirRepository;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.ivy.IIvyRepository;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.maven.IMavenRepository;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
@@ -291,38 +287,6 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                         var dependentlySourceSet = rootSourceSetContainer.getByName(getSourceSetName(dependency, dependentSourceSetName));
                         projectSet.setCompileClasspath(projectSet.getCompileClasspath().plus(dependentlySourceSet.getOutput()));
                     }
-                }
-            }
-        }
-
-        // TODO: 07/05/2023 remove 
-        var repoHandler = getProject().getRepositories();
-        for (Repository repository : dependency.getPersistentInfo().getProbeData().getRepositoryList()) {
-            switch (repository.getType()) {
-                case Constants.Maven -> {
-                    var maven = (IMavenRepository) repository;
-                    if (maven.getAuthenticated()) {
-                        ManagerLogger.info("Repository {} is authenticated skipping registration", maven.getName());
-                        return;
-                    }
-                    repoHandler.maven(maven.configureAction());
-                }
-
-                case Constants.FlatDir -> {
-                    var flatDir = (IFlatDirRepository) repository;
-                    if (flatDir.getDirs().isEmpty()) {
-                        return;
-                    }
-                    repoHandler.flatDir(flatDir.configureAction());
-                }
-
-                case Constants.Ivy -> {
-                    var ivy = (IIvyRepository) repository;
-                    if (ivy.getAuthenticated()) {
-                        ManagerLogger.info("Repository {} is authenticated skipping registration", ivy.getName());
-                        return;
-                    }
-                    repoHandler.ivy(ivy.configureAction());
                 }
             }
         }

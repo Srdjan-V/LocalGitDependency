@@ -6,7 +6,6 @@ import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJs
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.RepositoryDataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import org.gradle.api.Project;
@@ -51,10 +50,6 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
         this.project = project;
         builder = new ProjectProbeData.Builder();
         builder.setVersion(Constants.PROJECT_VERSION);
-
-        //remove
-        builder.setRepositoryList(RepositoryDataParser.create(project));
-
 
         buildBasicProjectData();
         List<String> artifactTasksNames = buildArtifactTasks();

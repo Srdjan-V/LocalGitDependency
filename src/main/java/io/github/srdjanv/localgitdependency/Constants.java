@@ -98,9 +98,4 @@ public class Constants {
     public static final BiFunction<File, String, File> concatFile = File::new;
     public static final String RepositoryMavenProjectLocal = "MavenProjectLocal";
 
-    //Repository types
-    public static final String Maven = "MAVEN";
-    public static final String Ivy = "IVY";
-    public static final String FlatDir = "FLAT_DIR";
-
 }

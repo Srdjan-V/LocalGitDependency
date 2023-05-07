@@ -2,7 +2,6 @@ package io.github.srdjanv.localgitdependency.persistence.data;
 
 import com.google.gson.*;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.repositorydata.RepositoryTypeAdapter;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -20,7 +19,6 @@ public class DataParser {
 
     static {
         GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting();
-        gsonBuilder.registerTypeAdapterFactory(RepositoryTypeAdapter.FACTORY);
         gson = gsonBuilder.create();
     }
 
@@ -36,7 +34,6 @@ public class DataParser {
         if (validDataForClass(ProjectProbeData.class, projectProbeData)) {
             Gson gson;
             GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapterFactory(RepositoryTypeAdapter.FACTORY);
             gson = gsonBuilder.create();
             return gson.toJson(projectProbeData);
         }
