@@ -44,11 +44,11 @@ class ProjectManager extends ManagerBase implements IProjectManager {
             managerRunner.setManagerSupplier(Managers::getGradleManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("initGradleAPI"));
         }));
-        PROJECT_RUNNERS.add(savePersistentDataTask);
         PROJECT_RUNNERS.add(ManagerRunner.<IGradleManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getGradleManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("buildDependencies"));
         }));
+        PROJECT_RUNNERS.add(savePersistentDataTask);
         PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getDependencyManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("addBuiltDependencies"));

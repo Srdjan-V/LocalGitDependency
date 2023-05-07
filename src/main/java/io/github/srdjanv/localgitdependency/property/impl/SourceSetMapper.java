@@ -23,7 +23,6 @@ public class SourceSetMapper {
         private String projectSet;
         private String[] dependencySet;
 
-
         @Override
         public void map(String projectSet, String... dependencySet) {
             this.projectSet = projectSet;

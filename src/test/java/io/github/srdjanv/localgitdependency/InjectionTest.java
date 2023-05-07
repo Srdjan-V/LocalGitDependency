@@ -32,7 +32,7 @@ public class InjectionTest {
         ProjectProbeData data = Assertions.assertDoesNotThrow(throwingSupplier, "Invalid Json Data");
 
         Assertions.assertEquals(3, data.getRepositoryList().size());
-        //Assertions.assertEquals(2, data.getSourceSetsData().get(0).getRepositoryClasspathDependencies().size());
+        Assertions.assertEquals(2, data.getSourceSetsData().get(0).getCompileClasspath().size());
     }
 
 

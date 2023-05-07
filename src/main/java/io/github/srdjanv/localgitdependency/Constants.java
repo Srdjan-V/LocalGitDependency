@@ -2,11 +2,12 @@ package io.github.srdjanv.localgitdependency;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
-import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -102,12 +103,14 @@ public class Constants {
     public static void checkExistsAndMkdirs(File file) {
         if (file.exists()) {
             if (!file.isDirectory()) {
-                throw new GradleException(String.format("%s is not a directory, delete the file and refresh gradle", file.getAbsolutePath()));
+                throw new UncheckedIOException(
+                        new IOException(String.format("%s is not a directory, delete the file and refresh gradle", file.getAbsolutePath())));
             }
             return;
         }
         if (!file.mkdirs()) {
-            throw new GradleException(String.format("Unable to create directory %s", file.getAbsolutePath()));
+            throw new UncheckedIOException(
+                    new IOException(String.format("Unable to create directory %s", file.getAbsolutePath())));
         }
     }
 

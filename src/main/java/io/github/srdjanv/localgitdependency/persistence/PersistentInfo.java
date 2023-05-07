@@ -75,7 +75,12 @@ public class PersistentInfo {
     }
 
     public void setBuildStatus(boolean status) {
-        if (dependencyData.getBuildSuccessful() != null && status != dependencyData.getBuildSuccessful()) {
+        if (dependencyData.getBuildSuccessful() != null) {
+            if (status != dependencyData.getBuildSuccessful()) {
+                setDirty();
+                dependencyData.setBuildSuccessful(status);
+            }
+        } else {
             setDirty();
             dependencyData.setBuildSuccessful(status);
         }

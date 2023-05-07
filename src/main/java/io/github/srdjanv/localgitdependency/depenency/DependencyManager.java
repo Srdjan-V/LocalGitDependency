@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 
 class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
+    private SourceSetContainer rootSourceSetContainer;
+
 
     DependencyManager(Managers managers) {
         super(managers);
@@ -37,19 +39,21 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
 
     @Override
     protected void managerConstructor() {
+        rootSourceSetContainer = getProject().getRootProject().getExtensions().getByType(SourceSetContainer.class);
     }
 
     @Override
     public void registerDependency(String configurationName, String dependencyURL, @SuppressWarnings("rawtypes") Closure configureClosure) {
-        DependencyProperty.Builder dependencyPropertyBuilder = new DependencyProperty.Builder(dependencyURL);
-        dependencyPropertyBuilder.configuration(configurationName);
-
-        if (configureClosure != null) {
-            ClosureUtil.delegate(configureClosure, dependencyPropertyBuilder);
+        DependencyProperty dependencyProperty;
+        {
+            DependencyProperty.Builder dependencyPropertyBuilder = new DependencyProperty.Builder(dependencyURL);
+            dependencyPropertyBuilder.configuration(configurationName);
+            if (configureClosure != null) {
+                ClosureUtil.delegate(configureClosure, dependencyPropertyBuilder);
+            }
+            dependencyProperty = new DependencyProperty(dependencyPropertyBuilder);
+            getPropertyManager().applyDefaultProperty(dependencyProperty);
         }
-
-        DependencyProperty dependencyProperty = new DependencyProperty(dependencyPropertyBuilder);
-        getPropertyManager().applyDefaultProperty(dependencyProperty);
 
         var configurations = new ArrayList<Artifact>();
         if (dependencyProperty.getConfigurations() == null) {
@@ -82,23 +86,28 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     public void addBuiltDependencies() {
         boolean addRepositoryMavenProjectLocal = false;
         boolean addRepositoryMavenLocal = false;
-        SourceSetContainer sourceSetContainer = getProject().getRootProject().getExtensions().getByType(SourceSetContainer.class);
 
         for (Dependency dependency : dependencies) {
             if (dependency.isEnableIdeSupport()) {
-                enableIdeSupport(sourceSetContainer, dependency);
+                enableIdeSupport(dependency);
             }
             switch (dependency.getDependencyType()) {
                 case MavenLocal -> {
-                    addMavenJarsAsDependencies(dependency);
                     addRepositoryMavenLocal = true;
+                    addRepositoryDependency(dependency);
                 }
                 case MavenProjectLocal -> {
-                    addMavenLocalJarsAsDependencies(dependency);
                     addRepositoryMavenProjectLocal = true;
+                    addRepositoryDependency(dependency);
                 }
-                case MavenProjectDependencyLocal -> addMavenProjectDependencyLocal(dependency);
-                case JarFlatDir -> addJarsAsFlatDirDependencies(dependency);
+                case MavenProjectDependencyLocal -> {
+                    addMavenProjectDependencyLocal(dependency);
+                    addRepositoryDependency(dependency);
+                }
+                case JarFlatDir -> {
+                    addJarsAsFlatDirDependencies(dependency);
+                    addRepositoryDependency(dependency);
+                }
                 case Jar -> addJarsAsDependencies(dependency);
                 default -> throw new IllegalStateException();
             }
@@ -108,6 +117,11 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         if (addRepositoryMavenProjectLocal) addRepositoryMavenProjectLocal();
     }
 
+    private void addRepositoryMavenLocal() {
+        ManagerLogger.info("Adding MavenLocal repository");
+        getProject().getRepositories().mavenLocal();
+    }
+
     private void addRepositoryMavenProjectLocal() {
         final File mavenRepo = Constants.MavenProjectLocal.apply(getPropertyManager().getGlobalProperty().getMavenDir());
         ManagerLogger.info("Adding MavenProjectLocal repository at {}", mavenRepo.getAbsolutePath());
@@ -115,19 +129,6 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
             mavenArtifactRepository.setName(Constants.RepositoryMavenProjectLocal);
             mavenArtifactRepository.setUrl(mavenRepo);
         });
-    }
-
-    private void addRepositoryMavenLocal() {
-        ManagerLogger.info("Adding MavenLocal repository");
-        getProject().getRepositories().mavenLocal();
-    }
-
-    private void addMavenJarsAsDependencies(Dependency dependency) {
-        addRepositoryDependency(dependency);
-    }
-
-    private void addMavenLocalJarsAsDependencies(Dependency dependency) {
-        addRepositoryDependency(dependency);
     }
 
     private void addMavenProjectDependencyLocal(Dependency dependency) {
@@ -142,7 +143,6 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                 mavenArtifactRepository.setUrl(mavenRepo);
             });
         });
-        addRepositoryDependency(dependency);
     }
 
     private void addJarsAsFlatDirDependencies(Dependency dependency) {
@@ -159,7 +159,6 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                 flatDir.dir(libs);
             });
         });
-        addRepositoryDependency(dependency);
     }
 
     private void addJarsAsDependencies(Dependency dependency) {
@@ -185,7 +184,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                     }
                     dependencies.put(artifact.getConfiguration(), validJars.toArray());
                 } else {
-                    dependencies.put(artifact.getConfiguration(), jars.toArray());
+                    dependencies.put(artifact.getConfiguration(), paths.toArray());
                 }
             }
         } catch (IOException exception) {
@@ -216,17 +215,18 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     private void addRepositoryDependency(Dependency dependency) {
-        String[] projectID = dependency.getPersistentInfo().getProbeData().getProjectId().split(":");
-        var configurations = dependency.getConfigurations();
-        for (var artifact : configurations) {
+        final String[] projectID = dependency.getPersistentInfo().getProbeData().getProjectId().split(":");
+        final String dependencyNotation = projectID[0] + ":" + dependency.getPersistentInfo().getProbeData().getArchivesBaseName() + ":" + projectID[2];
+
+        for (var artifact : dependency.getConfigurations()) {
             if (artifact.getArtifactProperty().isEmpty()) {
-                getProject().getDependencies().add(artifact.getConfiguration(), dependency.getPersistentInfo().getProbeData().getProjectId());
+                getProject().getDependencies().add(artifact.getConfiguration(), dependencyNotation, artifact.closure());
                 continue;
             }
 
             for (Artifact.Property property : artifact.getArtifactProperty()) {
                 if (!property.include()) {
-                    ManagerLogger.info("Skipping dependency registration for {}", dependency.getName());
+                    ManagerLogger.info("Dependency: {} Skipping artifact registration {}", dependency.getName(), property.notation());
                     continue;
                 }
                 if (property.notation().contains(":")) {
@@ -242,60 +242,60 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         }
     }
 
-    // TODO: 21/03/2023 improve
-    private void enableIdeSupport(SourceSetContainer sourceSetContainer, Dependency dependency) {
+    private void enableIdeSupport(Dependency dependency) {
         ManagerLogger.info("Dependency: {} enabling ide support", dependency.getName());
 
-        var project = getProject().getRootProject();
+        var rootProject = getProject().getRootProject();
+        //create source sets of the dependency
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
-            sourceSetContainer.register(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
+            rootSourceSetContainer.register(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
                 sourceSetConf.java(dependencySet -> dependencySet.srcDir(sourceSetData.getSources()));
                 sourceSetConf.resources(dependencySet -> dependencySet.srcDir(sourceSetData.getResources()));
             });
         }
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
-            SourceSet sourceSet = sourceSetContainer.getByName(getSourceSetName(dependency, sourceSetData));
+            SourceSet depSourceSet = rootSourceSetContainer.getByName(getSourceSetName(dependency, sourceSetData));
 
+            // configure source set classpath
             if (!sourceSetData.getCompileClasspath().isEmpty()) {
-                project.getDependencies().add(sourceSet.getCompileClasspathConfigurationName(),
-                        project.getLayout().files(sourceSetData.getCompileClasspath()));
+                rootProject.getDependencies().add(depSourceSet.getCompileClasspathConfigurationName(),
+                        rootProject.getLayout().files(sourceSetData.getCompileClasspath()));
             }
 
+            // link source sets to each other
             if (!sourceSetData.getDependentSourceSets().isEmpty()) {
-                var depSets = new ArrayList<SourceSet>();
+                var dependentSourceSets = new ArrayList<SourceSet>();
 
                 for (String dependentSourceSetName : sourceSetData.getDependentSourceSets()) {
                     for (SourceSetData data : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
                         if (data.getName().equals(dependentSourceSetName)) {
-                            depSets.add(sourceSetContainer.getByName(getSourceSetName(dependency, dependentSourceSetName)));
+                            dependentSourceSets.add(rootSourceSetContainer.getByName(getSourceSetName(dependency, dependentSourceSetName)));
                         }
                     }
                 }
-                //sourceSet.setCompileClasspath(sourceSet.getCompileClasspath().plus(project.getLayout().files(path)));
-                for (SourceSet depSet : depSets) {
-                    sourceSet.setCompileClasspath(sourceSet.getCompileClasspath().plus(depSet.getOutput()));
+                for (SourceSet sourceSet : dependentSourceSets) {
+                    depSourceSet.setCompileClasspath(depSourceSet.getCompileClasspath().plus(sourceSet.getOutput()));
                 }
-                for (SourceSetMapper sourceSetMapper : dependency.getSourceSetMappers()) {
-                    for (String s : sourceSetMapper.getDependencySet()) {
-                        if (sourceSetData.getName().equals(s)) {
-                            var projectSet = sourceSetContainer.getByName(sourceSetMapper.getProjectSet());
+            }
 
-                            for (SourceSet depSet : depSets) {
-                                projectSet.setCompileClasspath(projectSet.getCompileClasspath().plus(depSet.getOutput()));
-                            }
-
-                            /*projectSet.java(java -> {
-                                java.srcDir(pathSources);
-                            });
-                            projectSet.resources(java -> {
-                                java.srcDir(pathResources);
-                            });*/
+            //link source sets to the main project using mappers
+            for (SourceSetMapper sourceSetMapper : dependency.getSourceSetMappers()) {
+                for (String dependentSourceSetName : sourceSetMapper.getDependencySet()) {
+                    if (sourceSetData.getName().equals(dependentSourceSetName)) {
+                        SourceSet projectSet;
+                        if (getProject() == rootProject) {
+                            projectSet = rootSourceSetContainer.getByName(sourceSetMapper.getProjectSet());
+                        } else {
+                            projectSet = rootSourceSetContainer.getByName(getSourceSetName(sourceSetMapper.getProjectSet()));
                         }
+                        var dependentlySourceSet = rootSourceSetContainer.getByName(getSourceSetName(dependency, dependentSourceSetName));
+                        projectSet.setCompileClasspath(projectSet.getCompileClasspath().plus(dependentlySourceSet.getOutput()));
                     }
                 }
             }
         }
 
+        // TODO: 07/05/2023 remove 
         var repoHandler = getProject().getRepositories();
         for (Repository repository : dependency.getPersistentInfo().getProbeData().getRepositoryList()) {
             switch (repository.getType()) {
@@ -329,11 +329,15 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     private String getSourceSetName(Dependency dependency, SourceSetData sourceSetData) {
-        return dependency.getName() + "-" + sourceSetData.getName();
+        return Constants.EXTENSION_NAME + "." + getProject().getName() + "." + dependency.getName() + "." + sourceSetData.getName();
     }
 
     private String getSourceSetName(Dependency dependency, String name) {
-        return dependency.getName() + "-" + name;
+        return Constants.EXTENSION_NAME + "." + getProject().getName() + "." + dependency.getName() + "." + name;
+    }
+
+    private String getSourceSetName(String name) {
+        return Constants.EXTENSION_NAME + "." + getProject().getName() + "." + name;
     }
 
     @Override

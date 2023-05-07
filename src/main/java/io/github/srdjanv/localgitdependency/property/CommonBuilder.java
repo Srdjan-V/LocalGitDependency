@@ -102,9 +102,9 @@ public interface CommonBuilder {
     void tryGeneratingJavaDocJar(Boolean tryGeneratingJavaDocJar);
 
     /**
-     * By enabling this the plugin will register the source sets, configurations, repositories and its dependencies to your project.
+     * By enabling this the plugin will register the source sets, configurations, its dependencies to your project.
      * <p>
-     * Currently, repositories are not being added automatically and that's why it's disabled by default
+     * Disabled by default
      *
      * @param enableIdeSupport if it should enable ide support
      */

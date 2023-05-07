@@ -52,6 +52,7 @@ public class PluginDependencyTests {
                 builder.name(dependencyWrapper.getTestName());
                 builder.dependencyType(dependencyType);
                 builder.gradleDaemonMaxIdleTime(0);
+                builder.configuration(Constants.JAVA_IMPLEMENTATION);
             });
             dependencyWrapper.setTest(test -> {
                 printData(dependencyWrapper.getProjectManager().getProject());
@@ -128,7 +129,7 @@ public class PluginDependencyTests {
                     .getDependencies().size();
         } else {
             dependencyCount = dependencyWrapper.getProjectManager().getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
-                    .getDependencies().stream().filter(d -> d.getName().equals(dependencyWrapper.getDependency().getName())).count();
+                    .getDependencies().stream().filter(d -> d.getName().equals(dependencyWrapper.getDependency().getPersistentInfo().getProbeData().getArchivesBaseName())).count();
         }
 
         Assertions.assertEquals(1, dependencyCount, () -> dependencyWrapper.getDependency().getName() + " dependency is not registered wih gradle");

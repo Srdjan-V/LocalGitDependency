@@ -18,7 +18,7 @@ public class ProjectInstance {
                  BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream))) {
                 branch = bufferedReader.readLine();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
         }
 
@@ -52,7 +52,6 @@ public class ProjectInstance {
         Constants.PROJECT_VERSION = version;
         project.setGroup(properties.getProperty("group"));
         project.getPluginManager().apply("io.github.srdjan-v.local-git-dependency");
-        project.getPluginManager().apply("java");
 
         return project;
     }

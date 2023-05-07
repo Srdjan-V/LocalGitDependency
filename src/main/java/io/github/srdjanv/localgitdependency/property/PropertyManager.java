@@ -8,6 +8,7 @@ import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.property.impl.CommonPropertyFields;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
+import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.GradleException;
 
 import java.io.File;
@@ -41,7 +42,7 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
         builder.keepDependencyInitScriptUpdated(true);
         builder.tryGeneratingSourceJar(false);
         builder.tryGeneratingJavaDocJar(false);
-        builder.enableIdeSupport(true);
+        builder.enableIdeSupport(false);
         builder.registerDependencyRepositoryToProject(true);
         builder.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
 
@@ -55,13 +56,11 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
                 throw new GradleException("You can't change the globalProperty once they are set");
             }
             GlobalProperty.Builder defaultProperty = new GlobalProperty.Builder();
-            configureClosure.setDelegate(defaultProperty);
-            configureClosure.setResolveStrategy(Closure.DELEGATE_FIRST);
-            configureClosure.call();
+            ClosureUtil.delegate(configureClosure, defaultProperty);
             configureFilePaths(defaultProperty);
             GlobalProperty newGlobalProperty = new GlobalProperty(defaultProperty);
             customPathsCheck(newGlobalProperty);
-            this.globalProperty = mergersGlobalProperty(globalProperty, newGlobalProperty);
+            this.globalProperty = mergeGlobalProperty(globalProperty, newGlobalProperty);
             customGlobalProperty = true;
         }
     }
@@ -103,7 +102,7 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
                     field.set(defaultProperty, new File(defaultDir, String.valueOf(file)).toPath().normalize().toFile());
                 }
             } catch (Exception e) {
-                throw new GradleException(String.format("Unexpected error while reflecting %s class", CommonPropertyFields.class), e);
+                throw new RuntimeException(String.format("Unexpected error while reflecting %s class", CommonPropertyFields.class), e);
             }
         }
     }
@@ -130,7 +129,7 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
     /**
      * Merges 2 properties GlobalProperties, if a field in newGlobalProperty is null the field in defaultGlobalPropertyValues will be used
      */
-    private static GlobalProperty mergersGlobalProperty(GlobalProperty defaultGlobalPropertyValues, GlobalProperty newGlobalProperty) {
+    private static GlobalProperty mergeGlobalProperty(GlobalProperty defaultGlobalPropertyValues, GlobalProperty newGlobalProperty) {
         GlobalProperty resolvedProperty = new GlobalProperty();
         Class<?>[] classes = new Class[2];
         classes[0] = CommonPropertyFields.class;

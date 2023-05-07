@@ -45,7 +45,7 @@ public class Artifact {
         return configuration;
     }
 
-    public Closure getClosure() {
+    public Closure closure() {
         return closure;
     }
 

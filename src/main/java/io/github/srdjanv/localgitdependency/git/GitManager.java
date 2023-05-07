@@ -23,7 +23,7 @@ class GitManager extends ManagerBase implements IGitManager {
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             GitReport gitReport = initRepo(dependency);
 
-            if (gitReport.isHasGitExceptions()) {
+            if (gitReport.hasGitExceptions()) {
                 if (gitExceptions == null) {
                     gitExceptions = new ArrayList<>();
                 }

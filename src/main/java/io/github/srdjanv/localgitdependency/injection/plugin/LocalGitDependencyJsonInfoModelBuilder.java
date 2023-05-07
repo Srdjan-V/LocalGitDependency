@@ -13,6 +13,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.UnknownDomainObjectException;
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
+import org.gradle.api.plugins.BasePluginConvention;
 import org.gradle.api.plugins.BasePluginExtension;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.publish.internal.DefaultPublishingExtension;
@@ -70,12 +71,14 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
             }
 
             var base = project.getExtensions().getByType(BasePluginExtension.class);
-            archivesBaseName = base.getArchivesName().getOrElse(projectId);
+            archivesBaseName = base.getArchivesName().getOrElse(project.getName());
         } else {
-            // TODO: 05/05/2023
-            // @SuppressWarnings("deprecation") var base = project.getExtensions().getByType(BasePluginConvention.class);
-            // archivesBaseName = base.getArchivesBaseName();
-            archivesBaseName = projectId;
+            try {
+                @SuppressWarnings("deprecation") var base = project.getConvention().getPlugin(BasePluginConvention.class);
+                archivesBaseName = base.getArchivesBaseName();
+            } catch (IllegalStateException ignore) {
+                archivesBaseName = project.getName();
+            }
         }
 
         ProjectProbeData.Builder builder = new ProjectProbeData.Builder();

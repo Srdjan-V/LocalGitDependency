@@ -15,7 +15,7 @@ public class GitReport {
         return gitExceptions;
     }
 
-    public boolean isHasGitExceptions() {
+    public boolean hasGitExceptions() {
         return hasGitExceptions;
     }
 }
