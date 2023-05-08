@@ -15,6 +15,10 @@ public class InjectionTest {
     void testInjectionPlugin() {
         Project project = ProjectInstance.createProject();
 
+        project.getRepositories().mavenCentral();
+        project.getRepositories().mavenLocal();
+        project.getRepositories().gradlePluginPortal();
+
         project.getDependencies().add(Constants.JAVA_IMPLEMENTATION, "org.jetbrains:annotations:24.0.1");
         project.getDependencies().add(Constants.JAVA_IMPLEMENTATION, "com.google.code.gson:gson:2.10.1");
 
