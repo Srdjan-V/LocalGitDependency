@@ -11,8 +11,10 @@ import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import io.github.srdjanv.localgitdependency.property.impl.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.util.GradleVersion;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
@@ -21,13 +23,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
     private SourceSetContainer rootSourceSetContainer;
-
+    private Function<SourceSet, String[]> taskSupplier;
 
     DependencyManager(Managers managers) {
         super(managers);
@@ -36,6 +39,20 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     @Override
     protected void managerConstructor() {
         rootSourceSetContainer = getProject().getRootProject().getExtensions().getByType(SourceSetContainer.class);
+        //this is used to disable tasks for class compilation and so on
+        if (GradleVersion.version(getProject().getGradle().getGradleVersion()).compareTo(GradleVersion.version("6.0")) >= 0) {
+            taskSupplier = (sourceSet) -> new String[]{
+                    sourceSet.getCompileJavaTaskName(),
+                    sourceSet.getProcessResourcesTaskName(),
+                    sourceSet.getClassesTaskName(),
+                    sourceSet.getJavadocJarTaskName(),
+                    sourceSet.getSourcesJarTaskName()};
+        } else {
+            taskSupplier = (sourceSet) -> new String[]{
+                    sourceSet.getCompileJavaTaskName(),
+                    sourceSet.getProcessResourcesTaskName(),
+                    sourceSet.getClassesTaskName()};
+        }
     }
 
     @Override
@@ -94,11 +111,11 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                 }
                 case MavenProjectLocal -> {
                     addRepositoryMavenProjectLocal = true;
-                    addRepositoryDependency(dependency);
+                    addRepositoryDependency(dependency, dependency.getName());
                 }
                 case MavenProjectDependencyLocal -> {
                     addMavenProjectDependencyLocal(dependency);
-                    addRepositoryDependency(dependency);
+                    addRepositoryDependency(dependency, dependency.getName());
                 }
                 case JarFlatDir -> {
                     addJarsAsFlatDirDependencies(dependency);
@@ -211,8 +228,12 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     private void addRepositoryDependency(Dependency dependency) {
+        addRepositoryDependency(dependency, dependency.getPersistentInfo().getProbeData().getArchivesBaseName());
+    }
+
+    private void addRepositoryDependency(Dependency dependency, String archivesBaseName) {
         final String[] projectID = dependency.getPersistentInfo().getProbeData().getProjectId().split(":");
-        final String dependencyNotation = projectID[0] + ":" + dependency.getPersistentInfo().getProbeData().getArchivesBaseName() + ":" + projectID[2];
+        final String dependencyNotation = projectID[0] + ":" + archivesBaseName + ":" + projectID[2];
 
         for (var artifact : dependency.getConfigurations()) {
             if (artifact.getArtifactProperty().isEmpty()) {
@@ -244,10 +265,14 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         var rootProject = getProject().getRootProject();
         //create source sets of the dependency
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
-            rootSourceSetContainer.register(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
+            var sourceSet = rootSourceSetContainer.register(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
                 sourceSetConf.java(dependencySet -> dependencySet.srcDir(sourceSetData.getSources()));
                 sourceSetConf.resources(dependencySet -> dependencySet.srcDir(sourceSetData.getResources()));
-            });
+            }).get();
+
+            for (String task : taskSupplier.apply(sourceSet)) {
+                rootProject.getTasks().getByName(task).setEnabled(false);
+            }
         }
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
             SourceSet depSourceSet = rootSourceSetContainer.getByName(getSourceSetName(dependency, sourceSetData));
@@ -260,32 +285,62 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
 
             // link source sets to each other
             if (!sourceSetData.getDependentSourceSets().isEmpty()) {
-                var dependentSourceSets = new ArrayList<SourceSet>();
-
                 for (String dependentSourceSetName : sourceSetData.getDependentSourceSets()) {
-                    for (SourceSetData data : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
-                        if (data.getName().equals(dependentSourceSetName)) {
-                            dependentSourceSets.add(rootSourceSetContainer.getByName(getSourceSetName(dependency, dependentSourceSetName)));
+                    final Optional<SourceSetData> data = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
+                            stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst();
+
+                    if (data.isPresent()) {
+                        final SourceSetData sourceData = data.get();
+                        final var set = rootSourceSetContainer.getByName(getSourceSetName(dependency, sourceData));
+
+                        if (!sourceData.getBuildResourcesDir().equals("")) {
+                            set.getOutput().setResourcesDir(sourceData.getBuildResourcesDir());
+                        }
+                        if (set.getOutput().getClassesDirs() instanceof ConfigurableFileCollection configurableFileCollection) {
+                            configurableFileCollection.setFrom(sourceData.getBuildClassesDir());
+
+                            depSourceSet.setCompileClasspath(depSourceSet.getCompileClasspath().
+                                    plus(set.getOutput()));
                         }
                     }
-                }
-                for (SourceSet sourceSet : dependentSourceSets) {
-                    depSourceSet.setCompileClasspath(depSourceSet.getCompileClasspath().plus(sourceSet.getOutput()));
                 }
             }
 
             //link source sets to the main project using mappers
             for (SourceSetMapper sourceSetMapper : dependency.getSourceSetMappers()) {
+                final Set<String> dependentSourceSets = new HashSet<>();
                 for (String dependentSourceSetName : sourceSetMapper.getDependencySet()) {
                     if (sourceSetData.getName().equals(dependentSourceSetName)) {
-                        SourceSet projectSet;
-                        if (getProject() == rootProject) {
-                            projectSet = rootSourceSetContainer.getByName(sourceSetMapper.getProjectSet());
-                        } else {
-                            projectSet = rootSourceSetContainer.getByName(getSourceSetName(sourceSetMapper.getProjectSet()));
+                        dependentSourceSets.add(dependentSourceSetName);
+                        if (sourceSetMapper.isRecursive()) {
+                            dependentSourceSets.addAll(sourceSetData.getDependentSourceSets());
                         }
-                        var dependentlySourceSet = rootSourceSetContainer.getByName(getSourceSetName(dependency, dependentSourceSetName));
-                        projectSet.setCompileClasspath(projectSet.getCompileClasspath().plus(dependentlySourceSet.getOutput()));
+                    }
+                }
+
+                for (String dependentSourceSetName : dependentSourceSets) {
+                    final SourceSet projectSet;
+                    if (getProject() == rootProject) {
+                        projectSet = rootSourceSetContainer.getByName(sourceSetMapper.getProjectSet());
+                    } else {
+                        var subProjectSourceSetContainer = getProject().getExtensions().getByType(SourceSetContainer.class);
+                        projectSet = subProjectSourceSetContainer.getByName(sourceSetMapper.getProjectSet());
+                    }
+
+                    final var sourceData = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
+                            stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst().
+                            orElseThrow(() -> new IllegalArgumentException(
+                                    String.format("Source set %s not for for dependency %s", dependentSourceSetName, dependency.getName())));
+
+                    final var set = rootSourceSetContainer.getByName(getSourceSetName(dependency, sourceData));
+                    if (!sourceData.getBuildResourcesDir().equals("")) {
+                        set.getOutput().setResourcesDir(sourceData.getBuildResourcesDir());
+                    }
+                    if (set.getOutput().getClassesDirs() instanceof ConfigurableFileCollection configurableFileCollection) {
+                        configurableFileCollection.setFrom(sourceData.getBuildClassesDir());
+
+                        projectSet.setCompileClasspath(projectSet.getCompileClasspath().
+                                plus(set.getOutput()));
                     }
                 }
             }
@@ -294,14 +349,6 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
 
     private String getSourceSetName(Dependency dependency, SourceSetData sourceSetData) {
         return Constants.EXTENSION_NAME + "." + getProject().getName() + "." + dependency.getName() + "." + sourceSetData.getName();
-    }
-
-    private String getSourceSetName(Dependency dependency, String name) {
-        return Constants.EXTENSION_NAME + "." + getProject().getName() + "." + dependency.getName() + "." + name;
-    }
-
-    private String getSourceSetName(String name) {
-        return Constants.EXTENSION_NAME + "." + getProject().getName() + "." + name;
     }
 
     @Override

@@ -187,18 +187,24 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
         }
 
         for (SourceSet sourceSet : sourceContainer) {
-            List<String> sourcePaths = new ArrayList<>();
-            List<String> resourcePaths = new ArrayList<>();
-            List<String> compileClasspath = new ArrayList<>();
-            Set<String> dependentSourceSets = new HashSet<>();
-
-            for (File file : sourceSet.getJava().getSourceDirectories().getFiles()) {
-                sourcePaths.add(file.getAbsolutePath());
+            final String buildClassesDir = sourceSet.getOutput().getClassesDirs().getAsPath();
+            final String buildResourcesDir;
+            if (sourceSet.getOutput().getResourcesDir() == null) {
+                buildResourcesDir = "";
+            } else {
+                buildResourcesDir = sourceSet.getOutput().getResourcesDir().getAbsolutePath();
             }
 
-            for (File file : sourceSet.getResources().getSourceDirectories().getFiles()) {
-                resourcePaths.add(file.getAbsolutePath());
-            }
+            final List<String> sourcePaths = new ArrayList<>();
+            final List<String> resourcePaths = new ArrayList<>();
+            final List<String> compileClasspath = new ArrayList<>();
+            final Set<String> dependentSourceSets = new HashSet<>();
+
+            sourceSet.getJava().getSourceDirectories().getFiles().
+                    stream().map(File::getAbsolutePath).collect(() -> sourcePaths, List::add, List::addAll);
+
+            sourceSet.getJava().getSourceDirectories().getFiles().
+                    stream().map(File::getAbsolutePath).collect(() -> resourcePaths, List::add, List::addAll);
 
             topFor:
             for (File file : sourceSet.getCompileClasspath()) {
@@ -216,6 +222,8 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
 
             sourceSets.add(SourceSetData.builder().
                     setName(sourceSet.getName()).
+                    setBuildClassesDir(buildClassesDir).
+                    setBuildResourcesDir(buildResourcesDir).
                     setDependentSourceSets(dependentSourceSets).
                     setCompileClasspath(compileClasspath).
                     setSources(sourcePaths).

@@ -28,6 +28,16 @@ public class SourceSetData extends SourceSetDataFields implements NonNullData {
             return this;
         }
 
+        public Builder setBuildClassesDir(String buildClassesDir) {
+            this.buildClassesDir = buildClassesDir;
+            return this;
+        }
+
+        public Builder setBuildResourcesDir(String buildResourcesDir) {
+            this.buildResourcesDir = buildResourcesDir;
+            return this;
+        }
+
         public Builder setDependentSourceSets(Set<String> dependentSourceSets) {
             this.dependentSourceSets = dependentSourceSets;
             return this;
@@ -55,6 +65,12 @@ public class SourceSetData extends SourceSetDataFields implements NonNullData {
 
     public String getName() {
         return name;
+    }
+    public String getBuildClassesDir() {
+        return buildClassesDir;
+    }
+    public String getBuildResourcesDir() {
+        return buildResourcesDir;
     }
     public Set<String> getDependentSourceSets() {
         return dependentSourceSets;

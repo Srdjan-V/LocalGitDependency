@@ -5,6 +5,8 @@ import java.util.Set;
 
 class SourceSetDataFields {
     String name;
+    String buildClassesDir;
+    String buildResourcesDir;
     Set<String> dependentSourceSets;
     List<String> compileClasspath;
     List<String> sources;

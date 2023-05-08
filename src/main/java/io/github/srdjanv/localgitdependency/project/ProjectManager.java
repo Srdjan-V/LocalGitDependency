@@ -48,7 +48,6 @@ class ProjectManager extends ManagerBase implements IProjectManager {
             managerRunner.setManagerSupplier(Managers::getGradleManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("buildDependencies"));
         }));
-        PROJECT_RUNNERS.add(savePersistentDataTask);
         PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getDependencyManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("addBuiltDependencies"));
@@ -69,6 +68,7 @@ class ProjectManager extends ManagerBase implements IProjectManager {
 
     @Override
     public void startPlugin() {
+        Throwable throwable = null;
         String name = getProject().getName();
         String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
 
@@ -78,17 +78,24 @@ class ProjectManager extends ManagerBase implements IProjectManager {
             for (ManagerRunner<?> projectRunner : PROJECT_RUNNERS) {
                 projectRunner.runAndLog(getProjectManagers());
             }
-        } catch (Throwable throwable) {
+        } catch (Throwable e) {
+            throwable = e;
+        } finally {
             try {
                 savePersistentDataTask.runAndLog(getProjectManagers());
-            } catch (Throwable ignore) {
+            } catch (Throwable suppressed) {
+                if (throwable == null) {
+                    throwable = suppressed;
+                } else {
+                    throwable.addSuppressed(suppressed);
+                }
             }
             final long spent = System.currentTimeMillis() - start;
             PluginLogger.startInfo("{} finished {} tasks in {} ms", formattedName, Constants.EXTENSION_NAME, spent);
-            throw throwable;
         }
-        final long spent = System.currentTimeMillis() - start;
-        PluginLogger.startInfo("{} finished {} tasks in {} ms", formattedName, Constants.EXTENSION_NAME, spent);
+        if (throwable != null) {
+            throw new RuntimeException(throwable);
+        }
     }
 
 }
