@@ -49,7 +49,6 @@ configure([tasks.javadoc]) {
     })
 }
 
-
 tasks.named('test') {
     useJUnitPlatform()
 }
