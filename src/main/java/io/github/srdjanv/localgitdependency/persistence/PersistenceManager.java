@@ -67,6 +67,8 @@ class PersistenceManager extends ManagerBase implements IPersistenceManager {
                 throw new GradleException(Constants.PROJECT_DATA_JSON + " at " + projectDataJson.getAbsolutePath() + " can not be a directory");
             }
             projectData = DataParser.simpleLoadDataFromFileJson(projectDataJson, ProjectData.class, ProjectData::new);
+        } else {
+            projectData = new ProjectData();
         }
     }
 
