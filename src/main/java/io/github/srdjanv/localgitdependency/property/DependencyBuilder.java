@@ -15,29 +15,15 @@ public interface DependencyBuilder extends CommonBuilder {
      */
     void configuration(String configuration);
 
-    // TODO: 05/05/2023 fix doc 
-
     /**
-     * The map key represents the configuration and the list represents the generated artifacts
-     * <p>
-     * If the dependency type is Jar then the map will use string contains to filter what jars are going to be added
-     * <p>
-     * If its any other type the string will act as a dependency notation, you can add only the jar name and the program
-     * will add the group and version automatically. If the supplied string contains ':' the plugin will assume that is
-     * a full dependency notation(group:name:version).
-     * * <p>
-     * If the key is a empty list all artifacts are going to be added
-     * <p>
-     * preferably this should be a runtimeOnly configuration
-     *
-     * @param configurations Configuration name jar mapper
-     * @see org.gradle.api.artifacts.ConfigurationContainer
-     * @see io.github.srdjanv.localgitdependency.depenency.Dependency.Type
+     * @see io.github.srdjanv.localgitdependency.property.ArtifactBuilder
      */
-
     void configuration(@DelegatesTo(value = ArtifactBuilder.class,
             strategy = Closure.DELEGATE_FIRST) Closure... configurations);
 
+    /**
+     * @see io.github.srdjanv.localgitdependency.property.SourceSetMapperBuilder
+     */
     void mapSourceSets(@DelegatesTo(value = SourceSetMapperBuilder.class,
             strategy = Closure.DELEGATE_FIRST) Closure... mappings);
 

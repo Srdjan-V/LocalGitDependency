@@ -20,6 +20,7 @@ public interface SourceSetMapperBuilder {
      * If the specified dependencySet are going to get added recursively
      * <p>
      * Default true
+     *
      * @param recursive if it should be handled recursively
      */
     void recursive(Boolean recursive);
