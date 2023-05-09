@@ -40,4 +40,10 @@ public interface DependencyBuilder extends CommonBuilder {
 
     void tag(String tag);
 
+    /**
+     * Some projects might require a one time configuration
+     *
+     * @param startupTasks task names
+     */
+    void oneTimeStartupTasks(String... startupTasks);
 }

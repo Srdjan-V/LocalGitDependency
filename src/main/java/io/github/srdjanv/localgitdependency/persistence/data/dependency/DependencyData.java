@@ -7,6 +7,7 @@ public class DependencyData implements DependencyDataGetter, DependencyDataSette
     private String workingDirSHA1;
     private String initFileSHA1;
     private Dependency.Type dependencyType;
+    private Boolean startupTasksRun;
     private Boolean buildSuccessful;
 
     @Override
@@ -37,6 +38,16 @@ public class DependencyData implements DependencyDataGetter, DependencyDataSette
     @Override
     public void setDependencyType(Dependency.Type dependencyType) {
         this.dependencyType = dependencyType;
+    }
+
+    @Override
+    public Boolean getStartupTasksRun() {
+        return startupTasksRun;
+    }
+
+    @Override
+    public void setStartupTasksRun(boolean startupTasksRun) {
+        this.startupTasksRun = startupTasksRun;
     }
 
     @Override

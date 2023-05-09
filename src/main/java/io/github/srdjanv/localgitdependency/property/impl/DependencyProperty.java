@@ -16,6 +16,7 @@ public class DependencyProperty extends CommonPropertyGetters {
     private final String configuration;
     private final Closure[] configurations;
     private final Closure[] mappings;
+    private final String[] startupTasks;
 
     public DependencyProperty(Builder builder) {
         url = builder.url;
@@ -25,6 +26,7 @@ public class DependencyProperty extends CommonPropertyGetters {
         configuration = builder.configuration;
         configurations = builder.configurations;
         mappings = builder.mappings;
+        startupTasks = builder.startupTasks;
         BuilderUtil.instantiateObjectWithBuilder(this, builder, CommonPropertyFields.class);
     }
 
@@ -56,6 +58,10 @@ public class DependencyProperty extends CommonPropertyGetters {
         return mappings;
     }
 
+    public String[] getStartupTasks() {
+        return startupTasks;
+    }
+
     public static class Builder extends CommonPropertyBuilder implements DependencyBuilder {
         private final String url;
         private String name;
@@ -64,6 +70,7 @@ public class DependencyProperty extends CommonPropertyGetters {
         private String configuration;
         private Closure[] configurations;
         private Closure[] mappings;
+        private String[] startupTasks;
 
         public Builder(String url) {
             this.url = url;
@@ -107,5 +114,9 @@ public class DependencyProperty extends CommonPropertyGetters {
             this.target = tag;
         }
 
+        @Override
+        public void oneTimeStartupTasks(String... startupTasks) {
+            this.startupTasks = startupTasks;
+        }
     }
 }

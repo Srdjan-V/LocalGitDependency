@@ -86,8 +86,32 @@ public class PersistentInfo {
         }
     }
 
+    public void setStartupTasksStatus(boolean status) {
+        if (dependencyData.getStartupTasksRun() != null) {
+            if (status != dependencyData.getStartupTasksRun()) {
+                setDirty();
+                dependencyData.setStartupTasksRun(status);
+            }
+        } else {
+            setDirty();
+            dependencyData.setStartupTasksRun(status);
+        }
+    }
+
     public boolean getBuildStatus() {
-        return dependencyData.getBuildSuccessful();
+        if (dependencyData.getBuildSuccessful() == null) {
+            return false;
+        } else {
+            return dependencyData.getBuildSuccessful();
+        }
+    }
+
+    public boolean getRunStatus() {
+        if (dependencyData.getStartupTasksRun() == null) {
+            return false;
+        } else {
+            return dependencyData.getStartupTasksRun();
+        }
     }
 
     @Override

@@ -18,10 +18,7 @@ import org.gradle.util.GradleVersion;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -59,6 +56,9 @@ class GradleManager extends ManagerBase implements IGradleManager {
         validateMainInitScript();
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (!dependency.getPersistentInfo().isValidModel()) {
+                if (!dependency.getPersistentInfo().getRunStatus()) {
+                    runStartupTasks(dependency);
+                }
                 probeProject(dependency);
             }
 
@@ -79,6 +79,10 @@ class GradleManager extends ManagerBase implements IGradleManager {
 
     @Override
     public void buildDependency(Dependency dependency) {
+        if (!dependency.getPersistentInfo().getRunStatus()) {
+            runStartupTasks(dependency);
+        }
+
         long start = System.currentTimeMillis();
         ManagerLogger.info("Started building dependency: {}", dependency.getName());
 
@@ -128,6 +132,43 @@ class GradleManager extends ManagerBase implements IGradleManager {
         ManagerLogger.info("Probe finished in {} ms", spent);
     }
 
+    public void runStartupTasks(Dependency dependency) {
+        if (dependency.getGradleInfo().getStartupTasks() == null) {
+            dependency.getPersistentInfo().setStartupTasksStatus(true);
+            return;
+        }
+
+        long start = System.currentTimeMillis();
+        ManagerLogger.info("Started startupTasksRun for dependency: {}", dependency.getName());
+        ManagerLogger.info("Tasks: {}", Arrays.toString(dependency.getGradleInfo().getStartupTasks()));
+
+        DefaultGradleConnector connector = getGradleConnector(dependency);
+        try (ProjectConnection connection = connector.connect()) {
+            BuildLauncher build = connection.newBuild();
+            build.setStandardOutput(System.out);
+            build.setStandardError(System.err);
+            if (dependency.getGradleInfo().getJavaHome() != null) {
+                build.setJavaHome(dependency.getGradleInfo().getJavaHome());
+            }
+            build.forTasks(dependency.getGradleInfo().getStartupTasks());
+            build.run(new ResultHandler<>() {
+                @Override
+                public void onComplete(Void result) {
+                    dependency.getPersistentInfo().setStartupTasksStatus(true);
+                }
+
+                @Override
+                public void onFailure(GradleConnectionException failure) {
+                    dependency.getPersistentInfo().setStartupTasksStatus(false);
+                    throw failure;
+                }
+            });
+        }
+
+        long spent = System.currentTimeMillis() - start;
+        ManagerLogger.info("startupTasksRun finished in {} ms", spent);
+    }
+
     private void buildGradleProject(Dependency dependency, String task) {
         DefaultGradleConnector connector = getGradleConnector(dependency);
         try (ProjectConnection connection = connector.connect()) {
@@ -142,7 +183,7 @@ class GradleManager extends ManagerBase implements IGradleManager {
             build.run(new ResultHandler<>() {
                 @Override
                 public void onComplete(Void result) {
-                   dependency.getPersistentInfo().setBuildStatus(true);
+                    dependency.getPersistentInfo().setBuildStatus(true);
                 }
 
                 @Override
@@ -293,7 +334,6 @@ class GradleManager extends ManagerBase implements IGradleManager {
             writeToFile(file, initScript);
         }
     }
-
 
     private String generateShaForFile(File file) {
         SHA1 sha1 = SHA1.newInstance();

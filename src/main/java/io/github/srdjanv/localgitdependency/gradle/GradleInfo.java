@@ -17,6 +17,7 @@ public class GradleInfo {
     private final boolean tryGeneratingSourceJar;
     private final boolean tryGeneratingJavaDocJar;
     private final int gradleDaemonMaxIdleTime;
+    private final String[] startupTasks;
 
     public GradleInfo(DependencyProperty dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
@@ -26,6 +27,7 @@ public class GradleInfo {
         this.tryGeneratingSourceJar = dependencyConfig.getTryGeneratingSourceJar();
         this.tryGeneratingJavaDocJar = dependencyConfig.getTryGeneratingJavaDocJar();
         this.gradleDaemonMaxIdleTime = dependencyConfig.getGradleDaemonMaxIdleTime();
+        this.startupTasks = dependencyConfig.getStartupTasks();
     }
 
     @NotNull
@@ -57,6 +59,11 @@ public class GradleInfo {
 
     public int getGradleDaemonMaxIdleTime() {
         return gradleDaemonMaxIdleTime;
+    }
+
+    @Nullable
+    public String[] getStartupTasks() {
+        return startupTasks;
     }
 
     @Override

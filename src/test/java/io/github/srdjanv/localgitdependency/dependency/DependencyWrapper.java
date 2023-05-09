@@ -21,11 +21,13 @@ public class DependencyWrapper {
     private Closure<GlobalBuilder> globalClosure;
     private Closure<DependencyBuilder> dependencyClosure;
     private Dependency dependencyReference;
+    private String[] startupTasks;
 
     public DependencyWrapper(DependencyRegistry registry) {
         state = State.Starting;
         this.dependencyName = registry.dependencyName;
         this.gitUrl = registry.gitUrl;
+        this.startupTasks = registry.startupTasks;
     }
 
     public State getState() {
@@ -67,6 +69,7 @@ public class DependencyWrapper {
                 DependencyBuilder builder = (DependencyBuilder) getDelegate();
                 dependencyClosure.accept(builder);
                 builder.name(getTestName());
+                builder.oneTimeStartupTasks(startupTasks);
                 return builder;
             }
         };
@@ -132,6 +135,7 @@ public class DependencyWrapper {
                 public DependencyBuilder doCall() {
                     DependencyBuilder builder = (DependencyBuilder) getDelegate();
                     builder.name(getTestName());
+                    builder.oneTimeStartupTasks(startupTasks);
                     return builder;
                 }
             };
