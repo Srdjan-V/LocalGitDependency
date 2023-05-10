@@ -7,8 +7,6 @@ import java.io.File;
 public abstract class CommonPropertyFields {
     CommonPropertyFields() {
     }
-
-    String configuration;
     Boolean keepGitUpdated;
     Boolean keepDependencyInitScriptUpdated;
     File gitDir;
@@ -19,7 +17,6 @@ public abstract class CommonPropertyFields {
     Boolean tryGeneratingSourceJar;
     Boolean tryGeneratingJavaDocJar;
     Boolean enableIdeSupport;
-    Boolean registerDependencyToProject;
     Boolean registerDependencyRepositoryToProject;
     Boolean generateGradleTasks;
     Integer gradleDaemonMaxIdleTime;

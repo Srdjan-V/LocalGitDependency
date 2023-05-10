@@ -1,7 +1,6 @@
 package io.github.srdjanv.localgitdependency.dependency;
 
 import groovy.lang.Closure;
-import io.github.srdjanv.localgitdependency.LocalGitDependencyPlugin;
 import io.github.srdjanv.localgitdependency.ProjectInstance;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
@@ -22,11 +21,13 @@ public class DependencyWrapper {
     private Closure<GlobalBuilder> globalClosure;
     private Closure<DependencyBuilder> dependencyClosure;
     private Dependency dependencyReference;
+    private String[] startupTasks;
 
     public DependencyWrapper(DependencyRegistry registry) {
         state = State.Starting;
         this.dependencyName = registry.dependencyName;
         this.gitUrl = registry.gitUrl;
+        this.startupTasks = registry.startupTasks;
     }
 
     public State getState() {
@@ -68,6 +69,7 @@ public class DependencyWrapper {
                 DependencyBuilder builder = (DependencyBuilder) getDelegate();
                 dependencyClosure.accept(builder);
                 builder.name(getTestName());
+                builder.oneTimeStartupTasks(startupTasks);
                 return builder;
             }
         };
@@ -104,7 +106,7 @@ public class DependencyWrapper {
     }
 
     public void onlyRegisterDependencyAndRunTests() {
-        projectManager = LocalGitDependencyPlugin.getProject(ProjectInstance.createProject());
+        projectManager = ProjectInstance.getManager(ProjectInstance.createProject());
         setState(State.OnlyDependencyRegistered);
         checkDependencyState();
 
@@ -115,7 +117,7 @@ public class DependencyWrapper {
     }
 
     public void startPluginAndRunTests() {
-        projectManager = LocalGitDependencyPlugin.getProject(ProjectInstance.createProject());
+        projectManager = ProjectInstance.getManager(ProjectInstance.createProject());
         setState(State.Complete);
         checkDependencyState();
 
@@ -133,6 +135,7 @@ public class DependencyWrapper {
                 public DependencyBuilder doCall() {
                     DependencyBuilder builder = (DependencyBuilder) getDelegate();
                     builder.name(getTestName());
+                    builder.oneTimeStartupTasks(startupTasks);
                     return builder;
                 }
             };

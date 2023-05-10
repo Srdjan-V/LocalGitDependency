@@ -17,15 +17,17 @@ public class GradleInfo {
     private final boolean tryGeneratingSourceJar;
     private final boolean tryGeneratingJavaDocJar;
     private final int gradleDaemonMaxIdleTime;
+    private final String[] startupTasks;
 
-    public GradleInfo(DependencyProperty dependencyDependencyProperty, Dependency dependency) {
+    public GradleInfo(DependencyProperty dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
-        this.keepDependencyInitScriptUpdated = dependencyDependencyProperty.getKeepDependencyInitScriptUpdated();
-        this.initScript = Constants.persistentInitScript.apply(dependencyDependencyProperty.getPersistentDir(), dependency.getName());
-        this.javaHome = dependencyDependencyProperty.getJavaHomeDir();
-        this.tryGeneratingSourceJar = dependencyDependencyProperty.getTryGeneratingSourceJar();
-        this.tryGeneratingJavaDocJar = dependencyDependencyProperty.getTryGeneratingJavaDocJar();
-        this.gradleDaemonMaxIdleTime = dependencyDependencyProperty.getGradleDaemonMaxIdleTime();
+        this.keepDependencyInitScriptUpdated = dependencyConfig.getKeepDependencyInitScriptUpdated();
+        this.initScript = Constants.persistentInitScript.apply(dependencyConfig.getPersistentDir(), dependency.getName());
+        this.javaHome = dependencyConfig.getJavaHomeDir();
+        this.tryGeneratingSourceJar = dependencyConfig.getTryGeneratingSourceJar();
+        this.tryGeneratingJavaDocJar = dependencyConfig.getTryGeneratingJavaDocJar();
+        this.gradleDaemonMaxIdleTime = dependencyConfig.getGradleDaemonMaxIdleTime();
+        this.startupTasks = dependencyConfig.getStartupTasks();
     }
 
     @NotNull
@@ -57,6 +59,11 @@ public class GradleInfo {
 
     public int getGradleDaemonMaxIdleTime() {
         return gradleDaemonMaxIdleTime;
+    }
+
+    @Nullable
+    public String[] getStartupTasks() {
+        return startupTasks;
     }
 
     @Override

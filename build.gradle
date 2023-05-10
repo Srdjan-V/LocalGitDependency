@@ -22,11 +22,31 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 dependencies {
     implementation gradleApi()
-    implementation 'org.jetbrains:annotations:24.0.0'
+    implementation 'org.jetbrains:annotations:24.0.1'
     implementation 'org.eclipse.jgit:org.eclipse.jgit:5.11.0.202103091610-r'
     implementation 'com.google.code.gson:gson:2.10.1'
+    //implementation 'com.google.guava:guava:31.1-jre'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+    //enables java 17 features on java 8
+    annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+    compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+}
+
+configure([tasks.compileJava]) {
+    sourceCompatibility = 17 // for the IDE support
+    options.release = 8
+
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configure([tasks.javadoc]) {
+    javadocTool.set(javaToolchains.javadocToolFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    })
 }
 
 tasks.named('test') {
@@ -41,7 +61,7 @@ gradlePlugin {
         localGitDependency {
             displayName = "Local Git Dependency Plugin"
             description = "Gradle plugin to clone projects with git and build them"
-            tags.set(["git", "dependency"])
+            tags.set(["java", "git", "dependency"])
 
             id = "io.github.srdjan-v.local-git-dependency"
             implementationClass = "io.github.srdjanv.localgitdependency.LocalGitDependencyPlugin"
@@ -50,7 +70,7 @@ gradlePlugin {
         modelInjection {
             displayName = "Local Git Dependency Model Injection Plugin"
             description = "Helper plugin for local git dependency"
-            tags.set(["model", "git", "dependency"])
+            tags.set(["model", "java", "git", "dependency"])
 
             id = "io.github.srdjan-v.model-injection"
             implementationClass = "io.github.srdjanv.localgitdependency.injection.plugin.ModelInjectionPlugin"
@@ -60,6 +80,7 @@ gradlePlugin {
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens
+
 task filterTokens(type: Sync) {
 
     inputs.property 'version', version

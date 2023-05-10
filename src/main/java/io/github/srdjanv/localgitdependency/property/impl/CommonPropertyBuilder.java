@@ -15,11 +15,6 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields impleme
     }
 
     @Override
-    public void configuration(String configuration) {
-        this.configuration = configuration;
-    }
-
-    @Override
     public void keepGitUpdated(Boolean keepGitUpdated) {
         this.keepGitUpdated = keepGitUpdated;
     }
@@ -86,11 +81,6 @@ public abstract class CommonPropertyBuilder extends CommonPropertyFields impleme
     @Override
     public void enableIdeSupport(Boolean enableIdeSupport) {
         this.enableIdeSupport = enableIdeSupport;
-    }
-
-    @Override
-    public void registerDependencyToProject(Boolean registerDependencyToProject) {
-        this.registerDependencyToProject = registerDependencyToProject;
     }
 
     @Override

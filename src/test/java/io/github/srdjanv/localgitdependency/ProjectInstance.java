@@ -1,5 +1,7 @@
 package io.github.srdjanv.localgitdependency;
 
+import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
+import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 
@@ -16,7 +18,7 @@ public class ProjectInstance {
                  BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream))) {
                 branch = bufferedReader.readLine();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
         }
 
@@ -50,8 +52,11 @@ public class ProjectInstance {
         Constants.PROJECT_VERSION = version;
         project.setGroup(properties.getProperty("group"));
         project.getPluginManager().apply("io.github.srdjan-v.local-git-dependency");
-        project.getPluginManager().apply("java");
 
         return project;
+    }
+
+    public static IProjectManager getManager(Project project) {
+        return project.getExtensions().findByType(LocalGitDependencyManagerInstance.class).getProjectManager();
     }
 }

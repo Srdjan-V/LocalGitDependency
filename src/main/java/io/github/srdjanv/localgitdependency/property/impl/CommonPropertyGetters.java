@@ -6,11 +6,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 
 public abstract class CommonPropertyGetters extends CommonPropertyFields {
-
-    public String getConfiguration() {
-        return configuration;
-    }
-
     public Boolean getKeepGitUpdated() {
         return keepGitUpdated;
     }
@@ -50,10 +45,6 @@ public abstract class CommonPropertyGetters extends CommonPropertyFields {
 
     public Boolean getEnableIdeSupport() {
         return enableIdeSupport;
-    }
-
-    public Boolean getRegisterDependencyToProject() {
-        return registerDependencyToProject;
     }
 
     public Boolean getRegisterDependencyRepositoryToProject() {

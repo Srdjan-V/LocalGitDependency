@@ -14,8 +14,7 @@ import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoAllLocalGitChang
 import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoLocalGitChanges;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskProvider;
-
-import java.util.Arrays;
+import org.gradle.util.GradleVersion;
 
 class TasksManager extends ManagerBase implements ITasksManager {
     TasksManager(Managers managers) {
@@ -29,8 +28,9 @@ class TasksManager extends ManagerBase implements ITasksManager {
     @Override
     public void initTasks() {
         TaskCreator taskCreator;
-        int[] gradleVersion = Arrays.stream(getProject().getGradle().getGradleVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
-        if (gradleVersion[0] >= 4 && gradleVersion[1] >= 9) {
+
+        var gradleVersion = GradleVersion.version(getProject().getGradle().getGradleVersion());
+        if (gradleVersion.compareTo(GradleVersion.version("4.9")) >= 0) {
             taskCreator = this::register;
         } else {
             taskCreator = this::createTask;

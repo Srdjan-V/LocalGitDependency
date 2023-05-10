@@ -7,14 +7,6 @@ import java.io.File;
 public interface CommonBuilder {
 
     /**
-     * To what configuration the dependency is going to be added
-     *
-     * @param configuration Configuration name
-     * @see org.gradle.api.artifacts.ConfigurationContainer
-     */
-    void configuration(String configuration);
-
-    /**
      * This will try to keep the gir repo of the dependency updated
      *
      * @param keepGitUpdated True if the plugin should update the git repo if the target commit changes
@@ -110,22 +102,13 @@ public interface CommonBuilder {
     void tryGeneratingJavaDocJar(Boolean tryGeneratingJavaDocJar);
 
     /**
-     * By enabling this the plugin will register the source sets, configurations, repositories and its dependencies to your project.
+     * By enabling this the plugin will register the source sets, configurations, its dependencies to your project.
      * <p>
-     * Currently, repositories are not being added automatically and that's why it's disabled by default
+     * Disabled by default
      *
      * @param enableIdeSupport if it should enable ide support
      */
     void enableIdeSupport(Boolean enableIdeSupport);
-
-    /**
-     * If the built dependencies should be added as dependencies.
-     * You can manually add the dependency manually
-     *
-     * @param registerDependencyToProject if it should register the dependency
-     * @see org.gradle.api.artifacts.dsl.DependencyHandler
-     */
-    void registerDependencyToProject(Boolean registerDependencyToProject);
 
     /**
      * If a repository should be added for the build dependency, this will not do anything for the Jar dependency type
@@ -140,7 +123,6 @@ public interface CommonBuilder {
      * Custom tasks can be generated for this dependency
      *
      * @param generateGradleTasks if it should create custom tasks
-     * @see org.gradle.api.artifacts.dsl.DependencyHandler
      */
     void generateGradleTasks(Boolean generateGradleTasks);
 

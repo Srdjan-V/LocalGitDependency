@@ -1,20 +1,26 @@
 package io.github.srdjanv.localgitdependency.persistence;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.persistence.data.DataLayout;
+import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
+import io.github.srdjanv.localgitdependency.persistence.data.DataWrapper;
+import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
+import io.github.srdjanv.localgitdependency.persistence.data.project.ProjectData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import org.gradle.api.GradleException;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 class PersistenceManager extends ManagerBase implements IPersistenceManager {
-    private PersistentProjectData serializableProperty;
+    private ProjectData projectData;
     private File projectDataJson;
     private boolean dirty;
-    private Gson gson;
 
     PersistenceManager(Managers managers) {
         super(managers);
@@ -22,18 +28,16 @@ class PersistenceManager extends ManagerBase implements IPersistenceManager {
 
     @Override
     protected void managerConstructor() {
-        serializableProperty = new PersistentProjectData();
-        gson = new GsonBuilder().setPrettyPrinting().create();
     }
 
     @Override
     public String getInitScriptSHA() {
-        return serializableProperty.getMainInitSha1();
+        return projectData.getMainInitSHA1();
     }
 
     @Override
     public void setInitScriptSHA(String initScriptSHA) {
-        serializableProperty.setMainInitSha1(initScriptSHA);
+        projectData.setMainInitSHA1(initScriptSHA);
         dirty = true;
     }
 
@@ -60,18 +64,18 @@ class PersistenceManager extends ManagerBase implements IPersistenceManager {
 
         if (projectDataJson.exists()) {
             if (projectDataJson.isDirectory()) {
-                throw new RuntimeException(Constants.PROJECT_DATA_JSON + " at " + projectDataJson.getAbsolutePath() + " can not be a directory");
+                throw new GradleException(Constants.PROJECT_DATA_JSON + " at " + projectDataJson.getAbsolutePath() + " can not be a directory");
             }
-            PersistentProjectData serializableProperty = readJson(projectDataJson, PersistentProjectData.class);
-            if (serializableProperty == null) return;
-            this.serializableProperty.setMainInitSha1(serializableProperty.getMainInitSha1());
+            projectData = DataParser.simpleLoadDataFromFileJson(projectDataJson, ProjectData.class, ProjectData::new);
+        } else {
+            projectData = new ProjectData();
         }
     }
 
     @Override
     public void saveProjectPersistentData() {
         if (dirty) {
-            writeJson(projectDataJson, serializableProperty);
+            DataParser.simpleSaveDataToFileJson(projectDataJson, projectData);
             dirty = false;
         }
     }
@@ -81,7 +85,8 @@ class PersistenceManager extends ManagerBase implements IPersistenceManager {
         PersistentInfo persistentInfo = dependency.getPersistentInfo();
 
         if (persistentInfo.isDirty()) {
-            writeJson(persistentInfo.getPersistentFile(), persistentInfo.getPersistentDependencyData());
+            List<?> data = Arrays.asList(persistentInfo.getDependencyData(), persistentInfo.getProbeData());
+            DataParser.complexSaveDataToFileJson(persistentInfo.getPersistentFile(), data, DataLayout.getDependencyLayout());
             dirty = false;
         }
     }
@@ -90,39 +95,33 @@ class PersistenceManager extends ManagerBase implements IPersistenceManager {
     public void loadDependencyPersistentData(Dependency dependency) {
         PersistentInfo persistentInfo = dependency.getPersistentInfo();
 
-        if (!persistentInfo.getPersistentFile().exists()) return;
-        PersistentDependencyData persistentProperty = readJson(persistentInfo.getPersistentFile(), PersistentDependencyData.class);
-        if (persistentProperty == null) return;
-        PersistentDependencyData persistentDependencyData = persistentInfo.getPersistentDependencyData();
-        persistentDependencyData.setWorkingDirSHA1(persistentProperty.getWorkingDirSHA1());
-        persistentDependencyData.setProjectProbe(persistentProperty.getProjectProbe());
-        persistentDependencyData.setInitFileSHA1(persistentProperty.getInitFileSHA1());
+        List<DataWrapper> dataList = DataParser.complexLoadDataFromFileJson(persistentInfo.getPersistentFile(), DataLayout.getDependencyLayout());
+        for (DataWrapper dataWrapper : dataList) {
+            switch (dataWrapper.getDataType()) {
+                case DependencyData: {
+                    DependencyData data = (DependencyData) dataWrapper.getData();
+                    persistentInfo.setDependencyData(data);
+                    if (data.getDependencyType() != dependency.getDependencyType()) {
+                        data.setDependencyType(dependency.getDependencyType());
+                        persistentInfo.setDependencyTypeChanged();
+                        persistentInfo.setDirty();
+                    }
+                    break;
+                }
+                case ProjectProbeData: {
+                    ProjectProbeData probeData = (ProjectProbeData) dataWrapper.getData();
+                    persistentInfo.setProjectProbeData(probeData);
+                    if (dataWrapper.isValid() && Objects.equals(probeData.getVersion(), Constants.PROJECT_VERSION)) {
+                        persistentInfo.setValidModel();
+                    }
+                    break;
+                }
 
-        if (persistentProperty.getProjectProbe() != null && Objects.equals(persistentProperty.getProjectProbe().version, Constants.PROJECT_VERSION)) {
-            persistentInfo.setValidModel();
+                default:
+                    throw new IllegalStateException();
+            }
         }
 
-        if (persistentProperty.getDependencyType() != dependency.getDependencyType()) {
-            persistentDependencyData.setDependencyType(dependency.getDependencyType());
-            persistentInfo.setDependencyTypeChanged();
-            persistentInfo.setDirty();
-        }
-    }
-
-    private <T> T readJson(File file, Class<T> clazz) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            return gson.fromJson((reader), clazz);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void writeJson(File file, Object dataObject) {
-        try (PrintWriter pw = new PrintWriter(file)) {
-            pw.write(gson.toJson(dataObject));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

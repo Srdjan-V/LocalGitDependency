@@ -54,8 +54,10 @@ class ManagerRunner<T extends Manager> {
     private void invokeMethod(T manager) {
         try {
             method.invoke(manager);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e.getCause());
         }
     }
 

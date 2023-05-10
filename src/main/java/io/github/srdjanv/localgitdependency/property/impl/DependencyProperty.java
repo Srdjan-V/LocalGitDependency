@@ -3,9 +3,7 @@ package io.github.srdjanv.localgitdependency.property.impl;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
-import io.github.srdjanv.localgitdependency.property.IPropertyManager;
-
-import java.util.List;
+import io.github.srdjanv.localgitdependency.util.BuilderUtil;
 
 /**
  * Property's that only a dependency can have
@@ -15,19 +13,21 @@ public class DependencyProperty extends CommonPropertyGetters {
     private final String name;
     private final String target;
     private final GitInfo.TargetType targetType;
-    private final List<String> generatedJarsToAdd;
-    private final List<String> generatedArtifactNames;
-    private final Closure<?> configureClosure;
+    private final String configuration;
+    private final Closure[] configurations;
+    private final Closure[] mappings;
+    private final String[] startupTasks;
 
     public DependencyProperty(Builder builder) {
         url = builder.url;
         name = builder.name;
         target = builder.target;
         targetType = builder.targetType;
-        generatedJarsToAdd = builder.generatedJarsToAdd;
-        generatedArtifactNames = builder.generatedArtifactNames;
-        configureClosure = builder.configureClosure;
-        IPropertyManager.instantiateCommonPropertyFieldsInstance(this, builder);
+        configuration = builder.configuration;
+        configurations = builder.configurations;
+        mappings = builder.mappings;
+        startupTasks = builder.startupTasks;
+        BuilderUtil.instantiateObjectWithBuilder(this, builder, CommonPropertyFields.class);
     }
 
     public String getUrl() {
@@ -46,16 +46,20 @@ public class DependencyProperty extends CommonPropertyGetters {
         return targetType;
     }
 
-    public List<String> getGeneratedJarsToAdd() {
-        return generatedJarsToAdd;
+    public String getConfiguration() {
+        return configuration;
     }
 
-    public List<String> getGeneratedArtifactNames() {
-        return generatedArtifactNames;
+    public Closure[] getConfigurations() {
+        return configurations;
     }
 
-    public Closure<?> getConfigureClosure() {
-        return configureClosure;
+    public Closure[] getMappings() {
+        return mappings;
+    }
+
+    public String[] getStartupTasks() {
+        return startupTasks;
     }
 
     public static class Builder extends CommonPropertyBuilder implements DependencyBuilder {
@@ -63,44 +67,56 @@ public class DependencyProperty extends CommonPropertyGetters {
         private String name;
         private String target;
         private GitInfo.TargetType targetType;
-        private List<String> generatedJarsToAdd;
-        private List<String> generatedArtifactNames;
-        private Closure<?> configureClosure;
+        private String configuration;
+        private Closure[] configurations;
+        private Closure[] mappings;
+        private String[] startupTasks;
 
         public Builder(String url) {
             this.url = url;
         }
 
+        @Override
+        public void configuration(String configuration) {
+            this.configuration = configuration;
+        }
+
+        @Override
+        public void configuration(Closure... configurations) {
+            this.configurations = configurations;
+        }
+
+        @Override
+        public void mapSourceSets(Closure... mappings) {
+            this.mappings = mappings;
+        }
+
+        @Override
         public void name(String name) {
             this.name = name;
         }
 
+        @Override
         public void commit(String commit) {
             targetType = GitInfo.TargetType.COMMIT;
             this.target = commit;
         }
 
+        @Override
         public void branch(String branch) {
             targetType = GitInfo.TargetType.BRANCH;
             this.target = branch;
         }
 
+        @Override
         public void tag(String tag) {
             targetType = GitInfo.TargetType.TAG;
             this.target = tag;
         }
 
-        public void generatedJarsToAdd(List<String> generatedJars) {
-            this.generatedJarsToAdd = generatedJars;
+        @Override
+        public void oneTimeStartupTasks(String... startupTasks) {
+            this.startupTasks = startupTasks;
         }
-
-        public void generatedArtifactNames(List<String> generatedArtifactNames) {
-            this.generatedArtifactNames = generatedArtifactNames;
-        }
-
-        public void configure(@SuppressWarnings("rawtypes") Closure configureClosure) {
-            this.configureClosure = configureClosure;
-        }
-
     }
 }

@@ -8,6 +8,7 @@ import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.BiPredicate;
@@ -72,7 +73,7 @@ class CleanupManager extends ManagerBase implements ICleanupManager {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

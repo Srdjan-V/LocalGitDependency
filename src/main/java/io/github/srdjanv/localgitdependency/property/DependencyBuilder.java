@@ -1,10 +1,31 @@
 package io.github.srdjanv.localgitdependency.property;
 
 import groovy.lang.Closure;
-
-import java.util.List;
+import groovy.lang.DelegatesTo;
 
 public interface DependencyBuilder extends CommonBuilder {
+
+    /**
+     * To what configuration to add all the generated jars
+     * <p>
+     * preferably this should be a runtimeOnly configuration
+     *
+     * @param configuration Configuration name
+     * @see org.gradle.api.artifacts.ConfigurationContainer
+     */
+    void configuration(String configuration);
+
+    /**
+     * @see io.github.srdjanv.localgitdependency.property.ArtifactBuilder
+     */
+    void configuration(@DelegatesTo(value = ArtifactBuilder.class,
+            strategy = Closure.DELEGATE_FIRST) Closure... configurations);
+
+    /**
+     * @see io.github.srdjanv.localgitdependency.property.SourceSetMapperBuilder
+     */
+    void mapSourceSets(@DelegatesTo(value = SourceSetMapperBuilder.class,
+            strategy = Closure.DELEGATE_FIRST) Closure... mappings);
 
     /**
      * Sets the name of the dependency, it will also be used as the directory name
@@ -20,28 +41,9 @@ public interface DependencyBuilder extends CommonBuilder {
     void tag(String tag);
 
     /**
-     * This is used to filter out what jars will get added as dependencies.
-     * This is only used for the Jar Dependency
+     * Some projects might require a one time configuration
      *
-     * @param generatedJars Targeted jars
-     * @see io.github.srdjanv.localgitdependency.depenency.Dependency.Type
+     * @param startupTasks task names
      */
-    void generatedJarsToAdd(List<String> generatedJars);
-
-    /**
-     * If the dependency is generating artifacts with a different name then the project id set the artifacts to be added.
-     * If the supplied string contains ':' the plugin will assume that is a dependency notation(group:name:version).
-     * Each element of the list will be added as a dependency
-     *
-     * @param generatedArtifactNames Targeted artifacts
-     */
-    void generatedArtifactNames(List<String> generatedArtifactNames);
-
-    /**
-     * Custom configuration for the dependency, this closure will be passed to the DependencyHandler
-     *
-     * @param configureClosure the closure to use to configure the dependency
-     * @see org.gradle.api.artifacts.dsl.DependencyHandler
-     */
-    void configure(@SuppressWarnings("rawtypes") Closure configureClosure);
+    void oneTimeStartupTasks(String... startupTasks);
 }

@@ -19,28 +19,28 @@ public class GitInfo {
     private final boolean keepGitUpdated;
     private boolean refreshed;
 
-    public GitInfo(DependencyProperty dependencyDependencyProperty, Dependency dependency) {
+    public GitInfo(DependencyProperty dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
-        this.url = dependencyDependencyProperty.getUrl();
+        this.url = dependencyConfig.getUrl();
 
-        if (dependencyDependencyProperty.getTargetType() == null) {
+        if (dependencyConfig.getTargetType() == null) {
             targetType = TargetType.BRANCH;
             target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + MASTER;
         } else {
-            switch (dependencyDependencyProperty.getTargetType()) {
+            switch (dependencyConfig.getTargetType()) {
                 case COMMIT:
-                    targetType = dependencyDependencyProperty.getTargetType();
-                    target = dependencyDependencyProperty.getTarget();
+                    targetType = TargetType.COMMIT;
+                    target = dependencyConfig.getTarget();
                     break;
 
                 case TAG:
-                    targetType = dependencyDependencyProperty.getTargetType();
-                    target = R_TAGS + dependencyDependencyProperty.getTarget();
+                    targetType = TargetType.TAG;
+                    target = R_TAGS + dependencyConfig.getTarget();
                     break;
 
                 case BRANCH:
                     targetType = TargetType.BRANCH;
-                    target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + dependencyDependencyProperty.getTarget();
+                    target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + dependencyConfig.getTarget();
                     break;
 
                 default:
@@ -48,8 +48,8 @@ public class GitInfo {
             }
         }
 
-        this.dir = Constants.concatFile.apply(dependencyDependencyProperty.getGitDir(), dependency.getName());
-        this.keepGitUpdated = dependencyDependencyProperty.getKeepGitUpdated();
+        this.dir = Constants.concatFile.apply(dependencyConfig.getGitDir(), dependency.getName());
+        this.keepGitUpdated = dependencyConfig.getKeepGitUpdated();
     }
 
     @NotNull

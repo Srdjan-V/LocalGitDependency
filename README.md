@@ -2,6 +2,9 @@ LocalGitDependency
 =====================
 
 Gradle plugin to build external git repositories and add them as dependencies.
+*The main focus of this plugin are java project, other types may or may not work*
+
+*Minimum gradle version for dependency projects 4.10.0*
 
 **Note this plugin is still actively developed, braking changes might get introduced.**
 
@@ -62,7 +65,7 @@ You can also specify how the build dependency will be added to the
 project, [available dependency types](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/depenency/Dependency.java#L137)
 
 The default properties are located in
-the [PropertyManager cass](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/PropertyManager.java)
+the [PropertyManager class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/PropertyManager.java)
 
 ### Limitations  ###
 
@@ -110,33 +113,18 @@ localGitDependency {
 }
 ```
 
+Ideally the generated jars should be added to a runtimeOnly, if you want to depend oon some code of the dependency
+enable ide support
+
 ```
 localGitDependency {
     add("https://example.com/repository.git",{
+        configuration "runtimeOnly"
         name 'DependencyName'
         //only use one, the last one will be used if you specifly multiple 
         commit '1234fg'
         tag 'v1.0.0'
         branch 'dev'
-    })
-}
-```
-
-By default, the plugin will use java's default configuration, `implementation`. If you want you can specify it yourself
-
-```
-localGitDependency {
-    configureGlobal {
-        configuration 'customGlobalConfiguration'
-    }
-    
-    add(`configuration`, "https://example.com/repository.git",{
-        name 'DependencyName'
-        commit "1234fg"
-    })
-    
-    add("https://example.com/repository.git",{
-        configuration 'customConfiguration'
     })
 }
 ```
@@ -172,56 +160,40 @@ localGitDependency {
 }
 ```
 
-While using the jar dependency type you can use `generatedJarsToAdd` to filter what jars are going to be added as
-dependencies
+You are able to fine tune what generated artifacts are going to be used, and how they are going to get configured
 
 ```
 localGitDependency {
     add("https://example.com/repository.git", {
-        generatedJarsToAdd(["1.1.0.jar", "1.1.0-sources.jar"])
+        configuration({
+            configuration "runtimeOnly"
+            include "notation", "someOtherNotation"
+            closure ({
+                transitive false
+            })
+            closure (["someOtherNotation", {
+                transitive true
+            }])
+        }, {
+            configuration "someOtherConfiguration"
+            exclude "notation", "someOtherNotation"
+        })
     })
 }
 ```
 
-`generatedArtifactNames` is the same as `generatedJarsToAdd` but for configuring repositories. See the java doc for more
-information
-
-```
-localGitDependency {
-    add("https://example.com/repository.git", {
-        generatedArtifactNames(["name", "group:name:version"])
-    })
-}
-```
-
-It's possible to add a dependency configuration that will be used by gradle's DependencyHandler
-
-```
-localGitDependency {
-    add("https://example.com/repository.git", {
-        configure {
-            transitive = false
-        }
-    })
-}
-```
-
-You can specify if the dependency should be registered, setting this to false will also disable ide support
+By enabling this the plugin will register the sourceSets to your project
 
 ```
 localGitDependency {
     add('https://example.com/repository.git', {
-        registerDependencyToProject = false
-    })
-}
-```
-
-By enabling this the plugin will register the source sets, configurations, repositories and its dependencies to your project.
-Currently, repositories are not being added automatically and that's why it's disabled by default
-```
-localGitDependency {
-    add('https://example.com/repository.git', {
+        configuration "runtimeOnly"
         enableIdeSupport = true
+        mapSourceSets({
+            map "main", "main", "someOtherSourceSet"
+        }, {
+            map "test", "someOtherSourceSet"
+        })
     })
 }
 ```

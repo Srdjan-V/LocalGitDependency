@@ -11,7 +11,7 @@ import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.MethodAccess;
 import org.gradle.internal.metaobject.MethodMixIn;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "rawtypes"})
 public class LocalGitDependencyExtension extends ManagerBase implements MethodMixIn {
     private MethodAccess methodAccess;
 
@@ -46,7 +46,7 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
 
     public void configureGlobal(
             @DelegatesTo(value = GlobalBuilder.class, strategy = Closure.DELEGATE_FIRST)
-            Closure<GlobalBuilder> configureClosure) {
+            Closure configureClosure) {
         getPropertyManager().globalProperty(configureClosure);
     }
 
@@ -56,7 +56,7 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
 
     public void add(String dependencyURL,
                     @DelegatesTo(value = DependencyBuilder.class, strategy = Closure.DELEGATE_FIRST)
-                    Closure<DependencyBuilder> configureClosure) {
+                    Closure configureClosure) {
         add(null, dependencyURL, configureClosure);
     }
 
@@ -66,7 +66,7 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
 
     public void add(String configurationName, String dependencyURL,
                     @DelegatesTo(value = DependencyBuilder.class, strategy = Closure.DELEGATE_FIRST)
-                    Closure<DependencyBuilder> configureClosure) {
+                    Closure configureClosure) {
         getDependencyManager().registerDependency(configurationName, dependencyURL, configureClosure);
     }
 

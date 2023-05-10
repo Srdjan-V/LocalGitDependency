@@ -10,7 +10,7 @@ interface BaseUndoLocalChangesTask {
     default void clearChanges(IGitManager gitManager, Dependency dependency) {
         GitReport gitReport = gitManager.runRepoCommand(dependency, GitTasks::clearLocalChanges);
 
-        if (gitReport.isHasGitExceptions()) {
+        if (gitReport.hasGitExceptions()) {
             gitReport.getGitExceptions().forEach(exception -> ManagerLogger.error(exception.getMessage()));
         }
     }
