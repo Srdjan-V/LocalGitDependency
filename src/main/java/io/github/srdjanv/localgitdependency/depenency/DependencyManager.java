@@ -10,6 +10,7 @@ import io.github.srdjanv.localgitdependency.property.impl.Artifact;
 import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
 import io.github.srdjanv.localgitdependency.property.impl.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
+import org.gradle.api.UnknownTaskException;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.tasks.SourceSet;
@@ -206,7 +207,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
             return;
         }
 
-        if (dependencies.size() == 0) {
+        if (dependencies.size() == 0 && !dependency.getConfigurations().isEmpty()) {
             ManagerLogger.error("Dependency: {}, no libs where found", dependency.getName());
             return;
         }
@@ -271,7 +272,10 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
             }).get();
 
             for (String task : taskSupplier.apply(sourceSet)) {
-                rootProject.getTasks().getByName(task).setEnabled(false);
+                try {
+                    rootProject.getTasks().getByName(task).setEnabled(false);
+                } catch (UnknownTaskException ignore) {
+                }
             }
         }
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {

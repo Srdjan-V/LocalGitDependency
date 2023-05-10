@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+// TODO: 10/05/2023 Refactor
 class PropertyManager extends ManagerBase implements IPropertyManager {
     private boolean customGlobalProperty;
     private GlobalProperty globalProperty;
@@ -55,10 +56,10 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
             if (customGlobalProperty) {
                 throw new GradleException("You can't change the globalProperty once they are set");
             }
-            GlobalProperty.Builder defaultProperty = new GlobalProperty.Builder();
-            ClosureUtil.delegate(configureClosure, defaultProperty);
-            configureFilePaths(defaultProperty);
-            GlobalProperty newGlobalProperty = new GlobalProperty(defaultProperty);
+            GlobalProperty.Builder builder = new GlobalProperty.Builder();
+            ClosureUtil.delegate(configureClosure, builder);
+            configureFilePaths(builder);
+            GlobalProperty newGlobalProperty = new GlobalProperty(builder);
             customPathsCheck(newGlobalProperty);
             this.globalProperty = mergeGlobalProperty(globalProperty, newGlobalProperty);
             customGlobalProperty = true;
@@ -130,7 +131,6 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
      * Merges 2 properties GlobalProperties, if a field in newGlobalProperty is null the field in defaultGlobalPropertyValues will be used
      */
     private static GlobalProperty mergeGlobalProperty(GlobalProperty defaultGlobalPropertyValues, GlobalProperty newGlobalProperty) {
-        GlobalProperty resolvedProperty = new GlobalProperty();
         Class<?>[] classes = new Class[2];
         classes[0] = CommonPropertyFields.class;
         classes[1] = GlobalProperty.class;
@@ -143,9 +143,7 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
                     Object defaultGlobalPropertyField = field.get(defaultGlobalPropertyValues);
 
                     if (newGlobalPropertyField == null) {
-                        field.set(resolvedProperty, defaultGlobalPropertyField);
-                    } else {
-                        field.set(resolvedProperty, newGlobalPropertyField);
+                        field.set(newGlobalProperty, defaultGlobalPropertyField);
                     }
 
                 } catch (Exception e) {
@@ -154,6 +152,6 @@ class PropertyManager extends ManagerBase implements IPropertyManager {
             }
         }
 
-        return resolvedProperty;
+        return newGlobalProperty;
     }
 }

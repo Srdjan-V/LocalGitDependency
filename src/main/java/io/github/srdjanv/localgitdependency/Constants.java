@@ -17,6 +17,7 @@ public final class Constants {
     public static String PROJECT_VERSION = "@PROJECTVERSION@";
     public final static String EXTENSION_NAME = "LocalGitDependency";
     public final static String LOCAL_GIT_DEPENDENCY_EXTENSION = "localGitDependency";
+    public final static String LOCAL_GIT_DEPENDENCY_MANAGER_INSTANCE_EXTENSION = "LocalGitDependencyManagerInstance";
     public final static String JAVA_IMPLEMENTATION = "implementation";
     public final static String TAB_INDENT = "    ";
     public final static String TAB_INDENTX2 = TAB_INDENT + TAB_INDENT;

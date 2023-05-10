@@ -18,13 +18,7 @@ public class GlobalProperty extends CommonPropertyGetters {
         BuilderUtil.instantiateObjectWithBuilder(this, builder, CommonPropertyFields.class);
     }
 
-    public GlobalProperty() {
-        keepMainInitScriptUpdated = null;
-        generateDefaultGradleTasks = null;
-        automaticCleanup = null;
-    }
-
-    public boolean getKeepMainInitScriptUpdated() {
+    public Boolean getKeepMainInitScriptUpdated() {
         return keepMainInitScriptUpdated;
     }
 

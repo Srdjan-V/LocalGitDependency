@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 class GradleManager extends ManagerBase implements IGradleManager {
@@ -142,56 +143,37 @@ class GradleManager extends ManagerBase implements IGradleManager {
         ManagerLogger.info("Started startupTasksRun for dependency: {}", dependency.getName());
         ManagerLogger.info("Tasks: {}", Arrays.toString(dependency.getGradleInfo().getStartupTasks()));
 
-        DefaultGradleConnector connector = getGradleConnector(dependency);
-        try (ProjectConnection connection = connector.connect()) {
-            BuildLauncher build = connection.newBuild();
-            build.setStandardOutput(System.out);
-            build.setStandardError(System.err);
-            if (dependency.getGradleInfo().getJavaHome() != null) {
-                build.setJavaHome(dependency.getGradleInfo().getJavaHome());
-            }
-            build.forTasks(dependency.getGradleInfo().getStartupTasks());
-            build.run(new ResultHandler<>() {
-                @Override
-                public void onComplete(Void result) {
-                    dependency.getPersistentInfo().setStartupTasksStatus(true);
-                }
-
-                @Override
-                public void onFailure(GradleConnectionException failure) {
-                    dependency.getPersistentInfo().setStartupTasksStatus(false);
-                    throw failure;
-                }
-            });
-        }
+        runGradle(dependency,
+                build -> {
+                    build.forTasks(dependency.getGradleInfo().getStartupTasks());
+                },
+                startupTasksStatusResultHandler
+        );
 
         long spent = System.currentTimeMillis() - start;
         ManagerLogger.info("startupTasksRun finished in {} ms", spent);
     }
 
     private void buildGradleProject(Dependency dependency, String task) {
+        runGradle(dependency,
+                build -> {
+                    build.withArguments("--init-script", dependency.getGradleInfo().getInitScript().getAbsolutePath());
+                    build.forTasks(task);
+                }, buildStatusResultHandler
+        );
+    }
+
+    private void runGradle(Dependency dependency, Consumer<BuildLauncher> buildConfigurator, Function<Dependency, ResultHandler<Void>> function) {
         DefaultGradleConnector connector = getGradleConnector(dependency);
         try (ProjectConnection connection = connector.connect()) {
             BuildLauncher build = connection.newBuild();
+            buildConfigurator.accept(build);
             build.setStandardOutput(System.out);
             build.setStandardError(System.err);
-            build.withArguments("--init-script", dependency.getGradleInfo().getInitScript().getAbsolutePath());
             if (dependency.getGradleInfo().getJavaHome() != null) {
                 build.setJavaHome(dependency.getGradleInfo().getJavaHome());
             }
-            build.forTasks(task);
-            build.run(new ResultHandler<>() {
-                @Override
-                public void onComplete(Void result) {
-                    dependency.getPersistentInfo().setBuildStatus(true);
-                }
-
-                @Override
-                public void onFailure(GradleConnectionException failure) {
-                    dependency.getPersistentInfo().setBuildStatus(false);
-                    throw failure;
-                }
-            });
+            build.run(function.apply(dependency));
         }
     }
 
@@ -365,5 +347,34 @@ class GradleManager extends ManagerBase implements IGradleManager {
         }
     }
 
+    private static final Function<Dependency, ResultHandler<Void>> startupTasksStatusResultHandler = dependency -> {
+        return new ResultHandler<>() {
+            @Override
+            public void onComplete(Void result) {
+                dependency.getPersistentInfo().setStartupTasksStatus(true);
+            }
+
+            @Override
+            public void onFailure(GradleConnectionException failure) {
+                dependency.getPersistentInfo().setStartupTasksStatus(false);
+                throw failure;
+            }
+        };
+    };
+
+    private static final Function<Dependency, ResultHandler<Void>> buildStatusResultHandler = dependency -> {
+        return new ResultHandler<>() {
+            @Override
+            public void onComplete(Void result) {
+                dependency.getPersistentInfo().setBuildStatus(true);
+            }
+
+            @Override
+            public void onFailure(GradleConnectionException failure) {
+                dependency.getPersistentInfo().setBuildStatus(false);
+                throw failure;
+            }
+        };
+    };
 }
 
