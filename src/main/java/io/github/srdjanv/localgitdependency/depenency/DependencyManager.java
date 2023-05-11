@@ -105,26 +105,27 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
             if (dependency.isEnableIdeSupport()) {
                 enableIdeSupport(dependency);
             }
-            switch (dependency.getDependencyType()) {
-                case MavenLocal -> {
-                    addRepositoryMavenLocal = true;
-                    addRepositoryDependency(dependency);
+            if (!dependency.getConfigurations().isEmpty())
+                switch (dependency.getDependencyType()) {
+                    case MavenLocal -> {
+                        addRepositoryMavenLocal = true;
+                        addRepositoryDependency(dependency);
+                    }
+                    case MavenProjectLocal -> {
+                        addRepositoryMavenProjectLocal = true;
+                        addRepositoryDependency(dependency, dependency.getName());
+                    }
+                    case MavenProjectDependencyLocal -> {
+                        addMavenProjectDependencyLocal(dependency);
+                        addRepositoryDependency(dependency, dependency.getName());
+                    }
+                    case JarFlatDir -> {
+                        addJarsAsFlatDirDependencies(dependency);
+                        addRepositoryDependency(dependency);
+                    }
+                    case Jar -> addJarsAsDependencies(dependency);
+                    default -> throw new IllegalStateException();
                 }
-                case MavenProjectLocal -> {
-                    addRepositoryMavenProjectLocal = true;
-                    addRepositoryDependency(dependency, dependency.getName());
-                }
-                case MavenProjectDependencyLocal -> {
-                    addMavenProjectDependencyLocal(dependency);
-                    addRepositoryDependency(dependency, dependency.getName());
-                }
-                case JarFlatDir -> {
-                    addJarsAsFlatDirDependencies(dependency);
-                    addRepositoryDependency(dependency);
-                }
-                case Jar -> addJarsAsDependencies(dependency);
-                default -> throw new IllegalStateException();
-            }
         }
 
         if (addRepositoryMavenLocal) addRepositoryMavenLocal();
@@ -279,12 +280,11 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
             }
         }
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
-            SourceSet depSourceSet = rootSourceSetContainer.getByName(getSourceSetName(dependency, sourceSetData));
+            SourceSet depSourceSet = getSourceSetByName(rootSourceSetContainer, dependency, sourceSetData);
 
             // configure source set classpath
             if (!sourceSetData.getCompileClasspath().isEmpty()) {
-                rootProject.getDependencies().add(depSourceSet.getCompileClasspathConfigurationName(),
-                        rootProject.getLayout().files(sourceSetData.getCompileClasspath()));
+                depSourceSet.setCompileClasspath(rootProject.getLayout().files(sourceSetData.getCompileClasspath()));
             }
 
             // link source sets to each other
@@ -295,7 +295,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
 
                     if (data.isPresent()) {
                         final SourceSetData sourceData = data.get();
-                        final var set = rootSourceSetContainer.getByName(getSourceSetName(dependency, sourceData));
+                        final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
 
                         if (!sourceData.getBuildResourcesDir().equals("")) {
                             set.getOutput().setResourcesDir(sourceData.getBuildResourcesDir());
@@ -336,7 +336,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                             orElseThrow(() -> new IllegalArgumentException(
                                     String.format("Source set %s not for for dependency %s", dependentSourceSetName, dependency.getName())));
 
-                    final var set = rootSourceSetContainer.getByName(getSourceSetName(dependency, sourceData));
+                    final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
                     if (!sourceData.getBuildResourcesDir().equals("")) {
                         set.getOutput().setResourcesDir(sourceData.getBuildResourcesDir());
                     }
@@ -349,6 +349,10 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                 }
             }
         }
+    }
+
+    private SourceSet getSourceSetByName(SourceSetContainer sourceSetContainer, Dependency dependency, SourceSetData sourceSetData) {
+        return sourceSetContainer.getByName(getSourceSetName(dependency, sourceSetData));
     }
 
     private String getSourceSetName(Dependency dependency, SourceSetData sourceSetData) {
