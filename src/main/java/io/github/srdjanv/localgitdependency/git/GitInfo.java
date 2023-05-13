@@ -14,6 +14,8 @@ public class GitInfo {
     private final Dependency dependency;
     private final String url;
     private final String target;
+    private final String targetLocal;
+    private final String targetRemote;
     private final TargetType targetType;
     private final File dir;
     private final boolean keepGitUpdated;
@@ -25,26 +27,28 @@ public class GitInfo {
 
         if (dependencyConfig.getTargetType() == null) {
             targetType = TargetType.BRANCH;
-            target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + MASTER;
+            target = MASTER;
+            targetLocal = R_HEADS + target;
+            targetRemote = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + target;
         } else {
+            target = dependencyConfig.getTarget();
             switch (dependencyConfig.getTargetType()) {
-                case COMMIT:
+                case COMMIT -> {
                     targetType = TargetType.COMMIT;
-                    target = dependencyConfig.getTarget();
-                    break;
-
-                case TAG:
+                    targetLocal = target;
+                    targetRemote = target;
+                }
+                case TAG -> {
                     targetType = TargetType.TAG;
-                    target = R_TAGS + dependencyConfig.getTarget();
-                    break;
-
-                case BRANCH:
+                    targetLocal = R_TAGS + target;
+                    targetRemote = R_TAGS + target;
+                }
+                case BRANCH -> {
                     targetType = TargetType.BRANCH;
-                    target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + dependencyConfig.getTarget();
-                    break;
-
-                default:
-                    throw new IllegalStateException();
+                    targetLocal = R_HEADS + target;
+                    targetRemote = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + target;
+                }
+                default -> throw new IllegalStateException();
             }
         }
 
@@ -67,6 +71,17 @@ public class GitInfo {
         return target;
     }
 
+    @NotNull
+    public String getTargetLocal() {
+        return targetLocal;
+    }
+
+    @NotNull
+    public String getTargetRemote() {
+        return targetRemote;
+    }
+
+    @NotNull
     public TargetType getTargetType() {
         return targetType;
     }

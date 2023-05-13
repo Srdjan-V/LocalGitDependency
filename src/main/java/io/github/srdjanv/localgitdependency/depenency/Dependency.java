@@ -162,6 +162,8 @@ public class Dependency {
         return Objects.hash(name);
     }
 
+
+    // TODO: 12/05/2023 depend on classes
     //Type of the crated dependency
     public enum Type {
         MavenLocal, //default maven local publishing
