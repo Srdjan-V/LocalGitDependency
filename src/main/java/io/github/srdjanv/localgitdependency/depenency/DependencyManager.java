@@ -12,7 +12,6 @@ import io.github.srdjanv.localgitdependency.property.impl.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.UnknownTaskException;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
-import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.util.GradleVersion;
@@ -267,10 +266,16 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         var rootProject = getProject().getRootProject();
         //create source sets of the dependency
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
-            var sourceSet = rootSourceSetContainer.register(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
-                sourceSetConf.java(dependencySet -> dependencySet.srcDir(sourceSetData.getSources()));
-                sourceSetConf.resources(dependencySet -> dependencySet.srcDir(sourceSetData.getResources()));
-            }).get();
+            var sourceSet = rootSourceSetContainer.create(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
+                sourceSetConf.java(conf -> {
+                    conf.setSrcDirs(sourceSetData.getSources());
+                    conf.getDestinationDirectory().set(rootProject.file(sourceSetData.getBuildClassesDir()));
+                });
+                sourceSetConf.resources(conf -> {
+                    conf.setSrcDirs(sourceSetData.getResources());
+                    conf.getDestinationDirectory().set(rootProject.file(sourceSetData.getBuildResourcesDir()));
+                });
+            });
 
             for (String task : taskSupplier.apply(sourceSet)) {
                 try {
@@ -297,15 +302,8 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                         final SourceSetData sourceData = data.get();
                         final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
 
-                        if (!sourceData.getBuildResourcesDir().equals("")) {
-                            set.getOutput().setResourcesDir(sourceData.getBuildResourcesDir());
-                        }
-                        if (set.getOutput().getClassesDirs() instanceof ConfigurableFileCollection configurableFileCollection) {
-                            configurableFileCollection.setFrom(sourceData.getBuildClassesDir());
-
-                            depSourceSet.setCompileClasspath(depSourceSet.getCompileClasspath().
-                                    plus(set.getOutput()));
-                        }
+                        depSourceSet.setCompileClasspath(depSourceSet.getCompileClasspath().
+                                plus(set.getOutput()));
                     }
                 }
             }
@@ -334,18 +332,11 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                     final var sourceData = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
                             stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst().
                             orElseThrow(() -> new IllegalArgumentException(
-                                    String.format("Source set %s not for for dependency %s", dependentSourceSetName, dependency.getName())));
+                                    String.format("Source set %s not found for dependency %s", dependentSourceSetName, dependency.getName())));
 
                     final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
-                    if (!sourceData.getBuildResourcesDir().equals("")) {
-                        set.getOutput().setResourcesDir(sourceData.getBuildResourcesDir());
-                    }
-                    if (set.getOutput().getClassesDirs() instanceof ConfigurableFileCollection configurableFileCollection) {
-                        configurableFileCollection.setFrom(sourceData.getBuildClassesDir());
-
-                        projectSet.setCompileClasspath(projectSet.getCompileClasspath().
-                                plus(set.getOutput()));
-                    }
+                    projectSet.setCompileClasspath(projectSet.getCompileClasspath().
+                            plus(set.getOutput()));
                 }
             }
         }

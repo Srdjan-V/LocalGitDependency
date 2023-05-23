@@ -203,9 +203,10 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
             sourceSet.getJava().getSourceDirectories().getFiles().
                     stream().map(File::getAbsolutePath).collect(() -> sourcePaths, List::add, List::addAll);
 
-            sourceSet.getJava().getSourceDirectories().getFiles().
+            sourceSet.getResources().getSourceDirectories().getFiles().
                     stream().map(File::getAbsolutePath).collect(() -> resourcePaths, List::add, List::addAll);
 
+            // TODO: 18/05/2023 make it recursive
             topFor:
             for (File file : sourceSet.getCompileClasspath()) {
                 var absolutePath = file.getAbsolutePath();
