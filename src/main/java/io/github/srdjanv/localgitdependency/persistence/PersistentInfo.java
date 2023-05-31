@@ -6,6 +6,7 @@ import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.gradle.internal.impldep.org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,9 +22,15 @@ public final class PersistentInfo {
     private boolean dependencyTypeChanged;
     private boolean dirty;
 
-    public PersistentInfo(DependencyConfig dependencyConfig, Dependency dependency) {
+    public PersistentInfo(DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
-        this.persistentFile = Constants.persistentJsonFile.apply(dependencyConfig.getPersistentDir(), dependency.getName());
+        if (dependencyConfig.getPersistentDir() == null || dependency.getName() == null) {
+            if (dependencyConfig.getPersistentDir() == null) {
+                errorBuilder.append("DependencyConfig: 'persistentDir' is null");
+            }
+            this.persistentFile = null;
+        } else this.persistentFile = Constants.persistentJsonFile.apply(dependencyConfig.getPersistentDir(),
+                dependency.getName());
     }
 
     public boolean hasDependencyTypeChanged() {

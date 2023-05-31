@@ -3,6 +3,7 @@ package io.github.srdjanv.localgitdependency.git;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -21,9 +22,10 @@ public final class GitInfo {
     private final boolean keepGitUpdated;
     private boolean refreshed;
 
-    public GitInfo(DependencyConfig dependencyConfig, Dependency dependency) {
+    public GitInfo(DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
         this.url = dependencyConfig.getUrl();
+        if (url == null) errorBuilder.append("DependencyConfig: 'url' is null");
 
         if (dependencyConfig.getTargetType() == null) {
             targetType = TargetType.BRANCH;
@@ -52,8 +54,18 @@ public final class GitInfo {
             }
         }
 
-        this.dir = Constants.concatFile.apply(dependencyConfig.getGitDir(), dependency.getName());
-        this.keepGitUpdated = dependencyConfig.getKeepGitUpdated();
+        if (dependencyConfig.getGitDir() == null || dependency.getName() == null) {
+            if (dependencyConfig.getGitDir() == null) errorBuilder.append("DependencyConfig: 'gitDir' is null");
+
+            this.dir = null;
+        } else {
+            this.dir = Constants.concatFile.apply(dependencyConfig.getGitDir(), dependency.getName());
+        }
+
+        if (dependencyConfig.getKeepGitUpdated() == null) {
+            errorBuilder.append("DependencyConfig: 'keepGitUpdated' is null");
+            this.keepGitUpdated = false;
+        } else this.keepGitUpdated = dependencyConfig.getKeepGitUpdated();
     }
 
     @NotNull

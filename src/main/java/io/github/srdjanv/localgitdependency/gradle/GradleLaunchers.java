@@ -6,6 +6,7 @@ import io.github.srdjanv.localgitdependency.config.impl.dependency.Launchers.Lau
 import io.github.srdjanv.localgitdependency.config.impl.dependency.Launchers.ProbeConfig;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.Launchers.StartupConfig;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -16,28 +17,43 @@ import java.util.List;
 import static io.github.srdjanv.localgitdependency.config.impl.dependency.Launchers.BaseLauncherConfig;
 
 public final class GradleLaunchers {
-    public static GradleLaunchers build(DependencyConfig dependencyConfig) {
+    public static GradleLaunchers build(DependencyConfig dependencyConfig, ErrorUtil errorBuilder) {
         Launcher.Builder builder = new Launcher.Builder();
-        ClosureUtil.delegateNullSafe(dependencyConfig.getLauncher(), builder);
-        return new GradleLaunchers(new Launcher(builder));
+        if (ClosureUtil.delegateNullSafe(dependencyConfig.getLauncher(), builder)) {
+            return new GradleLaunchers(new Launcher(builder), errorBuilder);
+        }
+        errorBuilder.append("DependencyConfig: 'buildLauncher' is null");
+        return null;
     }
 
     private final Startup startup;
     private final Probe probe;
     private final Build build;
 
-    private GradleLaunchers(Launcher launcher) {
+    private GradleLaunchers(Launcher launcher, ErrorUtil errorBuilder) {
         StartupConfig.Builder startupConfigBuilder = new StartupConfig.Builder();
-        ClosureUtil.delegateNullSafe(launcher.getStartup(), startupConfigBuilder);
-        startup = new Startup(new StartupConfig(startupConfigBuilder));
+        if (ClosureUtil.delegateNullSafe(launcher.getStartup(), startupConfigBuilder)) {
+            startup = new Startup(new StartupConfig(startupConfigBuilder));
+        } else {
+            errorBuilder.append("BuildLauncher: 'startup' is null");
+            startup = null;
+        }
 
         ProbeConfig.Builder probeConfigBuilder = new ProbeConfig.Builder();
-        ClosureUtil.delegateNullSafe(launcher.getProbe(), probeConfigBuilder);
-        probe = new Probe(new ProbeConfig(probeConfigBuilder));
+        if (ClosureUtil.delegateNullSafe(launcher.getProbe(), probeConfigBuilder)) {
+            probe = new Probe(new ProbeConfig(probeConfigBuilder));
+        } else {
+            errorBuilder.append("BuildLauncher: 'probe' is null");
+            probe = null;
+        }
 
         BuildConfig.Builder buildConfigBuilder = new BuildConfig.Builder();
-        ClosureUtil.delegateNullSafe(launcher.getBuild(), buildConfigBuilder);
-        build = new Build(new BuildConfig(buildConfigBuilder));
+        if (ClosureUtil.delegateNullSafe(launcher.getBuild(), buildConfigBuilder)) {
+            build = new Build(new BuildConfig(buildConfigBuilder));
+        } else {
+            errorBuilder.append("BuildLauncher: 'build' is null");
+            build = null;
+        }
     }
 
     public Startup getStartup() {

@@ -4,13 +4,14 @@ import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.ConfigurationConfig;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 
 public class Configuration {
-    public static List<Configuration> build(DependencyConfig dependencyConfig) {
+    public static List<Configuration> build(DependencyConfig dependencyConfig, ErrorUtil errorBuilder) {
         var configurations = new ArrayList<Configuration>();
         if (dependencyConfig.getConfigurations() == null) {
             if (dependencyConfig.getConfiguration() != null) {
@@ -21,8 +22,11 @@ public class Configuration {
         } else {
             for (var configurationClosure : dependencyConfig.getConfigurations()) {
                 var builder = new ConfigurationConfig.Builder();
-                ClosureUtil.delegate(configurationClosure, builder);
-                configurations.add(new Configuration(new ConfigurationConfig(builder)));
+                if (ClosureUtil.delegateNullSafe(configurationClosure, builder)) {
+                    configurations.add(new Configuration(new ConfigurationConfig(builder)));
+                }else {
+                    errorBuilder.append("DependencyConfig: A ConfigurationBuilder is null");
+                }
             }
         }
         return Collections.unmodifiableList(configurations);

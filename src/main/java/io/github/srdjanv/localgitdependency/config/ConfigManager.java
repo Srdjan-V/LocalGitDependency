@@ -62,7 +62,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         if (pluginConfig.isCustom()) {
             throw new GradleException("You can't change the pluginConfig once its set");
         }
-        var pluginConfigBuilder = new  PluginConfig.Builder();
+        var pluginConfigBuilder = new PluginConfig.Builder();
         if (ClosureUtil.delegateNullSafe(configureClosure, pluginConfigBuilder)) {
             pluginConfig = new PluginConfig(pluginConfigBuilder, true);
         }

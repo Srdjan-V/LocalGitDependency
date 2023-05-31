@@ -5,6 +5,7 @@ import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,30 +31,62 @@ public class Dependency {
     private final PersistentInfo persistentInfo;
 
     public Dependency(DependencyConfig dependencyConfig) {
+        ErrorUtil errorBuilder = ErrorUtil.create("Git dependency errors:");
         this.name = dependencyConfig.getName() == null ? getNameFromUrl(dependencyConfig.getUrl()) : dependencyConfig.getName();
-        this.configurations = Configuration.build(dependencyConfig);
-        this.mappers = SourceSetMapper.build(dependencyConfig);
-        this.ideSupport = dependencyConfig.getEnableIdeSupport();
-        this.shouldRegisterRepository = dependencyConfig.getRegisterDependencyRepositoryToProject();
-        this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks();
-        this.dependencyType = dependencyConfig.getDependencyType();
-        switch (dependencyType) {
-            case MavenProjectLocal:
-                this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyConfig.getMavenDir());
-                break;
-
-            case MavenProjectDependencyLocal:
-                this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyConfig.getMavenDir(), name);
-                break;
-
-            default:
-                this.mavenFolder = null;
+        if (this.name == null) {
+            errorBuilder.append("DependencyConfig: 'name' is null");
         }
 
-        this.gitInfo = new GitInfo(dependencyConfig, this);
-        this.gradleInfo = new GradleInfo(dependencyConfig, this);
-        this.persistentInfo = new PersistentInfo(dependencyConfig, this);
-        validate();
+        this.configurations = Configuration.build(dependencyConfig, errorBuilder);
+        this.mappers = SourceSetMapper.build(dependencyConfig, errorBuilder);
+
+        if (dependencyConfig.getEnableIdeSupport() == null) {
+            errorBuilder.append("DependencyConfig: 'enableIdeSupport' is null");
+            this.ideSupport = false;
+        } else this.ideSupport = dependencyConfig.getEnableIdeSupport();
+
+        if (dependencyConfig.getRegisterDependencyRepositoryToProject() == null) {
+            errorBuilder.append("DependencyConfig: 'registerDependencyRepositoryToProject' is null");
+            this.shouldRegisterRepository = false;
+        } else this.shouldRegisterRepository = dependencyConfig.getRegisterDependencyRepositoryToProject();
+
+        if (dependencyConfig.getGenerateGradleTasks() == null) {
+            errorBuilder.append("DependencyConfig: 'GenerateGradleTasks' is null");
+            this.generateGradleTasks = false;
+        } else this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks();
+
+        this.dependencyType = dependencyConfig.getDependencyType();
+        if (dependencyType == null || dependencyConfig.getMavenDir() == null) {
+            if (dependencyType == null) {
+                errorBuilder.append("DependencyConfig: 'dependencyType' is null");
+            } else {
+                errorBuilder.append("DependencyConfig: 'mavenDir' is null");
+            }
+
+            this.mavenFolder = null;
+        } else {
+            switch (dependencyType) {
+                case MavenProjectLocal:
+                    this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyConfig.getMavenDir());
+                    break;
+
+                case MavenProjectDependencyLocal:
+                    this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyConfig.getMavenDir(), name);
+                    break;
+
+                default:
+                    this.mavenFolder = null;
+            }
+        }
+
+
+        this.gitInfo = new GitInfo(dependencyConfig, this, errorBuilder);
+        this.gradleInfo = new GradleInfo(dependencyConfig, this, errorBuilder);
+        this.persistentInfo = new PersistentInfo(dependencyConfig, this, errorBuilder);
+
+        if (errorBuilder.hasErrors()) {
+            throw new GradleException(errorBuilder.getMessage());
+        }
     }
 
     @NotNull
@@ -110,40 +143,11 @@ public class Dependency {
         return persistentInfo;
     }
 
-    // TODO: 18/02/2023 add all of the parameters for validation
-    private void validate() {
-        StringBuilder errors = null;
-
-        if (gitInfo.getUrl() == null) {
-            errors = crateStringBuilder(null);
-            errors.append("Property: 'url' is not specified").append(System.lineSeparator());
-        }
-        if (name == null) {
-            errors = crateStringBuilder(errors);
-            errors.append("Property: 'name' is not specified").append(System.lineSeparator());
-        }
-        if (gitInfo.getDir().exists() && !gitInfo.getDir().isDirectory()) {
-            errors = crateStringBuilder(errors);
-            errors.append("Property: 'dir' is not a directory ").append(gitInfo.getDir()).append(System.lineSeparator());
-        }
-
-        if (errors != null) {
-            throw new GradleException(errors.toString());
-        }
-    }
-
     private static String getNameFromUrl(String url) {
         if (url == null) return null;
         // Splitting last url's part before ".git" suffix
         Matcher matcher = Pattern.compile("([^/]+)\\.git$").matcher(url);
         return matcher.find() ? matcher.group(1) : null;
-    }
-
-    private StringBuilder crateStringBuilder(StringBuilder errors) {
-        if (errors == null) {
-            return new StringBuilder("Git dependency errors:").append(System.lineSeparator());
-        }
-        return errors;
     }
 
     @Override
