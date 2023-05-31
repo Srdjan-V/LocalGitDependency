@@ -1,10 +1,8 @@
-package io.github.srdjanv.localgitdependency.property;
+package io.github.srdjanv.localgitdependency.config.dependency.defaultable;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
-import java.io.File;
-
-public interface CommonBuilder {
+public interface DefaultableBuilder {
 
     /**
      * This will try to keep the gir repo of the dependency updated
@@ -18,66 +16,7 @@ public interface CommonBuilder {
      *
      * @param keepDependencyInitScriptUpdated If it should stay updated
      */
-    void keepDependencyInitScriptUpdated(Boolean keepDependencyInitScriptUpdated);
-
-    /**
-     * This will set the directory in which the dependency will be created, it will not set the folder.
-     * If you set the path to "./libs" the dependency will make a directory based of the dependency name inside the folder
-     *
-     * @param dir directory target
-     */
-    void gitDir(File dir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param dir directory target
-     */
-    void gitDir(String dir);
-
-    /**
-     * Some project need a specific java version to be build, specify the path of the JDK
-     *
-     * @param javaHomeDir Path to the JDK
-     */
-    void javaHomeDir(File javaHomeDir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param javaHomeDir directory target
-     */
-    void javaHomeDir(String javaHomeDir);
-
-    /**
-     * This will set the directory in which the dependency data will be stored, it will not set the folder.
-     * If you set the path to "./folder" the dependency will make a directory based of the dependency name inside the folder
-     *
-     * @param persistentDir directory target
-     */
-    void persistentDir(File persistentDir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param persistentDir directory target
-     */
-    void persistentDir(String persistentDir);
-
-    /**
-     * Some Dependency types will publish the artifact to local maven repo.
-     *
-     * @param mavenDir directory target
-     * @see Dependency.Type
-     */
-    void mavenDir(File mavenDir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param mavenDir directory target
-     */
-    void mavenDir(String mavenDir);
+    void keepInitScriptUpdated(Boolean keepDependencyInitScriptUpdated);
 
     /**
      * How the dependency is going to be added to the project

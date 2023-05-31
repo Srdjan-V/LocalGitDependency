@@ -2,32 +2,29 @@ package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Objects;
 
-public class GradleInfo {
+public final class GradleInfo {
     private final Dependency dependency;
+    private final GradleLaunchers launchers;
     private final File initScript;
-    private final File javaHome;
-    private final boolean keepDependencyInitScriptUpdated;
+    private final boolean keepInitScriptUpdated;
     private final boolean tryGeneratingSourceJar;
     private final boolean tryGeneratingJavaDocJar;
     private final int gradleDaemonMaxIdleTime;
-    private final String[] startupTasks;
 
-    public GradleInfo(DependencyProperty dependencyConfig, Dependency dependency) {
+    public GradleInfo(DependencyConfig dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
-        this.keepDependencyInitScriptUpdated = dependencyConfig.getKeepDependencyInitScriptUpdated();
+        this.launchers = GradleLaunchers.build(dependencyConfig);
+        this.keepInitScriptUpdated = dependencyConfig.getKeepInitScriptUpdated();
         this.initScript = Constants.persistentInitScript.apply(dependencyConfig.getPersistentDir(), dependency.getName());
-        this.javaHome = dependencyConfig.getJavaHomeDir();
         this.tryGeneratingSourceJar = dependencyConfig.getTryGeneratingSourceJar();
         this.tryGeneratingJavaDocJar = dependencyConfig.getTryGeneratingJavaDocJar();
         this.gradleDaemonMaxIdleTime = dependencyConfig.getGradleDaemonMaxIdleTime();
-        this.startupTasks = dependencyConfig.getStartupTasks();
     }
 
     @NotNull
@@ -39,14 +36,8 @@ public class GradleInfo {
     public File getInitScript() {
         return initScript;
     }
-
-    @Nullable
-    public File getJavaHome() {
-        return javaHome;
-    }
-
-    public boolean isKeepDependencyInitScriptUpdated() {
-        return keepDependencyInitScriptUpdated;
+    public boolean isKeepInitScriptUpdated() {
+        return keepInitScriptUpdated;
     }
 
     public boolean isTryGeneratingSourceJar() {
@@ -61,9 +52,9 @@ public class GradleInfo {
         return gradleDaemonMaxIdleTime;
     }
 
-    @Nullable
-    public String[] getStartupTasks() {
-        return startupTasks;
+    @NotNull
+    public GradleLaunchers getLaunchers() {
+        return launchers;
     }
 
     @Override

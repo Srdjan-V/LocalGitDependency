@@ -7,17 +7,17 @@ import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtensi
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
-import io.github.srdjanv.localgitdependency.property.IPropertyManager;
+import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import org.gradle.api.Project;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class ManagersInstances implements Managers {
+final class ManagersInstances implements Managers {
     private final Project project;
     private final IProjectManager projectManager;
-    private final IPropertyManager propertyManager;
+    private final IConfigManager propertyManager;
     private final IDependencyManager dependencyManager;
     private final IGitManager gitManager;
     private final IGradleManager gradleManager;
@@ -33,7 +33,7 @@ class ManagersInstances implements Managers {
         managerList.add((ManagerBase) (projectManager = IProjectManager.createInstance(this)));
         managerList.add(localGitDependencyExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, LocalGitDependencyExtension.class, this));
         managerList.add((ManagerBase) (dependencyManager = IDependencyManager.createInstance(this)));
-        managerList.add((ManagerBase) (propertyManager = IPropertyManager.createInstance(this)));
+        managerList.add((ManagerBase) (propertyManager = IConfigManager.createInstance(this)));
         managerList.add((ManagerBase) (gitManager = IGitManager.createInstance(this)));
         managerList.add((ManagerBase) (gradleManager = IGradleManager.createInstance(this)));
         managerList.add((ManagerBase) (persistenceManager = IPersistenceManager.createInstance(this)));
@@ -56,7 +56,7 @@ class ManagersInstances implements Managers {
     }
 
     @Override
-    public IPropertyManager getPropertyManager() {
+    public IConfigManager getPropertyManager() {
         return propertyManager;
     }
 

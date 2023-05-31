@@ -9,7 +9,7 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationda
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
+import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.tooling.*;
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-class GradleManager extends ManagerBase implements IGradleManager {
+final class GradleManager extends ManagerBase implements IGradleManager {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
 
     GradleManager(Managers managers) {
@@ -57,9 +57,7 @@ class GradleManager extends ManagerBase implements IGradleManager {
         validateMainInitScript();
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (!dependency.getPersistentInfo().isValidModel()) {
-                if (!dependency.getPersistentInfo().getRunStatus()) {
-                    runStartupTasks(dependency);
-                }
+                runStartupTasks(dependency);
                 probeProject(dependency);
             }
 
@@ -80,9 +78,7 @@ class GradleManager extends ManagerBase implements IGradleManager {
 
     @Override
     public void buildDependency(Dependency dependency) {
-        if (!dependency.getPersistentInfo().getRunStatus()) {
-            runStartupTasks(dependency);
-        }
+        runStartupTasks(dependency);
 
         long start = System.currentTimeMillis();
         ManagerLogger.info("Started building dependency: {}", dependency.getName());
@@ -118,7 +114,7 @@ class GradleManager extends ManagerBase implements IGradleManager {
         long start = System.currentTimeMillis();
         ManagerLogger.info("Started probing dependency: {} for information", dependency.getName());
 
-        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentDir();
+        File initScriptFolder = getPropertyManager().getPluginConfig().getPersistentDir();
         File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
 
         DefaultGradleConnector connector = getGradleConnector(dependency);
@@ -134,18 +130,24 @@ class GradleManager extends ManagerBase implements IGradleManager {
     }
 
     public void runStartupTasks(Dependency dependency) {
-        if (dependency.getGradleInfo().getStartupTasks() == null) {
+        if (dependency.getPersistentInfo().getRunStatus()) {
+            if (!dependency.getGradleInfo().getLaunchers().getStartup().isExplicit()) {
+                return;
+            }
+        }
+
+        if (dependency.getGradleInfo().getLaunchers().getStartup().getPreTasks().isEmpty()) {
             dependency.getPersistentInfo().setStartupTasksStatus(true);
             return;
         }
 
         long start = System.currentTimeMillis();
         ManagerLogger.info("Started startupTasksRun for dependency: {}", dependency.getName());
-        ManagerLogger.info("Tasks: {}", Arrays.toString(dependency.getGradleInfo().getStartupTasks()));
+        ManagerLogger.info("Tasks: {}", dependency.getGradleInfo().getLaunchers().getStartup().getPreTasks());
 
         runGradle(dependency,
                 build -> {
-                    build.forTasks(dependency.getGradleInfo().getStartupTasks());
+                    build.forTasks(dependency.getGradleInfo().getLaunchers().getStartup().getPreTasks().toArray(new String[]{}));
                 },
                 startupTasksStatusResultHandler
         );
@@ -170,9 +172,10 @@ class GradleManager extends ManagerBase implements IGradleManager {
             buildConfigurator.accept(build);
             build.setStandardOutput(System.out);
             build.setStandardError(System.err);
-            if (dependency.getGradleInfo().getJavaHome() != null) {
+            // TODO: 23/05/2023  
+/*            if (dependency.getGradleInfo().getJavaHome() != null) { 
                 build.setJavaHome(dependency.getGradleInfo().getJavaHome());
-            }
+            }*/
             build.run(function.apply(dependency));
         }
     }
@@ -265,14 +268,14 @@ class GradleManager extends ManagerBase implements IGradleManager {
     private void validateDependencyInitScript(Dependency dependency) {
         validateScript(
                 dependency.getGradleInfo().getInitScript(),
-                dependency.getGradleInfo().isKeepDependencyInitScriptUpdated(),
+                dependency.getGradleInfo().isKeepInitScriptUpdated(),
                 () -> createDependencyInitScript(dependency),
                 dependency.getPersistentInfo()::getInitFileSHA1,
                 dependency.getPersistentInfo()::setInitFileSHA1);
     }
 
     private void validateMainInitScript() {
-        GlobalProperty globalProperty = getPropertyManager().getGlobalProperty();
+        PluginConfig globalProperty = getPropertyManager().getPluginConfig();
         File mainInit = Constants.concatFile.apply(globalProperty.getPersistentDir(), Constants.MAIN_INIT_SCRIPT_GRADLE);
         validateScript(
                 mainInit,

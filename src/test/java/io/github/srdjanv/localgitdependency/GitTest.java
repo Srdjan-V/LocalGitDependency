@@ -13,7 +13,7 @@ public class GitTest {
         DependencyWrapper dependencyWrapper = DependencyRegistry.getTestDependencies().stream().findFirst().get();
 
         dependencyWrapper.setTestName("GitTest");
-        dependencyWrapper.setGlobalClosure(clause -> {
+        dependencyWrapper.setPluginClosure(clause -> {
             clause.automaticCleanup(false);
         });
         dependencyWrapper.setDependencyClosure(builder -> {

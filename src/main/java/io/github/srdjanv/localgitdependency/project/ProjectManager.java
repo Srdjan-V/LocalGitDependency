@@ -7,13 +7,13 @@ import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
-import io.github.srdjanv.localgitdependency.property.IPropertyManager;
+import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class ProjectManager extends ManagerBase implements IProjectManager {
+final class ProjectManager extends ManagerBase implements IProjectManager {
     private static final List<ManagerRunner<?>> PROJECT_RUNNERS;
 
     public static final ManagerRunner<IPersistenceManager> savePersistentDataTask =
@@ -24,7 +24,7 @@ class ProjectManager extends ManagerBase implements IProjectManager {
 
     static {
         PROJECT_RUNNERS = new ArrayList<>();
-        PROJECT_RUNNERS.add(ManagerRunner.<IPropertyManager>create(managerRunner -> {
+        PROJECT_RUNNERS.add(ManagerRunner.<IConfigManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getPropertyManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("createEssentialDirectories"));
         }));

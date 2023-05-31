@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-class GitManager extends ManagerBase implements IGitManager {
+final class GitManager extends ManagerBase implements IGitManager {
     GitManager(Managers managers) {
         super(managers);
     }

@@ -1,27 +1,31 @@
-package io.github.srdjanv.localgitdependency.property.impl;
+package io.github.srdjanv.localgitdependency.config.impl.dependency;
 
-import io.github.srdjanv.localgitdependency.property.SourceSetMapperBuilder;
+import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapperBuilder;
+import org.jetbrains.annotations.Nullable;
 
-public class SourceSetMapper {
+public final class SourceSetMapperConfig {
     private final String projectSet;
     private final String[] dependencySet;
-    private final boolean recursive;
+    private final Boolean recursive;
 
-    public SourceSetMapper(Builder builder) {
+    public SourceSetMapperConfig(Builder builder) {
         this.projectSet = builder.projectSet;
         this.dependencySet = builder.dependencySet;
-        this.recursive = builder.recursive != null ? builder.recursive : true;
+        this.recursive = builder.recursive;
     }
 
+    @Nullable
     public String getProjectSet() {
         return projectSet;
     }
 
+    @Nullable
     public String[] getDependencySet() {
         return dependencySet;
     }
 
-    public boolean isRecursive() {
+    @Nullable
+    public Boolean isRecursive() {
         return recursive;
     }
 

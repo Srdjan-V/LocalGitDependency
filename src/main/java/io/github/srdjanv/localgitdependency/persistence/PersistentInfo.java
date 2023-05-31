@@ -5,14 +5,14 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import org.gradle.internal.impldep.org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Objects;
 
-public class PersistentInfo {
+public final class PersistentInfo {
     private final Dependency dependency;
     private final File persistentFile;
     private DependencyData dependencyData;
@@ -21,7 +21,7 @@ public class PersistentInfo {
     private boolean dependencyTypeChanged;
     private boolean dirty;
 
-    public PersistentInfo(DependencyProperty dependencyConfig, Dependency dependency) {
+    public PersistentInfo(DependencyConfig dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
         this.persistentFile = Constants.persistentJsonFile.apply(dependencyConfig.getPersistentDir(), dependency.getName());
     }

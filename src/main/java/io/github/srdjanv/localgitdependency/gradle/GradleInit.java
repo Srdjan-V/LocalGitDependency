@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class GradleInit {
+public final class GradleInit {
     public static String createInitProbe() {
         GradleInit gradleInit = new GradleInit();
         gradleInit.appendLine(1, "repositories {");

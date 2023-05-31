@@ -1,16 +1,16 @@
-package io.github.srdjanv.localgitdependency.property.impl;
+package io.github.srdjanv.localgitdependency.config.impl.plugin;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
 import java.io.File;
 
-public abstract class CommonPropertyFields {
-    CommonPropertyFields() {
-    }
+public class PluginConfigFields {
+    Boolean keepMainInitScriptUpdated;
+    Boolean generateGradleTasks;
+    Boolean automaticCleanup;
     Boolean keepGitUpdated;
     Boolean keepDependencyInitScriptUpdated;
     File gitDir;
-    File javaHomeDir;
     File persistentDir;
     File mavenDir;
     Dependency.Type dependencyType;
@@ -18,6 +18,5 @@ public abstract class CommonPropertyFields {
     Boolean tryGeneratingJavaDocJar;
     Boolean enableIdeSupport;
     Boolean registerDependencyRepositoryToProject;
-    Boolean generateGradleTasks;
     Integer gradleDaemonMaxIdleTime;
 }

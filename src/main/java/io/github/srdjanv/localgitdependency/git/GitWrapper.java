@@ -20,7 +20,7 @@ import static org.eclipse.jgit.lib.Constants.*;
 
 // Some code has been taken from
 // https://github.com/alexvasilkov/GradleGitDependenciesPlugin/blob/master/src/main/groovy/com/alexvasilkov/gradle/git/utils/GitUtils.groovy
-class GitWrapper implements AutoCloseable {
+final class GitWrapper implements AutoCloseable {
     private List<Exception> gitExceptions;
     private String shaLocalChanges;
     Git git;

@@ -4,16 +4,13 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
-import io.github.srdjanv.localgitdependency.property.impl.Artifact;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
-import io.github.srdjanv.localgitdependency.property.impl.SourceSetMapper;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -21,10 +18,10 @@ import java.util.regex.Pattern;
 
 public class Dependency {
     private final String name;
-    private final List<Artifact> configurations;
+    private final List<Configuration> configurations;
     private final List<SourceSetMapper> mappers;
-    private final boolean enableIdeSupport;
-    private final boolean registerDependencyRepositoryToProject;
+    private final boolean ideSupport;
+    private final boolean shouldRegisterRepository;
     private final boolean generateGradleTasks;
     private final Type dependencyType;
     private final File mavenFolder;
@@ -32,12 +29,12 @@ public class Dependency {
     private final GradleInfo gradleInfo;
     private final PersistentInfo persistentInfo;
 
-    public Dependency(List<Artifact> configurations, List<SourceSetMapper> mappers, DependencyProperty dependencyConfig) {
+    public Dependency(DependencyConfig dependencyConfig) {
         this.name = dependencyConfig.getName() == null ? getNameFromUrl(dependencyConfig.getUrl()) : dependencyConfig.getName();
-        this.configurations = Collections.unmodifiableList(configurations);
-        this.mappers = Collections.unmodifiableList(mappers);
-        this.enableIdeSupport = dependencyConfig.getEnableIdeSupport();
-        this.registerDependencyRepositoryToProject = dependencyConfig.getRegisterDependencyRepositoryToProject();
+        this.configurations = Configuration.build(dependencyConfig);
+        this.mappers = SourceSetMapper.build(dependencyConfig);
+        this.ideSupport = dependencyConfig.getEnableIdeSupport();
+        this.shouldRegisterRepository = dependencyConfig.getRegisterDependencyRepositoryToProject();
         this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks();
         this.dependencyType = dependencyConfig.getDependencyType();
         switch (dependencyType) {
@@ -66,7 +63,7 @@ public class Dependency {
 
     @NotNull
     @Unmodifiable
-    public List<Artifact> getConfigurations() {
+    public List<Configuration> getConfigurations() {
         return configurations;
     }
 
@@ -76,12 +73,12 @@ public class Dependency {
         return mappers;
     }
 
-    public boolean isEnableIdeSupport() {
-        return enableIdeSupport;
+    public boolean isIdeSupport() {
+        return ideSupport;
     }
 
-    public boolean isRegisterDependencyRepositoryToProject() {
-        return registerDependencyRepositoryToProject;
+    public boolean shouldRegisterRepository() {
+        return shouldRegisterRepository;
     }
 
     public boolean isGenerateGradleTasks() {

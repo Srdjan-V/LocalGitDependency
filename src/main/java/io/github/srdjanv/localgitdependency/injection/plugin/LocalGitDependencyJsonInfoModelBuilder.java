@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuilder {
+public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuilder {
     private static final String MODEL_NAME = LocalGitDependencyJsonInfoModel.class.getName();
     private Project project;
     private ProjectProbeData.Builder builder;

@@ -36,7 +36,7 @@ class TasksManager extends ManagerBase implements ITasksManager {
             taskCreator = this::createTask;
         }
 
-        if (getPropertyManager().getGlobalProperty().getGenerateDefaultGradleTasks()) {
+        if (Boolean.TRUE.equals(getPropertyManager().getPluginConfig().getGenerateGradleTasks())) {
             taskCreator.create(Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class, getProjectManagers());
             taskCreator.create(Constants.PROBE_ALL_DEPENDENCIES, ProbeAllDependenciesTask.class, getProjectManagers());
             taskCreator.create(Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class, getProjectManagers());

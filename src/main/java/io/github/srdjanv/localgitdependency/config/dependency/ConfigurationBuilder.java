@@ -1,8 +1,8 @@
-package io.github.srdjanv.localgitdependency.property;
+package io.github.srdjanv.localgitdependency.config.dependency;
 
 import groovy.lang.Closure;
 
-public interface ArtifactBuilder {
+public interface ConfigurationBuilder {
     /**
      * The target configuration for artifacts
      * <p>

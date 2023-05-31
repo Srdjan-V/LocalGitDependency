@@ -5,7 +5,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.jetbrains.annotations.NotNull;
 
-public class LocalGitDependencyPlugin implements Plugin<Project> {
+public final class LocalGitDependencyPlugin implements Plugin<Project> {
     @Override
     public void apply(@NotNull Project project) {
         project.getPluginManager().apply("java");

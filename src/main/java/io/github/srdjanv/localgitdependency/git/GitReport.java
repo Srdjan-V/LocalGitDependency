@@ -2,7 +2,7 @@ package io.github.srdjanv.localgitdependency.git;
 
 import java.util.List;
 
-public class GitReport {
+public final class GitReport {
     private final List<Exception> gitExceptions;
     private final boolean hasGitExceptions;
 

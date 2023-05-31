@@ -2,10 +2,14 @@ package io.github.srdjanv.localgitdependency.dependency;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.ProjectInstance;
+import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableBuilder;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
-import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
-import io.github.srdjanv.localgitdependency.property.GlobalBuilder;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyBuilder;
+import io.github.srdjanv.localgitdependency.config.plugin.PluginBuilder;
+import io.github.srdjanv.localgitdependency.config.dependency.LauncherBuilder;
+import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
+import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.Optional;
@@ -18,7 +22,8 @@ public class DependencyWrapper {
     private String testName;
     private State state;
     private Consumer<DependencyWrapper> test;
-    private Closure<GlobalBuilder> globalClosure;
+    private Closure<PluginBuilder> pluginClosure;
+    private Closure<DefaultableBuilder> defaultableClosure;
     private Closure<DependencyBuilder> dependencyClosure;
     private Dependency dependencyReference;
     private String[] startupTasks;
@@ -53,11 +58,11 @@ public class DependencyWrapper {
         }
     }
 
-    public void setGlobalClosure(Consumer<GlobalBuilder> globalClosure) {
-        this.globalClosure = new Closure<GlobalBuilder>(null) {
-            public GlobalBuilder doCall() {
-                GlobalBuilder builder = (GlobalBuilder) getDelegate();
-                globalClosure.accept(builder);
+    public void setPluginClosure(Consumer<PluginBuilder> pluginClosure) {
+        this.pluginClosure = new Closure<PluginBuilder>(null) {
+            public PluginBuilder doCall() {
+                PluginBuilder builder = (PluginBuilder) getDelegate();
+                pluginClosure.accept(builder);
                 return builder;
             }
         };
@@ -69,7 +74,11 @@ public class DependencyWrapper {
                 DependencyBuilder builder = (DependencyBuilder) getDelegate();
                 dependencyClosure.accept(builder);
                 builder.name(getTestName());
-                builder.oneTimeStartupTasks(startupTasks);
+                builder.buildLauncher(ClosureUtil.configure((LauncherBuilder launcher) -> {
+                    launcher.startup(ClosureUtil.configure((Launchers.Startup startup) -> {
+                        startup.mainTasks(startupTasks);
+                    }));
+                }));
                 return builder;
             }
         };
@@ -87,9 +96,14 @@ public class DependencyWrapper {
         this.test = test;
     }
 
-    private void setGlobalConfiguration() {
-        if (globalClosure != null)
-            projectManager.getLocalGitDependencyExtension().configureGlobal(globalClosure);
+    private void setPluginConfiguration() {
+        if (pluginClosure != null)
+            projectManager.getLocalGitDependencyExtension().configurePlugin(pluginClosure);
+    }
+
+    private void setDefaultableConfiguration() {
+        if (defaultableClosure != null)
+            projectManager.getLocalGitDependencyExtension().configureDefaultable(defaultableClosure);
     }
 
     private void registerDepToExtension() {
@@ -110,7 +124,8 @@ public class DependencyWrapper {
         setState(State.OnlyDependencyRegistered);
         checkDependencyState();
 
-        setGlobalConfiguration();
+        setPluginConfiguration();
+        setDefaultableConfiguration();
         registerDepToExtension();
 
         test.accept(this);
@@ -121,7 +136,8 @@ public class DependencyWrapper {
         setState(State.Complete);
         checkDependencyState();
 
-        setGlobalConfiguration();
+        setPluginConfiguration();
+        setDefaultableConfiguration();
         registerDepToExtension();
         initPluginTasks();
 
@@ -135,7 +151,11 @@ public class DependencyWrapper {
                 public DependencyBuilder doCall() {
                     DependencyBuilder builder = (DependencyBuilder) getDelegate();
                     builder.name(getTestName());
-                    builder.oneTimeStartupTasks(startupTasks);
+                    builder.buildLauncher(ClosureUtil.configure((LauncherBuilder launcher) -> {
+                        launcher.startup(ClosureUtil.configure((Launchers.Startup startup) -> {
+                            startup.mainTasks(startupTasks);
+                        }));
+                    }));
                     return builder;
                 }
             };

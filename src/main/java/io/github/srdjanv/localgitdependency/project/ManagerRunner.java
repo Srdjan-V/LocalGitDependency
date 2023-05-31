@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-class ManagerRunner<T extends Manager> {
+final class ManagerRunner<T extends Manager> {
     private Function<Managers, T> managerRunner;
     private ReflectionFunction<Class<T>, Method> methodFunction;
     private Method method;

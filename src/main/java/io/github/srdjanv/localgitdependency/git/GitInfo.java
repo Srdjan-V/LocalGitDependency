@@ -2,7 +2,7 @@ package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -10,7 +10,7 @@ import java.util.Objects;
 
 import static org.eclipse.jgit.lib.Constants.*;
 
-public class GitInfo {
+public final class GitInfo {
     private final Dependency dependency;
     private final String url;
     private final String target;
@@ -21,7 +21,7 @@ public class GitInfo {
     private final boolean keepGitUpdated;
     private boolean refreshed;
 
-    public GitInfo(DependencyProperty dependencyConfig, Dependency dependency) {
+    public GitInfo(DependencyConfig dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
         this.url = dependencyConfig.getUrl();
 

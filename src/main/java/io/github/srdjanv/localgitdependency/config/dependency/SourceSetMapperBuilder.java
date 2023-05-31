@@ -1,4 +1,4 @@
-package io.github.srdjanv.localgitdependency.property;
+package io.github.srdjanv.localgitdependency.config.dependency;
 
 public interface SourceSetMapperBuilder {
     /**

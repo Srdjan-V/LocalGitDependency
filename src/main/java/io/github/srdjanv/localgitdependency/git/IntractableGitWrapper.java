@@ -8,7 +8,7 @@ import org.eclipse.jgit.transport.TagOpt;
 import java.io.IOException;
 import java.util.Optional;
 
-class IntractableGitWrapper implements GitTasks, AutoCloseable {
+final class IntractableGitWrapper implements GitTasks, AutoCloseable {
     private final GitWrapper gitWrapper;
 
     IntractableGitWrapper(GitInfo gitInfo) {

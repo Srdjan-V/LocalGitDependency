@@ -6,15 +6,15 @@ import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.property.impl.Artifact;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
-import io.github.srdjanv.localgitdependency.property.impl.SourceSetMapper;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.UnknownTaskException;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.util.GradleVersion;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
@@ -27,7 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class DependencyManager extends ManagerBase implements IDependencyManager {
+final class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
     private SourceSetContainer rootSourceSetContainer;
     private Function<SourceSet, String[]> taskSupplier;
@@ -56,43 +56,18 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     @Override
-    public void registerDependency(String configurationName, String dependencyURL, @SuppressWarnings("rawtypes") Closure configureClosure) {
-        DependencyProperty dependencyProperty;
+    public void registerDependency(@Nullable String configurationName, @NotNull String dependencyURL, @Nullable @SuppressWarnings("rawtypes") Closure configureClosure) {
+        DependencyConfig dependencyProperty;
         {
-            DependencyProperty.Builder dependencyPropertyBuilder = new DependencyProperty.Builder(dependencyURL);
+            DependencyConfig.Builder dependencyPropertyBuilder = new DependencyConfig.Builder(dependencyURL);
             dependencyPropertyBuilder.configuration(configurationName);
             if (configureClosure != null) {
                 ClosureUtil.delegate(configureClosure, dependencyPropertyBuilder);
             }
-            dependencyProperty = new DependencyProperty(dependencyPropertyBuilder);
-            getPropertyManager().applyDefaultProperty(dependencyProperty);
+            dependencyProperty = new DependencyConfig(dependencyPropertyBuilder, getPropertyManager().getDefaultableConfig());
         }
 
-        var configurations = new ArrayList<Artifact>();
-        if (dependencyProperty.getConfigurations() == null) {
-            if (dependencyProperty.getConfiguration() != null) {
-                var artifactBuilder = new Artifact.Builder();
-                artifactBuilder.configuration(dependencyProperty.getConfiguration());
-                configurations.add(new Artifact(artifactBuilder));
-            }
-        } else {
-            for (var artifactClosure : dependencyProperty.getConfigurations()) {
-                var builder = new Artifact.Builder();
-                ClosureUtil.delegate(artifactClosure, builder);
-                configurations.add(new Artifact(builder));
-            }
-        }
-
-        var mappings = new ArrayList<SourceSetMapper>();
-        if (dependencyProperty.getMappings() != null) {
-            for (var mappingClosure : dependencyProperty.getMappings()) {
-                var builder = new SourceSetMapper.Builder();
-                ClosureUtil.delegate(mappingClosure, builder);
-                mappings.add(new SourceSetMapper(builder));
-            }
-        }
-
-        dependencies.add(new Dependency(configurations, mappings, dependencyProperty));
+        dependencies.add(new Dependency(dependencyProperty));
     }
 
     @Override
@@ -101,17 +76,17 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         boolean addRepositoryMavenLocal = false;
 
         for (Dependency dependency : dependencies) {
-            if (dependency.isEnableIdeSupport()) {
+            if (dependency.isIdeSupport()) {
                 enableIdeSupport(dependency);
             }
             if (!dependency.getConfigurations().isEmpty())
                 switch (dependency.getDependencyType()) {
                     case MavenLocal -> {
-                        addRepositoryMavenLocal = true;
+                        addRepositoryMavenLocal |= dependency.shouldRegisterRepository();
                         addRepositoryDependency(dependency);
                     }
                     case MavenProjectLocal -> {
-                        addRepositoryMavenProjectLocal = true;
+                        addRepositoryMavenProjectLocal |= dependency.shouldRegisterRepository();
                         addRepositoryDependency(dependency, dependency.getName());
                     }
                     case MavenProjectDependencyLocal -> {
@@ -137,7 +112,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     private void addRepositoryMavenProjectLocal() {
-        final File mavenRepo = Constants.MavenProjectLocal.apply(getPropertyManager().getGlobalProperty().getMavenDir());
+        final File mavenRepo = Constants.MavenProjectLocal.apply(getPropertyManager().getPluginConfig().getMavenDir());
         ManagerLogger.info("Adding MavenProjectLocal repository at {}", mavenRepo.getAbsolutePath());
         getProject().getRepositories().maven(mavenArtifactRepository -> {
             mavenArtifactRepository.setName(Constants.RepositoryMavenProjectLocal);
@@ -186,19 +161,19 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         final Map<String, Object[]> dependencies = new HashMap<>();
         try (Stream<Path> jars = Files.list(libs)) {
             List<Path> paths = jars.collect(Collectors.toList());
-            for (var artifact : dependency.getConfigurations()) {
-                if (!artifact.getArtifactProperty().isEmpty()) {
+            for (var configuration : dependency.getConfigurations()) {
+                if (!configuration.getArtifactProperty().isEmpty()) {
                     List<Path> validJars = new ArrayList<>();
                     for (Path path : paths) {
-                        for (Artifact.Property property : artifact.getArtifactProperty()) {
+                        for (Configuration.Property property : configuration.getArtifactProperty()) {
                             if (property.include() && path.getFileName().toString().contains(property.notation())) {
                                 validJars.add(path);
                             }
                         }
                     }
-                    dependencies.put(artifact.getConfiguration(), validJars.toArray());
+                    dependencies.put(configuration.getConfiguration(), validJars.toArray());
                 } else {
-                    dependencies.put(artifact.getConfiguration(), paths.toArray());
+                    dependencies.put(configuration.getConfiguration(), paths.toArray());
                 }
             }
         } catch (IOException exception) {
@@ -220,7 +195,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     private void addRepository(Dependency dependency, String repositoryPath, Consumer<RepositoryHandler> repositoryConfiguration) {
-        if (dependency.isRegisterDependencyRepositoryToProject()) {
+        if (dependency.shouldRegisterRepository()) {
             ManagerLogger.info("Adding {} repository at {} for dependency: {}", dependency.getDependencyType(), repositoryPath, dependency.getName());
             repositoryConfiguration.accept(getProject().getRepositories());
         } else {
@@ -242,7 +217,7 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                 continue;
             }
 
-            for (Artifact.Property property : artifact.getArtifactProperty()) {
+            for (Configuration.Property property : artifact.getArtifactProperty()) {
                 if (!property.include()) {
                     ManagerLogger.info("Dependency: {} Skipping artifact registration {}", dependency.getName(), property.notation());
                     continue;
@@ -293,18 +268,16 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
             }
 
             // link source sets to each other
-            if (!sourceSetData.getDependentSourceSets().isEmpty()) {
-                for (String dependentSourceSetName : sourceSetData.getDependentSourceSets()) {
-                    final Optional<SourceSetData> data = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
-                            stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst();
+            for (String dependentSourceSetName : sourceSetData.getDependentSourceSets()) {
+                final Optional<SourceSetData> data = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
+                        stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst();
 
-                    if (data.isPresent()) {
-                        final SourceSetData sourceData = data.get();
-                        final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
+                if (data.isPresent()) {
+                    final SourceSetData sourceData = data.get();
+                    final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
 
-                        depSourceSet.setCompileClasspath(depSourceSet.getCompileClasspath().
-                                plus(set.getOutput()));
-                    }
+                    depSourceSet.setCompileClasspath(depSourceSet.getCompileClasspath().
+                            plus(set.getOutput()));
                 }
             }
 

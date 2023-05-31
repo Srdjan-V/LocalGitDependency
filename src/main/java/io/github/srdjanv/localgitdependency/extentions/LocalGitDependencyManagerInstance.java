@@ -7,7 +7,7 @@ import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.property.IPropertyManager;
+import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import org.gradle.api.Project;
 
@@ -29,7 +29,7 @@ public class LocalGitDependencyManagerInstance implements Managers {
     }
 
     @Override
-    public IPropertyManager getPropertyManager() {
+    public IConfigManager getPropertyManager() {
         return manager.getPropertyManager();
     }
 

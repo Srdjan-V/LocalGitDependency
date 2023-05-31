@@ -6,15 +6,22 @@ public final class BuilderUtil {
     private BuilderUtil() {
     }
 
-    public static <D> void instantiateObjectWithBuilder(D object, D builder, Class<D> fieldsClazz) {
-        for (Field field : fieldsClazz.getDeclaredFields()) {
-            try {
-                field.setAccessible(true);
-                field.set(object, field.get(builder));
-            } catch (Exception e) {
-                throw new RuntimeException(String.format("Unexpected error while reflecting %s class", fieldsClazz), e);
+    public static <D> void instantiateObjectWithBuilder(D object, D builder, final Class<D> fieldsClazz) {
+        Class<?> currentClazz = fieldsClazz;
+        do {
+            for (Field field : currentClazz.getDeclaredFields()) {
+                try {
+                    field.setAccessible(true);
+                    var builderObj = field.get(builder);
+                    if (builderObj != null) {
+                        field.set(object, builderObj);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(String.format("Unexpected error while reflecting %s class", currentClazz.getSimpleName()), e);
+                }
             }
-        }
+            currentClazz = currentClazz.getSuperclass();
+        } while (currentClazz != Object.class);
     }
 
 }
