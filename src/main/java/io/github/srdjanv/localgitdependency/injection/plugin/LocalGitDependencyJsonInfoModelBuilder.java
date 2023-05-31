@@ -211,10 +211,12 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
             for (File file : sourceSet.getCompileClasspath()) {
                 var absolutePath = file.getAbsolutePath();
 
-                for (SourceSet source : sourceContainer) {
-                    if (absolutePath.contains(source.getName()) && absolutePath.contains("build") && (absolutePath.contains("classes") || absolutePath.contains("resources"))) {
-                        dependentSourceSets.add(source.getName());
-                        continue topFor;
+                for (SourceSet innerSourceSet : sourceContainer) {
+                    for (File classesDir : innerSourceSet.getOutput().getClassesDirs()) {
+                        if (absolutePath.equals(classesDir.getAbsolutePath())) {
+                            dependentSourceSets.add(innerSourceSet.getName());
+                            continue topFor;
+                        }
                     }
                 }
 
