@@ -10,6 +10,7 @@ public class PluginConfigFields {
     Boolean automaticCleanup;
     Boolean keepGitUpdated;
     Boolean keepDependencyInitScriptUpdated;
+    File defaultDir;
     File gitDir;
     File persistentDir;
     File mavenDir;

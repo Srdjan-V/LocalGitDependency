@@ -5,21 +5,23 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import java.io.File;
 
 public interface PluginBuilder {
+    void defaultDir(File dir);
+    void defaultDir(String dir);
 
     /**
      * This will set the directory in which the dependency will be created, it will not set the folder.
      * If you set the path to "./libs" the dependency will make a directory based of the dependency name inside the folder
      *
-     * @param dir directory target
+     * @param gitDir directory target
      */
-    void gitDir(File dir);
+    void gitDir(File gitDir);
 
     /**
      * Same as the above, but takes a string
      *
-     * @param dir directory target
+     * @param gitDir directory target
      */
-    void gitDir(String dir);
+    void gitDir(String gitDir);
 
     /**
      * This will set the directory in which the dependency data will be stored, it will not set the folder.

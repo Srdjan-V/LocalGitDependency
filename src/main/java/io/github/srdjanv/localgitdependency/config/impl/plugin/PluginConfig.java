@@ -3,7 +3,8 @@ package io.github.srdjanv.localgitdependency.config.impl.plugin;
 import io.github.srdjanv.localgitdependency.config.plugin.PluginBuilder;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.util.BuilderUtil;
-import org.jetbrains.annotations.Nullable;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -22,77 +23,84 @@ public final class PluginConfig extends PluginConfigFields {
         return custom;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getKeepMainInitScriptUpdated() {
         return keepMainInitScriptUpdated;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getGenerateGradleTasks() {
         return generateGradleTasks;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getAutomaticCleanup() {
         return automaticCleanup;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getKeepGitUpdated() {
         return keepGitUpdated;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getKeepDependencyInitScriptUpdated() {
         return keepDependencyInitScriptUpdated;
     }
 
-    @Nullable
+    @NotNull
+    public File getDefaultDir() {
+        return defaultDir;
+    }
+
+    @NotNull
     public File getGitDir() {
         return gitDir;
     }
 
-    @Nullable
+    @NotNull
     public File getPersistentDir() {
         return persistentDir;
     }
 
-    @Nullable
+    @NotNull
     public File getMavenDir() {
         return mavenDir;
     }
 
-    @Nullable
+    @NotNull
     public Dependency.Type getDependencyType() {
         return dependencyType;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getTryGeneratingSourceJar() {
         return tryGeneratingSourceJar;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getTryGeneratingJavaDocJar() {
         return tryGeneratingJavaDocJar;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getEnableIdeSupport() {
         return enableIdeSupport;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getRegisterDependencyRepositoryToProject() {
         return registerDependencyRepositoryToProject;
     }
 
-    @Nullable
+    @NotNull
     public Integer getGradleDaemonMaxIdleTime() {
         return gradleDaemonMaxIdleTime;
     }
 
     public static class Builder extends PluginConfigFields implements PluginBuilder {
+        public Builder() {
+        }
 
         @Override
         public void keepInitScriptUpdated(Boolean keepInitScriptUpdated) {
@@ -110,33 +118,44 @@ public final class PluginConfig extends PluginConfigFields {
         }
 
         @Override
+        public void defaultDir(File defaultDir) {
+            this.defaultDir = defaultDir;
+        }
+
+        @Override
+        public void defaultDir(String defaultDir) {
+            if (defaultDir != null)
+                this.defaultDir = new File(defaultDir);
+        }
+
+        @Override
         public void gitDir(File dir) {
-            this.gitDir = dir;
+            this.gitDir = FileUtil.configureFilePath(defaultDir, dir);
         }
 
         @Override
         public void gitDir(String dir) {
-            this.gitDir = new File(dir);
+            this.gitDir = FileUtil.configureFilePath(defaultDir, dir);
         }
 
         @Override
         public void persistentDir(File persistentDir) {
-            this.persistentDir = persistentDir;
+            this.persistentDir = FileUtil.configureFilePath(defaultDir, persistentDir);
         }
 
         @Override
         public void persistentDir(String persistentDir) {
-            this.persistentDir = new File(persistentDir);
+            this.persistentDir = FileUtil.configureFilePath(defaultDir, persistentDir);
         }
 
         @Override
         public void mavenDir(File mavenDir) {
-            this.mavenDir = mavenDir;
+            this.mavenDir = FileUtil.configureFilePath(defaultDir, mavenDir);
         }
 
         @Override
         public void mavenDir(String mavenDir) {
-            this.mavenDir = new File(mavenDir);
+            this.mavenDir = FileUtil.configureFilePath(defaultDir, mavenDir);
         }
 
     }

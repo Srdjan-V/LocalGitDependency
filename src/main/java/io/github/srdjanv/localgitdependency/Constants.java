@@ -5,10 +5,10 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationda
 import org.gradle.api.Project;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import static io.github.srdjanv.localgitdependency.util.FileUtil.checkExistsAndMkdirs;
 
 public final class Constants {
     private Constants() {
@@ -82,20 +82,6 @@ public final class Constants {
         checkExistsAndMkdirs(persistentJsonFile.getParentFile());
         return persistentJsonFile;
     };
-
-    public static void checkExistsAndMkdirs(File file) {
-        if (file.exists()) {
-            if (!file.isDirectory()) {
-                throw new UncheckedIOException(
-                        new IOException(String.format("%s is not a directory, delete the file and refresh gradle", file.getAbsolutePath())));
-            }
-            return;
-        }
-        if (!file.mkdirs()) {
-            throw new UncheckedIOException(
-                    new IOException(String.format("Unable to create directory %s", file.getAbsolutePath())));
-        }
-    }
 
     public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
     public static final BiFunction<File, String, File> concatFile = File::new;

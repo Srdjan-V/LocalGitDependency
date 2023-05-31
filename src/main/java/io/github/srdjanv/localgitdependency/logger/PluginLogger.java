@@ -18,4 +18,7 @@ public class PluginLogger {
         logger.lifecycle(Constants.TAB_INDENT + info, args);
     }
 
+    public static void warn(String warn, Object... args) {
+        logger.lifecycle(warn, args);
+    }
 }

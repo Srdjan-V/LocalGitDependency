@@ -3,10 +3,14 @@ package io.github.srdjanv.localgitdependency.config;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfig;
+import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfigFields;
 import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
+import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfigFields;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.BuilderUtil;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.GradleException;
 
@@ -14,7 +18,11 @@ import java.io.File;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static io.github.srdjanv.localgitdependency.util.FileUtil.checkExistsAndMkdirs;
 
 // TODO: 10/05/2023 Refactor
 final class ConfigManager extends ManagerBase implements IConfigManager {
@@ -30,6 +38,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         {
             PluginConfig.Builder builder = new PluginConfig.Builder();
             File defaultDir = Constants.defaultDir.apply(getProject());
+            builder.defaultDir(defaultDir);
             builder.persistentDir(Constants.defaultPersistentDir.apply(defaultDir));
             builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
             builder.mavenDir(Constants.defaultMavenFolder.apply(defaultDir));
@@ -64,7 +73,14 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         }
         var pluginConfigBuilder = new PluginConfig.Builder();
         if (ClosureUtil.delegateNullSafe(configureClosure, pluginConfigBuilder)) {
-            pluginConfig = new PluginConfig(pluginConfigBuilder, true);
+            var newPluginConfig = new PluginConfig(pluginConfigBuilder, true);
+            customPathsCheck(newPluginConfig);
+            BuilderUtil.instantiateObjectWithBuilder(pluginConfig, newPluginConfig, PluginConfigFields.class);
+            var list = BuilderUtil.validateNotNull(pluginConfig, PluginConfigFields.class);
+            if (list != null) {
+                list.add(0, "Unable to configurePlugin some fields are null:");
+                throw new GradleException(list.stream().collect(Collectors.joining(System.lineSeparator())));
+            }
         }
     }
 
@@ -75,17 +91,14 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         }
         var defaultableConfigBuilder = new DefaultableConfig.Builder();
         if (ClosureUtil.delegateNullSafe(configureClosure, defaultableConfigBuilder)) {
-            defaultableConfig = new DefaultableConfig(defaultableConfigBuilder, true);
+            var newDefaultableConfig = new DefaultableConfig(defaultableConfigBuilder, true);
+            BuilderUtil.instantiateObjectWithBuilder(defaultableConfig, newDefaultableConfig, DefaultableConfigFields.class);
+            var list = BuilderUtil.validateNotNull(defaultableConfig, DefaultableConfigFields.class);
+            if (list != null) {
+                list.add(0, "Unable to configureDefaultable some fields are null:");
+                throw new GradleException(list.stream().collect(Collectors.joining(System.lineSeparator())));
+            }
         }
-
-/*        if (configureClosure != null) {
-            PluginConfig.Builder builder = new PluginConfig.Builder();
-            ClosureUtil.delegate(configureClosure, builder);
-            configureFilePaths(builder);
-            PluginConfig newGlobalProperty = new PluginConfig(builder);
-            customPathsCheck(newGlobalProperty);
-            this.pluginConfig = mergeGlobalProperty(pluginConfig, newGlobalProperty);
-        }*/
     }
 
     @Override
@@ -98,25 +111,63 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         return defaultableConfig;
     }
 
-    private void customPathsCheck(PluginConfig globalProperty) {
-        if (globalProperty.getAutomaticCleanup() != null) {
+    private void customPathsCheck(PluginConfig pluginConfig) {
+        if (pluginConfig.getAutomaticCleanup() == null) {
+            Optional<File> optional = streamEssentialDirectories(pluginConfig).filter(Objects::nonNull).findAny();
+            if (optional.isPresent()) {
+                throw new GradleException("Custom global directory paths detected, automaticCleanup must explicitly be set to true or false");
+            }
             return;
         }
-
-        Optional<File> optional = streamEssentialDirectories(globalProperty).filter(Objects::nonNull).findAny();
-        if (optional.isPresent()) {
-            throw new GradleException("Custom global directory paths detected, automaticCleanup must explicitly be set to true or false");
+        if (pluginConfig.getAutomaticCleanup() == true) {
+            Optional<File> optional = streamEssentialDirectories(pluginConfig).filter(Objects::nonNull).findAny();
+            if (optional.isPresent()) {
+                PluginLogger.warn("Custom global directory paths detected and automatic cleanup is on, this might delete unwanted directory's if configured incorrectly");
+            }
         }
     }
 
     @Override
     public void createEssentialDirectories() {
-        streamEssentialDirectories(pluginConfig).forEach(Constants::checkExistsAndMkdirs);
+        final AtomicBoolean atomicBoolean = new AtomicBoolean();
+        streamEssentialDirectories(pluginConfig).forEach(file -> {
+            if (file.exists()) {
+                atomicBoolean.set(true);
+            }
+        });
+
+        boolean createPersistentDir = false;
+        boolean createGitDir = false;
+        boolean createMavenDir = false;
+
+        if (atomicBoolean.get()) {
+            var deps = getDependencyManager().getDependencies();
+            if (!deps.isEmpty()) {
+                createPersistentDir = true;
+                createGitDir = true;
+            }
+            for (Dependency dependency : deps) {
+                switch (dependency.getDependencyType()) {
+                    case MavenLocal:
+                    case MavenProjectLocal:
+                    case MavenProjectDependencyLocal:
+                        createMavenDir = true;
+                }
+            }
+        }
+
+        if (createPersistentDir) {
+            checkExistsAndMkdirs(pluginConfig.getPersistentDir());
+        }
+        if (createGitDir) {
+            checkExistsAndMkdirs(pluginConfig.getGitDir());
+        }
+        if (createMavenDir) {
+            checkExistsAndMkdirs(pluginConfig.getMavenDir());
+        }
     }
 
-    private static Stream<File> streamEssentialDirectories(PluginConfig property) {
-        return Stream.of(property.getPersistentDir(), property.getGitDir(), property.getMavenDir());
+    private static Stream<File> streamEssentialDirectories(PluginConfig pluginConfig) {
+        return Stream.of(pluginConfig.getPersistentDir(), pluginConfig.getGitDir(), pluginConfig.getMavenDir());
     }
-
-
 }
