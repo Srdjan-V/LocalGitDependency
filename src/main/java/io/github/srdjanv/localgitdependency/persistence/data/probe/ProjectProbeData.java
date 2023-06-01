@@ -4,7 +4,7 @@ import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
-import io.github.srdjanv.localgitdependency.util.BuilderUtil;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import org.gradle.api.JavaVersion;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
     }
 
     private ProjectProbeData(Builder builder) {
-        BuilderUtil.instantiateObjectWithBuilder(this, builder, ProjectProbeDataFields.class);
+        ClassUtil.instantiateObjectWithBuilder(this, builder, ProjectProbeDataFields.class);
     }
 
     public static class Builder extends ProjectProbeDataFields{

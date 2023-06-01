@@ -1,5 +1,8 @@
 package io.github.srdjanv.localgitdependency.config.dependency.defaultable;
 
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import io.github.srdjanv.localgitdependency.config.dependency.LauncherBuilder;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
 public interface DefaultableBuilder {
@@ -74,4 +77,9 @@ public interface DefaultableBuilder {
      */
     void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime);
 
+    /**
+     * @see LauncherBuilder
+     */
+    void buildLauncher(@DelegatesTo(value = LauncherBuilder.class,
+            strategy = Closure.DELEGATE_FIRST) Closure launcher);
 }

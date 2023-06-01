@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
@@ -30,7 +31,7 @@ public class Dependency {
     private final GradleInfo gradleInfo;
     private final PersistentInfo persistentInfo;
 
-    public Dependency(DependencyConfig dependencyConfig) {
+    public Dependency(PluginConfig pluginConfig, DependencyConfig dependencyConfig) {
         ErrorUtil errorBuilder = ErrorUtil.create("Git dependency errors:");
         this.name = dependencyConfig.getName() == null ? getNameFromUrl(dependencyConfig.getUrl()) : dependencyConfig.getName();
         if (this.name == null) {
@@ -60,7 +61,11 @@ public class Dependency {
             if (dependencyType == null) {
                 errorBuilder.append("DependencyConfig: 'dependencyType' is null");
             } else {
-                errorBuilder.append("DependencyConfig: 'mavenDir' is null");
+                switch (dependencyType) {
+                    case MavenProjectLocal:
+                    case MavenProjectDependencyLocal:
+                        errorBuilder.append("DependencyConfig: 'mavenDir' is null");
+                }
             }
 
             this.mavenFolder = null;
@@ -80,9 +85,9 @@ public class Dependency {
         }
 
 
-        this.gitInfo = new GitInfo(dependencyConfig, this, errorBuilder);
-        this.gradleInfo = new GradleInfo(dependencyConfig, this, errorBuilder);
-        this.persistentInfo = new PersistentInfo(dependencyConfig, this, errorBuilder);
+        this.gitInfo = new GitInfo(pluginConfig, dependencyConfig, this, errorBuilder);
+        this.gradleInfo = new GradleInfo(pluginConfig, dependencyConfig, this, errorBuilder);
+        this.persistentInfo = new PersistentInfo(pluginConfig, dependencyConfig, this, errorBuilder);
 
         if (errorBuilder.hasErrors()) {
             throw new GradleException(errorBuilder.getMessage());

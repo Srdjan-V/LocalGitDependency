@@ -6,7 +6,7 @@ import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableC
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfigFields;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
-import io.github.srdjanv.localgitdependency.util.BuilderUtil;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -17,8 +17,8 @@ import java.io.File;
 public final class DependencyConfig extends DependencyConfigFields {
 
     public DependencyConfig(Builder builder, DefaultableConfig defaultableConfig) {
-        BuilderUtil.instantiateObjectWithBuilder(this, defaultableConfig, DefaultableConfigFields.class);
-        BuilderUtil.instantiateObjectWithBuilder(this, builder, DependencyConfigFields.class);
+        ClassUtil.mergeObjects(this, defaultableConfig, DefaultableConfigFields.class);
+        ClassUtil.mergeObjects(this, builder, DependencyConfigFields.class);
     }
 
     @Nullable

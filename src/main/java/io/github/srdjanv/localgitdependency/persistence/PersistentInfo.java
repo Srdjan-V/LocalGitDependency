@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.persistence;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
@@ -22,15 +23,19 @@ public final class PersistentInfo {
     private boolean dependencyTypeChanged;
     private boolean dirty;
 
-    public PersistentInfo(DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
+    public PersistentInfo(PluginConfig pluginConfig, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
-        if (dependencyConfig.getPersistentDir() == null || dependency.getName() == null) {
-            if (dependencyConfig.getPersistentDir() == null) {
-                errorBuilder.append("DependencyConfig: 'persistentDir' is null");
+
+        if (dependency.getName() != null) {
+            File dir;
+            if (dependencyConfig.getPersistentDir() != null) {
+                dir = dependencyConfig.getPersistentDir();
+            } else {
+                dir = pluginConfig.getPersistentDir();
             }
-            this.persistentFile = null;
-        } else this.persistentFile = Constants.persistentJsonFile.apply(dependencyConfig.getPersistentDir(),
-                dependency.getName());
+            this.persistentFile = Constants.persistentJsonFile.apply(dir,
+                    dependency.getName());
+        } else this.persistentFile = null;
     }
 
     public boolean hasDependencyTypeChanged() {

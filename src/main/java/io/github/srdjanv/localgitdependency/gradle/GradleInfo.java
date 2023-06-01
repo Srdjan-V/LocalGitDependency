@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
@@ -18,7 +19,7 @@ public final class GradleInfo {
     private final boolean tryGeneratingJavaDocJar;
     private final int gradleDaemonMaxIdleTime;
 
-    public GradleInfo(DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
+    public GradleInfo(PluginConfig pluginConfig, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
         this.launchers = GradleLaunchers.build(dependencyConfig, errorBuilder);
         if (dependencyConfig.getKeepInitScriptUpdated() == null) {
@@ -26,13 +27,16 @@ public final class GradleInfo {
             this.keepInitScriptUpdated = false;
         } else this.keepInitScriptUpdated = dependencyConfig.getKeepInitScriptUpdated();
 
-        if (dependencyConfig.getPersistentDir() == null || dependency.getName() == null) {
-            if (dependencyConfig.getPersistentDir() == null) {
-                errorBuilder.append("DependencyConfig: 'keepInitScriptUpdated' is null");
+        if (dependency.getName() != null) {
+            File dir;
+            if (dependencyConfig.getPersistentDir() != null) {
+                dir = dependencyConfig.getPersistentDir();
+            } else {
+                dir = pluginConfig.getPersistentDir();
             }
-            this.initScript = null;
-        } else this.initScript = Constants.persistentInitScript.apply(dependencyConfig.getPersistentDir(),
-                dependency.getName());
+            this.initScript = Constants.persistentInitScript.apply(dir,
+                    dependency.getName());
+        } else this.initScript = null;
 
         if (dependencyConfig.getTryGeneratingSourceJar() == null) {
             errorBuilder.append("DependencyConfig: 'tryGeneratingSourceJar' is null");

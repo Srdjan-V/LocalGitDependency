@@ -1,8 +1,9 @@
 package io.github.srdjanv.localgitdependency.config.impl.defaultable;
 
+import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableBuilder;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.util.BuilderUtil;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
 /**
  * Base property's used for dependency and global configuration.
@@ -14,7 +15,7 @@ public final class DefaultableConfig extends DefaultableConfigFields {
 
     public DefaultableConfig(Builder builder, boolean custom) {
         this.custom = custom;
-        BuilderUtil.instantiateObjectWithBuilder(this, builder, DefaultableConfigFields.class);
+        ClassUtil.instantiateObjectWithBuilder(this, builder, DefaultableConfigFields.class);
     }
 
     public boolean isCustom() {
@@ -57,7 +58,9 @@ public final class DefaultableConfig extends DefaultableConfigFields {
         return gradleDaemonMaxIdleTime;
     }
 
-
+    public Closure getLauncher(){
+        return launcher;
+    }
 
     public static class Builder extends DefaultableConfigFields implements DefaultableBuilder {
         @Override
@@ -103,6 +106,11 @@ public final class DefaultableConfig extends DefaultableConfigFields {
         @Override
         public void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime) {
             this.gradleDaemonMaxIdleTime = gradleDaemonMaxIdleTime;
+        }
+
+        @Override
+        public void buildLauncher(Closure launcher) {
+            this.launcher = launcher;
         }
 
     }

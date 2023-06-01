@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
@@ -22,7 +23,7 @@ public final class GitInfo {
     private final boolean keepGitUpdated;
     private boolean refreshed;
 
-    public GitInfo(DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
+    public GitInfo(PluginConfig pluginConfig,DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
         this.url = dependencyConfig.getUrl();
         if (url == null) errorBuilder.append("DependencyConfig: 'url' is null");
@@ -54,13 +55,16 @@ public final class GitInfo {
             }
         }
 
-        if (dependencyConfig.getGitDir() == null || dependency.getName() == null) {
-            if (dependencyConfig.getGitDir() == null) errorBuilder.append("DependencyConfig: 'gitDir' is null");
-
-            this.dir = null;
-        } else {
-            this.dir = Constants.concatFile.apply(dependencyConfig.getGitDir(), dependency.getName());
-        }
+        if (dependency.getName() != null) {
+            File dir;
+            if (dependencyConfig.getGitDir() != null) {
+                dir = dependencyConfig.getGitDir();
+            } else {
+                dir = pluginConfig.getGitDir();
+            }
+            this.dir = Constants.concatFile.apply(dir,
+                    dependency.getName());
+        } else this.dir = null;
 
         if (dependencyConfig.getKeepGitUpdated() == null) {
             errorBuilder.append("DependencyConfig: 'keepGitUpdated' is null");

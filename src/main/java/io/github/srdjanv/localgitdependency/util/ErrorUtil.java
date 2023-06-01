@@ -1,5 +1,7 @@
 package io.github.srdjanv.localgitdependency.util;
 
+import io.github.srdjanv.localgitdependency.Constants;
+
 public final class ErrorUtil {
     private final String message;
     private StringBuilder errors;
@@ -20,7 +22,7 @@ public final class ErrorUtil {
     }
 
     public ErrorUtil append(String s) {
-        getBuilder().append(s).append(System.lineSeparator());
+        getBuilder().append(Constants.TAB_INDENT).append(s).append(System.lineSeparator());
         return this;
     }
 

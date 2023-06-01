@@ -1,5 +1,6 @@
 package io.github.srdjanv.localgitdependency.config.impl.defaultable;
 
+import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
 public abstract class DefaultableConfigFields {
@@ -14,5 +15,6 @@ public abstract class DefaultableConfigFields {
     protected Boolean registerDependencyRepositoryToProject;
     protected Boolean generateGradleTasks;
     protected Integer gradleDaemonMaxIdleTime;
+    protected Closure launcher;
 
 }

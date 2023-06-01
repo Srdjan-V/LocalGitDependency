@@ -32,12 +32,6 @@ public interface DependencyBuilder extends DefaultableBuilder {
             strategy = Closure.DELEGATE_FIRST) Closure... mappings);
 
     /**
-     * @see LauncherBuilder
-     */
-    void buildLauncher(@DelegatesTo(value = LauncherBuilder.class,
-            strategy = Closure.DELEGATE_FIRST) Closure launcher);
-
-    /**
      * Sets the name of the dependency, it will also be used as the directory name
      *
      * @param name Dependency name

@@ -1,8 +1,7 @@
 package io.github.srdjanv.localgitdependency.config.impl.plugin;
 
 import io.github.srdjanv.localgitdependency.config.plugin.PluginBuilder;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.util.BuilderUtil;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +15,7 @@ public final class PluginConfig extends PluginConfigFields {
 
     public PluginConfig(Builder builder, boolean custom) {
         this.custom = custom;
-        BuilderUtil.instantiateObjectWithBuilder(this, builder, PluginConfigFields.class);
+        ClassUtil.instantiateObjectWithBuilder(this, builder, PluginConfigFields.class);
     }
 
     public boolean isCustom() {
@@ -24,8 +23,8 @@ public final class PluginConfig extends PluginConfigFields {
     }
 
     @NotNull
-    public Boolean getKeepMainInitScriptUpdated() {
-        return keepMainInitScriptUpdated;
+    public Boolean getKeepInitScriptUpdated() {
+        return keepInitScriptUpdated;
     }
 
     @NotNull
@@ -36,16 +35,6 @@ public final class PluginConfig extends PluginConfigFields {
     @NotNull
     public Boolean getAutomaticCleanup() {
         return automaticCleanup;
-    }
-
-    @NotNull
-    public Boolean getKeepGitUpdated() {
-        return keepGitUpdated;
-    }
-
-    @NotNull
-    public Boolean getKeepDependencyInitScriptUpdated() {
-        return keepDependencyInitScriptUpdated;
     }
 
     @NotNull
@@ -68,43 +57,13 @@ public final class PluginConfig extends PluginConfigFields {
         return mavenDir;
     }
 
-    @NotNull
-    public Dependency.Type getDependencyType() {
-        return dependencyType;
-    }
-
-    @NotNull
-    public Boolean getTryGeneratingSourceJar() {
-        return tryGeneratingSourceJar;
-    }
-
-    @NotNull
-    public Boolean getTryGeneratingJavaDocJar() {
-        return tryGeneratingJavaDocJar;
-    }
-
-    @NotNull
-    public Boolean getEnableIdeSupport() {
-        return enableIdeSupport;
-    }
-
-    @NotNull
-    public Boolean getRegisterDependencyRepositoryToProject() {
-        return registerDependencyRepositoryToProject;
-    }
-
-    @NotNull
-    public Integer getGradleDaemonMaxIdleTime() {
-        return gradleDaemonMaxIdleTime;
-    }
-
     public static class Builder extends PluginConfigFields implements PluginBuilder {
         public Builder() {
         }
 
         @Override
         public void keepInitScriptUpdated(Boolean keepInitScriptUpdated) {
-            this.keepMainInitScriptUpdated = keepInitScriptUpdated;
+            this.keepInitScriptUpdated = keepInitScriptUpdated;
         }
 
         @Override

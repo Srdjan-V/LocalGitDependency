@@ -38,10 +38,12 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
     }
 
     private void cleanLibsDir(File libsDir) {
+        if (!libsDir.exists()) return;
         iterateDirs(libsDir, (dir, dep) -> dir.equals(dep.getGitInfo().getDir()));
     }
 
     private void cleanMavenDir(File mavenDir) {
+        if (!mavenDir.exists()) return;
         iterateDirs(mavenDir, (dir, dep) -> {
             switch (dep.getDependencyType()) {
                 case MavenProjectDependencyLocal:
@@ -57,6 +59,7 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
     }
 
     private void cleanDataDir(File dataDir) {
+        if (!dataDir.exists()) return;
         iterateDirs(dataDir, (dir, dep) -> dir.equals(new File(dataDir, dep.getName())));
     }
 

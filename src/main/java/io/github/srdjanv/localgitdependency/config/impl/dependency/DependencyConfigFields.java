@@ -17,7 +17,6 @@ public abstract class DependencyConfigFields extends DefaultableConfigFields {
     protected String configuration;
     protected Closure[] configurations;
     protected Closure[] mappings;
-    protected Closure launcher;
     protected File gitDir;
     protected File persistentDir;
     protected File mavenDir;

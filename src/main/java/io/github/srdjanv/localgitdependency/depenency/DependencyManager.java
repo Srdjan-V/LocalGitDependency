@@ -57,17 +57,17 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
 
     @Override
     public void registerDependency(@Nullable String configurationName, @NotNull String dependencyURL, @Nullable @SuppressWarnings("rawtypes") Closure configureClosure) {
-        DependencyConfig dependencyProperty;
+        DependencyConfig dependencyConfig;
         {
             DependencyConfig.Builder dependencyPropertyBuilder = new DependencyConfig.Builder(dependencyURL);
             dependencyPropertyBuilder.configuration(configurationName);
             if (configureClosure != null) {
                 ClosureUtil.delegate(configureClosure, dependencyPropertyBuilder);
             }
-            dependencyProperty = new DependencyConfig(dependencyPropertyBuilder, getPropertyManager().getDefaultableConfig());
+            dependencyConfig = new DependencyConfig(dependencyPropertyBuilder, getPropertyManager().getDefaultableConfig());
         }
 
-        dependencies.add(new Dependency(dependencyProperty));
+        dependencies.add(new Dependency(getPropertyManager().getPluginConfig(), dependencyConfig));
     }
 
     @Override
