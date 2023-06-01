@@ -1,8 +1,10 @@
 package io.github.srdjanv.localgitdependency;
 
+import io.github.srdjanv.localgitdependency.config.dependency.LauncherBuilder;
 import io.github.srdjanv.localgitdependency.dependency.DependencyRegistry;
 import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
@@ -51,7 +53,11 @@ public class PluginDependencyTests {
             dependencyWrapper.setDependencyClosure(builder -> {
                 builder.name(dependencyWrapper.getTestName());
                 builder.dependencyType(dependencyType);
-                builder.gradleDaemonMaxIdleTime(0);
+                builder.buildLauncher(ClosureUtil.ofDelegate(launcherObj-> {
+                    LauncherBuilder launcher = (LauncherBuilder) launcherObj;
+                    launcher.gradleDaemonMaxIdleTime(0);
+                    return launcher;
+                }));
                 builder.configuration(Constants.JAVA_IMPLEMENTATION);
             });
             dependencyWrapper.setTest(test -> {

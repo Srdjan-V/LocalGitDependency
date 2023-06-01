@@ -1,9 +1,9 @@
 package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +23,7 @@ public final class GitInfo {
     private final boolean keepGitUpdated;
     private boolean refreshed;
 
-    public GitInfo(PluginConfig pluginConfig,DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
+    public GitInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
         this.url = dependencyConfig.getUrl();
         if (url == null) errorBuilder.append("DependencyConfig: 'url' is null");
@@ -60,7 +60,7 @@ public final class GitInfo {
             if (dependencyConfig.getGitDir() != null) {
                 dir = dependencyConfig.getGitDir();
             } else {
-                dir = pluginConfig.getGitDir();
+                dir = managers.getPropertyManager().getPluginConfig().getGitDir();
             }
             this.dir = Constants.concatFile.apply(dir,
                     dependency.getName());

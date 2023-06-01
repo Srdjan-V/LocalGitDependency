@@ -9,6 +9,7 @@ import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,11 +27,19 @@ public final class GradleLaunchers {
         return null;
     }
 
+    private final File executable;
+    private final Integer gradleDaemonMaxIdleTime;
     private final Startup startup;
     private final Probe probe;
     private final Build build;
 
     private GradleLaunchers(Launcher launcher, ErrorUtil errorBuilder) {
+        this.executable = launcher.getExecutable();
+        if (launcher.getGradleDaemonMaxIdleTime() == null) {
+            errorBuilder.append("BuildLauncher: 'gradleDaemonMaxIdleTime' is null");
+            this.gradleDaemonMaxIdleTime = 0;
+        } else this.gradleDaemonMaxIdleTime = launcher.getGradleDaemonMaxIdleTime();
+
         StartupConfig.Builder startupConfigBuilder = new StartupConfig.Builder();
         if (ClosureUtil.delegateNullSafe(launcher.getStartup(), startupConfigBuilder)) {
             startup = new Startup(new StartupConfig(startupConfigBuilder));
@@ -56,6 +65,13 @@ public final class GradleLaunchers {
         }
     }
 
+    public File getExecutable() {
+        return executable;
+    }
+    public Integer getGradleDaemonMaxIdleTime() {
+        return gradleDaemonMaxIdleTime;
+    }
+
     public Startup getStartup() {
         return startup;
     }
@@ -68,7 +84,7 @@ public final class GradleLaunchers {
         return build;
     }
 
-    public class Startup extends Base {
+    public static class Startup extends Base {
         private Startup(StartupConfig config) {
             super(config);
         }
@@ -111,6 +127,7 @@ public final class GradleLaunchers {
     }
 
     private static abstract class Base {
+
         private final boolean explicit;
         private final List<String> preTasks;
         private final List<String> mainTasks;

@@ -14,7 +14,6 @@ public abstract class DefaultableConfigFields {
     protected Boolean enableIdeSupport;
     protected Boolean registerDependencyRepositoryToProject;
     protected Boolean generateGradleTasks;
-    protected Integer gradleDaemonMaxIdleTime;
     protected Closure launcher;
 
 }

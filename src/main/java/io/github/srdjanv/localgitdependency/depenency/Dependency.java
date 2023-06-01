@@ -6,6 +6,7 @@ import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +32,7 @@ public class Dependency {
     private final GradleInfo gradleInfo;
     private final PersistentInfo persistentInfo;
 
-    public Dependency(PluginConfig pluginConfig, DependencyConfig dependencyConfig) {
+    public Dependency(Managers managers, DependencyConfig dependencyConfig) {
         ErrorUtil errorBuilder = ErrorUtil.create("Git dependency errors:");
         this.name = dependencyConfig.getName() == null ? getNameFromUrl(dependencyConfig.getUrl()) : dependencyConfig.getName();
         if (this.name == null) {
@@ -85,9 +86,9 @@ public class Dependency {
         }
 
 
-        this.gitInfo = new GitInfo(pluginConfig, dependencyConfig, this, errorBuilder);
-        this.gradleInfo = new GradleInfo(pluginConfig, dependencyConfig, this, errorBuilder);
-        this.persistentInfo = new PersistentInfo(pluginConfig, dependencyConfig, this, errorBuilder);
+        this.gitInfo = new GitInfo(managers, dependencyConfig, this, errorBuilder);
+        this.gradleInfo = new GradleInfo(managers, dependencyConfig, this, errorBuilder);
+        this.persistentInfo = new PersistentInfo(managers, dependencyConfig, this, errorBuilder);
 
         if (errorBuilder.hasErrors()) {
             throw new GradleException(errorBuilder.getMessage());

@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static io.github.srdjanv.localgitdependency.util.ClassUtil.isClassAnnotatedWithNonNullData;
+
 public class DataParser {
     private DataParser() {
     }
@@ -46,7 +48,7 @@ public class DataParser {
             return false;
         }
 
-        if (!isClassImplementingNonNullData(clazz)) {
+        if (!isClassAnnotatedWithNonNullData(clazz)) {
             return true;
         }
 
@@ -69,11 +71,9 @@ public class DataParser {
                     //inner List objects with a generic type that implement NonNullData
                     if (declaredField.getType() == List.class) {
                         Type genericType = declaredField.getGenericType();
-                        if (genericType instanceof ParameterizedType) {
-                            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+                        if (genericType instanceof ParameterizedType parameterizedType) {
                             Type type = parameterizedType.getActualTypeArguments()[0];
-                            if (type instanceof Class) {
-                                Class<?> listClazz = (Class<?>) type;
+                            if (type instanceof Class<?> listClazz) {
                                 List<?> list = (List<?>) declaredField.get(data);
 
                                 for (Object o : list) {
@@ -93,15 +93,6 @@ public class DataParser {
             throw new RuntimeException(e);
         }
         return true;
-    }
-
-    private static boolean isClassImplementingNonNullData(Class<?> clazz) {
-        for (Class<?> clazzInterface : clazz.getInterfaces()) {
-            if (clazzInterface == NonNullData.class) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static List<DataWrapper> complexLoadDataFromFileJson(File file, DataLayout layout) {

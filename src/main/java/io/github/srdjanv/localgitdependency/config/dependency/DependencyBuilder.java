@@ -5,8 +5,6 @@ import groovy.lang.DelegatesTo;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableBuilder;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
-import java.io.File;
-
 public interface DependencyBuilder extends DefaultableBuilder {
 
     /**
@@ -50,14 +48,7 @@ public interface DependencyBuilder extends DefaultableBuilder {
      *
      * @param dir directory target
      */
-    void gitDir(File dir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param dir directory target
-     */
-    void gitDir(String dir);
+    void gitDir(Object dir);
 
     /**
      * This will set the directory in which the dependency data will be stored, it will not set the folder.
@@ -65,14 +56,7 @@ public interface DependencyBuilder extends DefaultableBuilder {
      *
      * @param persistentDir directory target
      */
-    void persistentDir(File persistentDir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param persistentDir directory target
-     */
-    void persistentDir(String persistentDir);
+    void persistentDir(Object persistentDir);
 
     /**
      * Some Dependency types will publish the artifact to local maven repo.
@@ -80,12 +64,5 @@ public interface DependencyBuilder extends DefaultableBuilder {
      * @param mavenDir directory target
      * @see Dependency.Type
      */
-    void mavenDir(File mavenDir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param mavenDir directory target
-     */
-    void mavenDir(String mavenDir);
+    void mavenDir(Object mavenDir);
 }

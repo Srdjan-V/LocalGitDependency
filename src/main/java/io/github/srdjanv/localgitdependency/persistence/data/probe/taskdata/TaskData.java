@@ -1,9 +1,10 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata;
 
-import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
-public class TaskData extends TaskDataFields implements NonNullData {
+@NonNullData
+public class TaskData extends TaskDataFields {
     public TaskData() {
     }
 
@@ -14,6 +15,7 @@ public class TaskData extends TaskDataFields implements NonNullData {
     public static Builder builder() {
         return new Builder();
     }
+
     public static class Builder extends TaskDataFields {
         private Builder() {
         }

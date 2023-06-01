@@ -7,6 +7,7 @@ import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableC
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -116,11 +117,6 @@ public final class DependencyConfig extends DependencyConfigFields {
         return generateGradleTasks;
     }
 
-    @Nullable
-    public Integer getGradleDaemonMaxIdleTime() {
-        return gradleDaemonMaxIdleTime;
-    }
-
     public static class Builder extends DependencyConfigFields implements DependencyBuilder {
         public Builder(String url) {
             this.url = url;
@@ -170,33 +166,18 @@ public final class DependencyConfig extends DependencyConfigFields {
         }
 
         @Override
-        public void gitDir(File dir) {
-            this.gitDir = dir;
+        public void gitDir(Object dir) {
+            this.gitDir = FileUtil.toFile(dir, "gitDir");
         }
 
         @Override
-        public void gitDir(String dir) {
-            this.gitDir = new File(dir);
+        public void persistentDir(Object persistentDir) {
+            this.persistentDir = FileUtil.toFile(persistentDir, "persistentDir");
         }
 
         @Override
-        public void persistentDir(File persistentDir) {
-            this.persistentDir = persistentDir;
-        }
-
-        @Override
-        public void persistentDir(String persistentDir) {
-            this.persistentDir = new File(persistentDir);
-        }
-
-        @Override
-        public void mavenDir(File mavenDir) {
-            this.mavenDir = mavenDir;
-        }
-
-        @Override
-        public void mavenDir(String mavenDir) {
-            this.mavenDir = new File(mavenDir);
+        public void mavenDir(Object mavenDir) {
+            this.mavenDir = FileUtil.toFile(mavenDir, "mavenDir");;
         }
 
         @Override
@@ -237,11 +218,6 @@ public final class DependencyConfig extends DependencyConfigFields {
         @Override
         public void generateGradleTasks(Boolean generateGradleTasks) {
             this.generateGradleTasks = generateGradleTasks;
-        }
-
-        @Override
-        public void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime) {
-            this.gradleDaemonMaxIdleTime = gradleDaemonMaxIdleTime;
         }
     }
 }

@@ -6,22 +6,31 @@ import io.github.srdjanv.localgitdependency.config.dependency.Launchers.Base;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers.Build;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers.Probe;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers.Startup;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
+import io.github.srdjanv.localgitdependency.util.annotations.NullableData;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.File;
 
 public final class Launchers {
     private Launchers() {
     }
 
-    public static class Launcher {
-        private final Closure startup;
-        private final Closure probe;
-        private final Closure build;
-
+    public static class Launcher extends LauncherFields {
         public Launcher(Builder builder) {
-            this.startup = builder.startup;
-            this.probe = builder.probe;
-            this.build = builder.build;
+            ClassUtil.instantiateObjectWithBuilder(this, builder, LauncherFields.class);
+        }
+
+        @Nullable
+        public File getExecutable() {
+            return executable;
+        }
+
+        @Nullable
+        public Integer getGradleDaemonMaxIdleTime() {
+            return gradleDaemonMaxIdleTime;
         }
 
         @Nullable
@@ -39,10 +48,22 @@ public final class Launchers {
             return build;
         }
 
-        public static class Builder implements LauncherBuilder {
-            private Closure startup;
-            private Closure probe;
-            private Closure build;
+        public static class Builder extends LauncherFields implements LauncherBuilder {
+
+            @Override
+            public void setExecutable(Object path) {
+                this.executable = FileUtil.toFile(path, "setExecutable");
+            }
+
+            @Override
+            public void setExecutable(JavaLauncher javaLauncher) {
+                this.executable = javaLauncher.getExecutablePath().getAsFile();
+            }
+
+            @Override
+            public void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime) {
+                this.gradleDaemonMaxIdleTime = gradleDaemonMaxIdleTime;
+            }
 
             @Override
             public void startup(Closure startup) {
@@ -59,6 +80,15 @@ public final class Launchers {
                 this.build = build;
             }
         }
+    }
+
+    public static abstract class LauncherFields {
+        @NullableData
+        protected File executable;
+        protected Integer gradleDaemonMaxIdleTime;
+        protected Closure startup;
+        protected Closure probe;
+        protected Closure build;
     }
 
     public static class StartupConfig extends BaseLauncherConfig {
@@ -88,88 +118,10 @@ public final class Launchers {
         }
     }
 
-    public static class BaseBuilder implements Base {
-        Object executable;
-        JavaLauncher launcher;
-        Boolean explicit;
-        String[] preTasks;
-        String[] mainTasks;
-        String[] postTasks;
-        String[] setTaskTriggers;
-        String[] addTaskTriggers;
-
-/*
-        @Override
-        public void setExecutable(Object path) {
-            executable = path;
-        }
-
-        @Override
-        public void setJavaLauncher(JavaLauncher launcher) {
-            this.launcher = launcher;
-        }
-*/
-
-        @Override
-        public void explicit(Boolean explicit) {
-            this.explicit = explicit;
-        }
-
-        @Override
-        public void preTasks(String... tasks) {
-            preTasks = tasks;
-        }
-
-        @Override
-        public void mainTasks(String... tasks) {
-            preTasks = tasks;
-        }
-
-        @Override
-        public void postTasks(String... tasks) {
-            preTasks = tasks;
-        }
-
-        @Override
-        public void setTaskTriggers(String... files) {
-            setTaskTriggers = files;
-        }
-
-        @Override
-        public void addTaskTriggers(String... files) {
-            addTaskTriggers = files;
-        }
-    }
-
-    public static class BaseLauncherConfig {
-        private final Object executable;
-        private final JavaLauncher launcher;
-        private final Boolean explicit;
-        private final String[] preTasks;
-        private final String[] mainTasks;
-        private final String[] postTasks;
-        private final String[] setTaskTriggers;
-        private final String[] addTaskTriggers;
+    public static class BaseLauncherConfig extends BaseLauncherFields {
 
         BaseLauncherConfig(BaseBuilder builder) {
-            this.executable = builder.executable;
-            this.launcher = builder.launcher;
-            this.explicit = builder.explicit;
-            this.preTasks = builder.preTasks;
-            this.mainTasks = builder.mainTasks;
-            this.postTasks = builder.postTasks;
-            this.setTaskTriggers = builder.setTaskTriggers;
-            this.addTaskTriggers = builder.addTaskTriggers;
-        }
-
-        @Nullable
-        public Object getExecutable() {
-            return executable;
-        }
-
-        @Nullable
-        public JavaLauncher getLauncher() {
-            return launcher;
+            ClassUtil.instantiateObjectWithBuilder(this, builder, BaseLauncherFields.class);
         }
 
         @Nullable
@@ -201,5 +153,46 @@ public final class Launchers {
         public String[] getAddTaskTriggers() {
             return addTaskTriggers;
         }
+    }
+
+    public static class BaseBuilder extends BaseLauncherFields implements Base {
+        @Override
+        public void explicit(Boolean explicit) {
+            this.explicit = explicit;
+        }
+
+        @Override
+        public void preTasks(String... tasks) {
+            preTasks = tasks;
+        }
+
+        @Override
+        public void mainTasks(String... tasks) {
+            preTasks = tasks;
+        }
+
+        @Override
+        public void postTasks(String... tasks) {
+            preTasks = tasks;
+        }
+
+        @Override
+        public void setTaskTriggers(String... files) {
+            setTaskTriggers = files;
+        }
+
+        @Override
+        public void addTaskTriggers(String... files) {
+            addTaskTriggers = files;
+        }
+    }
+
+    public static class BaseLauncherFields {
+        protected Boolean explicit;
+        protected String[] preTasks;
+        protected String[] mainTasks;
+        protected String[] postTasks;
+        protected String[] setTaskTriggers;
+        protected String[] addTaskTriggers;
     }
 }

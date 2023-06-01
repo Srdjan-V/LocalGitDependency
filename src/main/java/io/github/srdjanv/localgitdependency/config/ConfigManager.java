@@ -61,10 +61,10 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         builder.tryGeneratingJavaDocJar(false);
         builder.enableIdeSupport(false);
         builder.registerDependencyRepositoryToProject(true);
-        builder.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
         builder.buildLauncher(ClosureUtil.ofDelegate(launcherObj -> {
             // TODO: 01/06/2023
             var launcher = (LauncherBuilder) launcherObj;
+            launcher.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
             launcher.startup(ClosureUtil.ofDelegate(obj -> obj));
             launcher.probe(ClosureUtil.ofDelegate(obj -> obj));
             launcher.build(ClosureUtil.ofDelegate(obj -> obj));
@@ -85,7 +85,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
             var newPluginConfig = new PluginConfig(pluginConfigBuilder, true);
             customPathsCheck(newPluginConfig);
             ClassUtil.mergeObjects(newPluginConfig, pluginConfig, PluginConfigFields.class);
-            var list = ClassUtil.validateNotNull(newPluginConfig, PluginConfigFields.class);
+            var list = ClassUtil.validateData(newPluginConfig, PluginConfigFields.class);
             if (list != null) {
                 list.add(0, "Unable to configurePlugin some fields are null:");
                 throw new GradleException(list.stream().collect(Collectors.joining(Constants.TAB_INDENT, System.lineSeparator(), "")));
@@ -104,7 +104,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         if (ClosureUtil.delegateNullSafe(configureClosure, defaultableConfigBuilder)) {
             var newDefaultableConfig = new DefaultableConfig(defaultableConfigBuilder, true);
             ClassUtil.mergeObjects(newDefaultableConfig, defaultableConfig, DefaultableConfigFields.class);
-            var list = ClassUtil.validateNotNull(newDefaultableConfig, DefaultableConfigFields.class);
+            var list = ClassUtil.validateData(newDefaultableConfig, DefaultableConfigFields.class);
             if (list != null) {
                 list.add(0, "Unable to configureDefaultable some fields are null:");
                 throw new GradleException(list.stream().collect(Collectors.joining(Constants.TAB_INDENT, System.lineSeparator(), "")));

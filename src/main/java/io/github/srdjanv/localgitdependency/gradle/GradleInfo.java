@@ -1,9 +1,9 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,9 +17,8 @@ public final class GradleInfo {
     private final boolean keepInitScriptUpdated;
     private final boolean tryGeneratingSourceJar;
     private final boolean tryGeneratingJavaDocJar;
-    private final int gradleDaemonMaxIdleTime;
 
-    public GradleInfo(PluginConfig pluginConfig, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
+    public GradleInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
         this.launchers = GradleLaunchers.build(dependencyConfig, errorBuilder);
         if (dependencyConfig.getKeepInitScriptUpdated() == null) {
@@ -32,7 +31,7 @@ public final class GradleInfo {
             if (dependencyConfig.getPersistentDir() != null) {
                 dir = dependencyConfig.getPersistentDir();
             } else {
-                dir = pluginConfig.getPersistentDir();
+                dir = managers.getPropertyManager().getPluginConfig().getPersistentDir();
             }
             this.initScript = Constants.persistentInitScript.apply(dir,
                     dependency.getName());
@@ -47,11 +46,6 @@ public final class GradleInfo {
             errorBuilder.append("DependencyConfig: 'tryGeneratingJavaDocJar' is null");
             this.tryGeneratingJavaDocJar = false;
         } else this.tryGeneratingJavaDocJar = dependencyConfig.getTryGeneratingJavaDocJar();
-
-        if (dependencyConfig.getGradleDaemonMaxIdleTime() == null) {
-            errorBuilder.append("DependencyConfig: 'gradleDaemonMaxIdleTime' is null");
-            this.gradleDaemonMaxIdleTime = 0;
-        } else this.gradleDaemonMaxIdleTime = dependencyConfig.getGradleDaemonMaxIdleTime();
     }
 
     @NotNull
@@ -74,10 +68,6 @@ public final class GradleInfo {
 
     public boolean isTryGeneratingJavaDocJar() {
         return tryGeneratingJavaDocJar;
-    }
-
-    public int getGradleDaemonMaxIdleTime() {
-        return gradleDaemonMaxIdleTime;
     }
 
     @NotNull

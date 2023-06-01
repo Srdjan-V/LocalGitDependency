@@ -4,7 +4,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 
 public final class FileUtil {
     private FileUtil() {
@@ -23,6 +25,19 @@ public final class FileUtil {
         return new File(defaultDir, String.valueOf(dir)).toPath().normalize().toFile();
     }
 
+    public static File toFile(Object path, String methodName) {
+        if (path instanceof File file) {
+            return file;
+        } else if (path instanceof Path file) {
+            return file.toFile();
+        } else if (path instanceof String file) {
+            return new File(file);
+        } else {
+            throw new UncheckedIOException(
+                    new InvalidObjectException(String.format("Invalid data for method: %s, acceptable types are File, Path, String", methodName))
+            );
+        }
+    }
 
     public static void checkExistsAndMkdirs(File file) {
         if (file.exists()) {

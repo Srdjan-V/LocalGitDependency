@@ -69,15 +69,6 @@ public interface DefaultableBuilder {
     void generateGradleTasks(Boolean generateGradleTasks);
 
     /**
-     * For how long should the gradle daemon used for dependency building idle.
-     * Use java's TimeUnit class for easy conversion
-     *
-     * @param gradleDaemonMaxIdleTime the amount of time in seconds
-     * @see java.util.concurrent.TimeUnit
-     */
-    void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime);
-
-    /**
      * @see LauncherBuilder
      */
     void buildLauncher(@DelegatesTo(value = LauncherBuilder.class,

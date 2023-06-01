@@ -1,5 +1,7 @@
 package io.github.srdjanv.localgitdependency.util;
 
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
+import io.github.srdjanv.localgitdependency.util.annotations.NullableData;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
@@ -47,7 +49,7 @@ public final class ClassUtil {
     }
 
     @Nullable
-    public static <D> List<String> validateNotNull(D object, Class<D> clazz) {
+    public static <D> List<String> validateData(D object, Class<D> clazz) {
         List<String> nulls = null;
         Class<?> currentClazz = clazz;
         do {
@@ -56,6 +58,9 @@ public final class ClassUtil {
                     field.setAccessible(true);
                     var obj = field.get(object);
                     if (obj == null) {
+                        if (field.isAnnotationPresent(NullableData.class)) {
+                            continue;
+                        }
                         if (nulls == null) {
                             nulls = new ArrayList<>();
                         }
@@ -70,4 +75,11 @@ public final class ClassUtil {
         return nulls;
     }
 
+    public static boolean isClassAnnotatedWithNonNullData(Class<?> clazz) {
+        return clazz.isAnnotationPresent(NonNullData.class);
+    }
+
+    public static boolean isClassAnnotatedWithNullableData(Class<?> clazz) {
+        return clazz.isAnnotationPresent(NullableData.class);
+    }
 }

@@ -45,7 +45,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
         if (gradleConnector == null) {
             gradleConnector = (DefaultGradleConnector) GradleConnector.newConnector();
             gradleConnector.searchUpwards(false);
-            gradleConnector.daemonMaxIdleTime(dependency.getGradleInfo().getGradleDaemonMaxIdleTime(), TimeUnit.SECONDS);
+            gradleConnector.daemonMaxIdleTime(dependency.getGradleInfo().getLaunchers().getGradleDaemonMaxIdleTime(), TimeUnit.SECONDS);
             gradleConnector.forProjectDirectory(dependency.getGitInfo().getDir());
             gradleConnectorCache.put(dependency.getName(), gradleConnector);
         }

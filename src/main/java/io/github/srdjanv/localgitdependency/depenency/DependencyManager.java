@@ -67,7 +67,7 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
             dependencyConfig = new DependencyConfig(dependencyPropertyBuilder, getPropertyManager().getDefaultableConfig());
         }
 
-        dependencies.add(new Dependency(getPropertyManager().getPluginConfig(), dependencyConfig));
+        dependencies.add(new Dependency(this, dependencyConfig));
     }
 
     @Override

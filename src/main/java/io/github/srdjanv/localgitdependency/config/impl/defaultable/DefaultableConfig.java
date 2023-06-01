@@ -54,10 +54,6 @@ public final class DefaultableConfig extends DefaultableConfigFields {
         return generateGradleTasks;
     }
 
-    public Integer getGradleDaemonMaxIdleTime() {
-        return gradleDaemonMaxIdleTime;
-    }
-
     public Closure getLauncher(){
         return launcher;
     }
@@ -101,11 +97,6 @@ public final class DefaultableConfig extends DefaultableConfigFields {
         @Override
         public void generateGradleTasks(Boolean generateGradleTasks) {
             this.generateGradleTasks = generateGradleTasks;
-        }
-
-        @Override
-        public void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime) {
-            this.gradleDaemonMaxIdleTime = gradleDaemonMaxIdleTime;
         }
 
         @Override
