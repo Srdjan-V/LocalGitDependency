@@ -13,6 +13,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class PersistentInfo {
     private final Dependency dependency;
@@ -86,43 +88,53 @@ public final class PersistentInfo {
         projectProbeData = DataParser.parseJson(jsonData);
     }
 
-    public void setBuildStatus(boolean status) {
-        if (dependencyData.getBuildSuccessful() != null) {
-            if (status != dependencyData.getBuildSuccessful()) {
-                setDirty();
-                dependencyData.setBuildSuccessful(status);
-            }
-        } else {
-            setDirty();
-            dependencyData.setBuildSuccessful(status);
-        }
-    }
-
     public void setStartupTasksStatus(boolean status) {
-        if (dependencyData.getStartupTasksRun() != null) {
-            if (status != dependencyData.getStartupTasksRun()) {
+        setTaskData(dependencyData::getStartupTasksSuccessful,
+                dependencyData::setStartupTasksSuccessful,
+                status);
+    }
+
+    public void setProbeTasksStatus(boolean status) {
+        setTaskData(dependencyData::getProbeTasksSuccessful,
+                dependencyData::setProbeTasksSuccessful,
+                status);
+    }
+
+    public void setBuildStatus(boolean status) {
+        setTaskData(dependencyData::getBuildTasksSuccessful,
+                dependencyData::setBuildTasksSuccessful,
+                status);
+    }
+
+    private void setTaskData(Supplier<Boolean> data, Consumer<Boolean> dataSetter, boolean status) {
+        if (data.get() != null) {
+            if (status != data.get()) {
                 setDirty();
-                dependencyData.setStartupTasksRun(status);
+                dataSetter.accept(status);
             }
         } else {
             setDirty();
-            dependencyData.setStartupTasksRun(status);
+            dataSetter.accept(status);
         }
     }
 
-    public boolean getBuildStatus() {
-        if (dependencyData.getBuildSuccessful() == null) {
-            return false;
-        } else {
-            return dependencyData.getBuildSuccessful();
-        }
+    public boolean isSuccessfulStartup() {
+        return getTaskData(dependencyData::getStartupTasksSuccessful);
     }
 
-    public boolean getRunStatus() {
-        if (dependencyData.getStartupTasksRun() == null) {
+    public boolean isSuccessfulProbe() {
+        return getTaskData(dependencyData::getProbeTasksSuccessful);
+    }
+
+    public boolean isSuccessfulBuild() {
+        return getTaskData(dependencyData::getBuildTasksSuccessful);
+    }
+
+    private boolean getTaskData(Supplier<Boolean> data) {
+        if (data.get() == null) {
             return false;
         } else {
-            return dependencyData.getStartupTasksRun();
+            return data.get();
         }
     }
 

@@ -11,8 +11,11 @@ public interface IGradleManager extends Manager {
     }
     @TaskDescription("setting up gradle files")
     void initGradleAPI();
+
     @TaskDescription("building dependencies")
-    void buildDependencies();
-    void buildDependency(Dependency dependency);
-    void probeProject(Dependency dependency);
+    void startBuildTasks();
+
+    void startStartupTasks(Dependency dependency);
+    void startProbeTasks(Dependency dependency);
+    void startBuildTasks(Dependency dependency);
 }

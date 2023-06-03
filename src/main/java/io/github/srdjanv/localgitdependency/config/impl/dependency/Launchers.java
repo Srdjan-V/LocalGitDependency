@@ -125,6 +125,21 @@ public final class Launchers {
         }
 
         @Nullable
+        public String[] getPreTasksArguments() {
+            return preTasksArguments;
+        }
+
+        @Nullable
+        public String[] getMainTasksArguments() {
+            return mainTasksArguments;
+        }
+
+        @Nullable
+        public String[] getPostTasksArguments() {
+            return postTasksArguments;
+        }
+
+        @Nullable
         public Boolean getExplicit() {
             return explicit;
         }
@@ -153,6 +168,11 @@ public final class Launchers {
         public String[] getAddTaskTriggers() {
             return addTaskTriggers;
         }
+
+        @Nullable
+        public Boolean getForwardOutput() {
+            return forwardOutput;
+        }
     }
 
     public static class BaseBuilder extends BaseLauncherFields implements Base {
@@ -162,13 +182,28 @@ public final class Launchers {
         }
 
         @Override
+        public void preTasksWithArguments(String... args) {
+            preTasksArguments = args;
+        }
+
+        @Override
         public void preTasks(String... tasks) {
             preTasks = tasks;
         }
 
         @Override
+        public void mainTasksWithArguments(String... args) {
+            mainTasksArguments = args;
+        }
+
+        @Override
         public void mainTasks(String... tasks) {
             preTasks = tasks;
+        }
+
+        @Override
+        public void postTasksWithArguments(String... args) {
+            postTasksArguments = args;
         }
 
         @Override
@@ -185,14 +220,23 @@ public final class Launchers {
         public void addTaskTriggers(String... files) {
             addTaskTriggers = files;
         }
+
+        @Override
+        public void forwardOutput(Boolean forwardOutput) {
+            this.forwardOutput = forwardOutput;
+        }
     }
 
-    public static class BaseLauncherFields {
+    public static abstract class BaseLauncherFields {
         protected Boolean explicit;
+        protected String[] preTasksArguments;
         protected String[] preTasks;
+        protected String[] mainTasksArguments;
         protected String[] mainTasks;
+        protected String[] postTasksArguments;
         protected String[] postTasks;
         protected String[] setTaskTriggers;
         protected String[] addTaskTriggers;
+        protected Boolean forwardOutput;
     }
 }

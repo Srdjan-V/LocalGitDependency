@@ -8,8 +8,9 @@ public class DependencyData implements DependencyDataGetter, DependencyDataSette
     private String workingDirSHA1;
     private String initFileSHA1;
     private Dependency.Type dependencyType;
-    private Boolean startupTasksRun;
-    private Boolean buildSuccessful;
+    private Boolean startupTasksSuccessful;
+    private Boolean probeTasksSuccessful;
+    private Boolean buildTasksSuccessful;
 
     @Override
     public String getWorkingDirSHA1() {
@@ -42,22 +43,32 @@ public class DependencyData implements DependencyDataGetter, DependencyDataSette
     }
 
     @Override
-    public Boolean getStartupTasksRun() {
-        return startupTasksRun;
+    public Boolean getStartupTasksSuccessful() {
+        return startupTasksSuccessful;
     }
 
     @Override
-    public void setStartupTasksRun(boolean startupTasksRun) {
-        this.startupTasksRun = startupTasksRun;
+    public void setStartupTasksSuccessful(boolean startupTasksSuccessful) {
+        this.startupTasksSuccessful = startupTasksSuccessful;
     }
 
     @Override
-    public Boolean getBuildSuccessful() {
-        return buildSuccessful;
+    public Boolean getProbeTasksSuccessful() {
+        return probeTasksSuccessful;
     }
 
     @Override
-    public void setBuildSuccessful(boolean buildSuccessful) {
-        this.buildSuccessful = buildSuccessful;
+    public void setProbeTasksSuccessful(boolean probeTasksSuccessful) {
+        this.probeTasksSuccessful = probeTasksSuccessful;
+    }
+
+    @Override
+    public Boolean getBuildTasksSuccessful() {
+        return buildTasksSuccessful;
+    }
+
+    @Override
+    public void setBuildTasksSuccessful(boolean buildTasksSuccessful) {
+        this.buildTasksSuccessful = buildTasksSuccessful;
     }
 }

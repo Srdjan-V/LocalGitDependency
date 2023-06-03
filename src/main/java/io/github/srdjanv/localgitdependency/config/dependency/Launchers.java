@@ -20,10 +20,18 @@ public final class Launchers {
 
         void addTaskTriggers(String... files);
 
+        void preTasksWithArguments(String... args);
+
         void preTasks(String... tasks);
+
+        void mainTasksWithArguments(String... args);
 
         void mainTasks(String... tasks);
 
+        void postTasksWithArguments(String... args);
+
         void postTasks(String... tasks);
+
+        void forwardOutput(Boolean forwardOutput);
     }
 }
