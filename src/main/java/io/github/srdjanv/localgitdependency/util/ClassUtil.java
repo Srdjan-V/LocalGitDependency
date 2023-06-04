@@ -93,6 +93,8 @@ public final class ClassUtil {
                         if (field.isAnnotationPresent(NonNullData.class)) {
                             if (obj == null) {
                                 nulls.add(String.format("Field %s is null", field.getName()));
+                            } else {
+                                validateDataDefaultInternalListOrArr(field, obj, defaultDataNullable, nulls);
                             }
                         }
 
@@ -102,8 +104,9 @@ public final class ClassUtil {
                                 continue;
                             }
                             nulls.add(String.format("Field %s is null", field.getName()));
+                        } else {
+                            validateDataDefaultInternalListOrArr(field, obj, defaultDataNullable, nulls);
                         }
-
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(String.format("Unexpected error while reflecting %s class", currentClazz.getSimpleName()), e);
@@ -111,6 +114,22 @@ public final class ClassUtil {
             }
             currentClazz = currentClazz.getSuperclass();
         } while (currentClazz != Object.class);
+    }
+
+    //this may or may not work, no config is currently using a list or string arr to store data
+    private static void validateDataDefaultInternalListOrArr(Field field, Object data, Boolean defaultDataNullable, List<String> nulls) throws IllegalAccessException {
+        //inner List objects with a generic type that implement NonNullData
+        if (field.getType() == List.class) {
+            List<?> list = (List<?>) field.get(data);
+            for (Object o : list) {
+                validateDataDefaultInternal(o, defaultDataNullable, nulls);
+            }
+        } else if (field.getType() == String[].class) {
+            String[] arr = (String[]) field.get(data);
+            for (Object o : arr) {
+                validateDataDefaultInternal(o, defaultDataNullable, nulls);
+            }
+        }
     }
 
     public static boolean isClassAnnotatedWithNonNullData(Class<?> clazz) {

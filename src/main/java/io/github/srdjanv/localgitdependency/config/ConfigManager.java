@@ -62,22 +62,17 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         builder.tryGeneratingJavaDocJar(false);
         builder.enableIdeSupport(false);
         builder.registerDependencyRepositoryToProject(true);
-        builder.buildLauncher(ClosureUtil.ofDelegate(launcherObj -> {
-            var launcher = (LauncherBuilder) launcherObj;
+        builder.buildLauncher(ClosureUtil.<LauncherBuilder>configure(launcher -> {
             launcher.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
-            launcher.startup(ClosureUtil.ofDelegate(obj -> {
-                ((Launchers.Base) obj).forwardOutput(true);
-                return obj;
+            launcher.startup(ClosureUtil.<Launchers.Base>configure(obj -> {
+                obj.forwardOutput(true);
             }));
-            launcher.probe(ClosureUtil.ofDelegate(obj -> {
-                ((Launchers.Base) obj).forwardOutput(true);
-                return obj;
+            launcher.probe(ClosureUtil.<Launchers.Base>configure(obj -> {
+                obj.forwardOutput(true);
             }));
-            launcher.build(ClosureUtil.ofDelegate(obj -> {
-                ((Launchers.Base) obj).forwardOutput(true);
-                return obj;
+            launcher.build(ClosureUtil.<Launchers.Base>configure(obj -> {
+                obj.forwardOutput(true);
             }));
-            return launcherObj;
         }));
 
         defaultableConfig = new DefaultableConfig(builder);

@@ -16,7 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public final class Launchers {
     private Launchers() {
@@ -32,31 +31,30 @@ public final class Launchers {
             ClassUtil.instantiateObjectWithBuilder(this, builder, LauncherFields.class);
 
             startupConfig = buildLauncher(
-                    StartupConfig.Builder::new,
-                    () -> builder.startup,
+                    new StartupConfig.Builder(),
+                    builder.startup,
                     StartupConfig::new
             );
             probeConfig = buildLauncher(
-                    ProbeConfig.Builder::new,
-                    () -> builder.probe,
+                    new ProbeConfig.Builder(),
+                    builder.probe,
                     ProbeConfig::new
             );
             buildConfig = buildLauncher(
-                    BuildConfig.Builder::new,
-                    () -> builder.build,
+                    new BuildConfig.Builder(),
+                    builder.build,
                     BuildConfig::new
             );
         }
 
         private static <B extends BaseBuilder, C extends BaseLauncherConfig> C buildLauncher(
-                Supplier<B> builder,
-                Supplier<Closure> closureSupplier,
+                @NotNull B configBuilder,
+                @Nullable Closure closure,
                 Function<B, C> configFunction
         ) {
-            var configBuilder = builder.get();
-            if (ClosureUtil.delegateNullSafe(closureSupplier.get(), configBuilder)) {
+            if (ClosureUtil.delegateNullSafe(closure, configBuilder)) {
                 return configFunction.apply(configBuilder);
-            } else throw new IllegalStateException();
+            } else throw new NullPointerException("BuildLauncher: a launcher is null");
         }
 
         public Launcher(Builder builder, Launcher defaultable) {
@@ -64,47 +62,45 @@ public final class Launchers {
             ClassUtil.mergeObjectsDefaultNewObject(this, builder, LauncherFields.class);
 
             startupConfig = defaultableBuildLauncher(
-                    StartupConfig.Builder::new,
-                    () -> builder.startup,
+                    new StartupConfig.Builder(),
+                    builder.startup,
                     StartupConfig::new,
-                    defaultable::getStartup,
+                    defaultable.getStartup(),
                     StartupConfig.class);
 
             probeConfig = defaultableBuildLauncher(
-                    ProbeConfig.Builder::new,
-                    () -> builder.probe,
+                    new ProbeConfig.Builder(),
+                    builder.probe,
                     ProbeConfig::new,
-                    defaultable::getProbe,
+                    defaultable.getProbe(),
                     ProbeConfig.class);
 
             buildConfig = defaultableBuildLauncher(
-                    BuildConfig.Builder::new,
-                    () -> builder.build,
+                    new BuildConfig.Builder(),
+                    builder.build,
                     BuildConfig::new,
-                    defaultable::getBuild,
+                    defaultable.getBuild(),
                     BuildConfig.class);
         }
 
         private static <B extends BaseBuilder, C extends BaseLauncherConfig> C defaultableBuildLauncher(
-                Supplier<B> builder,
-                Supplier<Closure> closureSupplier,
+                @NotNull B configBuilder,
+                @Nullable Closure closure,
                 Function<B, C> configFunction,
-                Supplier<C> fallback,
+                @Nullable C fallback,
                 Class<C> fields
         ) {
-            var configBuilder = builder.get();
-            if (ClosureUtil.delegateNullSafe(closureSupplier.get(), configBuilder)) {
-                var defaultC = fallback.get();
-                if (defaultC != null) {
+            if (ClosureUtil.delegateNullSafe(closure, configBuilder)) {
+                if (fallback != null) {
                     var conf = configFunction.apply(configBuilder);
-                    ClassUtil.mergeObjectsDefaultReference(conf, defaultC, fields);
+                    ClassUtil.mergeObjectsDefaultReference(conf, fallback, fields);
                     return conf;
                 }
 
                 return configFunction.apply(configBuilder);
-            } else if (fallback.get() != null) {
-                return fallback.get();
-            } else throw new IllegalStateException();
+            } else if (fallback != null) {
+                return fallback;
+            } else throw new NullPointerException("BuildLauncher: a launcher is null");
         }
 
         @Nullable

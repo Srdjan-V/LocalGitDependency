@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public final class ClosureUtil {
@@ -31,15 +30,6 @@ public final class ClosureUtil {
             @Override
             public T call(Object... args) {
                 return supplier.get();
-            }
-        };
-    }
-
-    public static <T> Closure<T> ofDelegate(Function<T, T> function) {
-        return new Closure<>(ClosureUtil.class) {
-            @Override
-            public T call(Object... args) {
-                return function.apply((T) getDelegate());
             }
         };
     }

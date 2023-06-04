@@ -20,10 +20,8 @@ public class GitTest {
         });
         dependencyWrapper.setDependencyClosure(builder -> {
             builder.name(dependencyWrapper.getTestName());
-            builder.buildLauncher(ClosureUtil.ofDelegate(launcherObj-> {
-                LauncherBuilder launcher = (LauncherBuilder) launcherObj;
+            builder.buildLauncher(ClosureUtil.<LauncherBuilder>configure(launcher -> {
                 launcher.gradleDaemonMaxIdleTime(0);
-                return launcher;
             }));
             builder.configuration(Constants.JAVA_IMPLEMENTATION);
             //builder.tag("v1.0.1.11");

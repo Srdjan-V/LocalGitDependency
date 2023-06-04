@@ -9,6 +9,7 @@ import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
+import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,8 +26,9 @@ public final class DependencyConfig extends DependencyConfigFields {
         ClassUtil.mergeObjectsDefaultReference(this, defaultableConfig, DefaultableConfigFields.class);
         ClassUtil.mergeObjectsDefaultNewObject(this, builder, DependencyConfigFields.class);
 
-        var launcherBuilder = new Launchers.Launcher.Builder();
-        if (ClosureUtil.delegateNullSafe(builder.launcher, launcherBuilder)) {
+        if (builder.launcher != null) {
+            var launcherBuilder = new Launchers.Launcher.Builder();
+            ClosureUtil.delegate(builder.launcher, launcherBuilder);
             launcher = new Launchers.Launcher(launcherBuilder, launcher);
         }
 
@@ -36,7 +38,7 @@ public final class DependencyConfig extends DependencyConfigFields {
                 var configurationConfig = new ConfigurationConfig.Builder();
                 if (ClosureUtil.delegateNullSafe(closure, configurationConfig)) {
                     configurationConfigList.add(new ConfigurationConfig(configurationConfig));
-                } else throw new IllegalStateException();
+                } else throw new GradleException("Null provided as a configuration closure");
             }
             this.configurationConfig = configurationConfigList;
         }
@@ -47,7 +49,7 @@ public final class DependencyConfig extends DependencyConfigFields {
                 var sourceSetMapperConfig = new SourceSetMapperConfig.Builder();
                 if (ClosureUtil.delegateNullSafe(closure, sourceSetMapperConfig)) {
                     sourceSetMapperConfigList.add(new SourceSetMapperConfig(sourceSetMapperConfig));
-                } else throw new IllegalStateException();
+                } else throw new GradleException("Null provided as a mappings closure");
             }
             this.sourceSetMapperConfig = sourceSetMapperConfigList;
         }

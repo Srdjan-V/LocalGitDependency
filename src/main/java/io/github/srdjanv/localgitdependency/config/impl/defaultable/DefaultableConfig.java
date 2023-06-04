@@ -7,7 +7,9 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
+import org.eclipse.jgit.annotations.Nullable;
 
+// non null data is used for you supply a custom default config, all data is otherwise nullable
 @NonNullData
 @SuppressWarnings("unused")
 public final class DefaultableConfig extends DefaultableConfigFields {
@@ -19,7 +21,7 @@ public final class DefaultableConfig extends DefaultableConfigFields {
         var launcherBuilder = new Launchers.Launcher.Builder();
         if (ClosureUtil.delegateNullSafe(builder.launcher, launcherBuilder)) {
             launcher = new Launchers.Launcher(launcherBuilder);
-        } else throw new IllegalStateException();
+        } else throw new NullPointerException("buildLauncher is null");
     }
 
     public DefaultableConfig(Builder builder, DefaultableConfig defaultable) {
@@ -32,45 +34,54 @@ public final class DefaultableConfig extends DefaultableConfigFields {
             launcher = new Launchers.Launcher(launcherBuilder);
         } else if (defaultable.getLauncher() != null){
             launcher = defaultable.getLauncher();
-        } else throw new IllegalStateException();
+        } else throw new NullPointerException("buildLauncher is null");
     }
 
     public boolean isCustom() {
         return custom;
     }
 
+    @Nullable
     public Boolean getKeepGitUpdated() {
         return keepGitUpdated;
     }
 
+    @Nullable
     public Dependency.Type getDependencyType() {
         return dependencyType;
     }
 
+    @Nullable
     public Boolean getKeepDependencyInitScriptUpdated() {
         return keepInitScriptUpdated;
     }
 
+    @Nullable
     public Boolean getTryGeneratingSourceJar() {
         return tryGeneratingSourceJar;
     }
 
+    @Nullable
     public Boolean getTryGeneratingJavaDocJar() {
         return tryGeneratingJavaDocJar;
     }
 
+    @Nullable
     public Boolean getEnableIdeSupport() {
         return enableIdeSupport;
     }
 
+    @Nullable
     public Boolean getRegisterDependencyRepositoryToProject() {
         return registerDependencyRepositoryToProject;
     }
 
+    @Nullable
     public Boolean getGenerateGradleTasks() {
         return generateGradleTasks;
     }
 
+    @Nullable
     public Launchers.Launcher getLauncher() {
         return launcher;
     }

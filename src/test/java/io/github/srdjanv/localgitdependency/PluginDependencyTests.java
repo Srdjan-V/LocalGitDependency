@@ -53,10 +53,8 @@ public class PluginDependencyTests {
             dependencyWrapper.setDependencyClosure(builder -> {
                 builder.name(dependencyWrapper.getTestName());
                 builder.dependencyType(dependencyType);
-                builder.buildLauncher(ClosureUtil.ofDelegate(launcherObj-> {
-                    LauncherBuilder launcher = (LauncherBuilder) launcherObj;
+                builder.buildLauncher(ClosureUtil.<LauncherBuilder>configure(launcher -> {
                     launcher.gradleDaemonMaxIdleTime(0);
-                    return launcher;
                 }));
                 builder.configuration(Constants.JAVA_IMPLEMENTATION);
             });

@@ -1,8 +1,10 @@
 package io.github.srdjanv.localgitdependency.config.impl.dependency;
 
 import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapperBuilder;
-import org.jetbrains.annotations.Nullable;
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
+import org.jetbrains.annotations.NotNull;
 
+@NonNullData
 public final class SourceSetMapperConfig {
     private final String projectSet;
     private final String[] dependencySet;
@@ -14,17 +16,17 @@ public final class SourceSetMapperConfig {
         this.recursive = builder.recursive;
     }
 
-    @Nullable
+    @NotNull
     public String getProjectSet() {
         return projectSet;
     }
 
-    @Nullable
+    @NotNull
     public String[] getDependencySet() {
         return dependencySet;
     }
 
-    @Nullable
+    @NotNull
     public Boolean isRecursive() {
         return recursive;
     }

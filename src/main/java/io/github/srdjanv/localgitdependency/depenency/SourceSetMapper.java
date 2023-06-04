@@ -26,7 +26,7 @@ public class SourceSetMapper {
     public SourceSetMapper(SourceSetMapperConfig config) {
         this.projectSet = config.getProjectSet();
         this.dependencySet = config.getDependencySet();
-        this.recursive = config.isRecursive() != null ? config.isRecursive() : true;
+        this.recursive = config.isRecursive();
     }
 
     public String getProjectSet() {

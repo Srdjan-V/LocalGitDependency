@@ -221,10 +221,13 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             List<String> tasks,
             Function<Dependency, ResultHandler<Void>> function
     ) {
-        if (tasks.size() == 0 && args.size() == 0) return;
+        if (tasks.size() == 0) return;
 
-        final String[] arrArgs = args.toArray(new String[0]);
-        ManagerLogger.info("Args: {}", (Object) arrArgs);
+        final String[] arrArgs;
+        if (args.size() != 0) {
+            arrArgs = args.toArray(new String[0]);
+            ManagerLogger.info("Args: {}", (Object) arrArgs);
+        } else arrArgs = new String[0];
 
         final String[] arrTasks = tasks.toArray(new String[0]);
         ManagerLogger.info("Tasks: {}", (Object) arrTasks);
@@ -381,7 +384,13 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                 getPersistenceManager()::setInitScriptSHA);
     }
 
-    private void validateScript(File file, boolean keepUpdated, Supplier<String> scriptSupplier, Supplier<String> persistentSHASupplier, Consumer<String> persistentSHASetter) {
+    private void validateScript(
+            File file,
+            boolean keepUpdated,
+            Supplier<String> scriptSupplier,
+            Supplier<String> persistentSHASupplier,
+            Consumer<String> persistentSHASetter
+    ) {
         if (file.exists()) {
             if (!file.isFile()) {
                 throw new RuntimeException(String.format("This path: '%s' leads to a folder, it must be a file", file.getAbsolutePath()));
