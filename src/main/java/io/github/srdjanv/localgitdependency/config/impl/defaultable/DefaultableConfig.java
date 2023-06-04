@@ -2,20 +2,37 @@ package io.github.srdjanv.localgitdependency.config.impl.defaultable;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableBuilder;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
+import io.github.srdjanv.localgitdependency.util.ClosureUtil;
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 
-/**
- * Base property's used for dependency and global configuration.
- * A new dependency will inherit properties from the global configuration.
- */
+@NonNullData
 @SuppressWarnings("unused")
 public final class DefaultableConfig extends DefaultableConfigFields {
     private final boolean custom;
 
-    public DefaultableConfig(Builder builder, boolean custom) {
-        this.custom = custom;
+    public DefaultableConfig(Builder builder) {
+        this.custom = false;
         ClassUtil.instantiateObjectWithBuilder(this, builder, DefaultableConfigFields.class);
+        var launcherBuilder = new Launchers.Launcher.Builder();
+        if (ClosureUtil.delegateNullSafe(builder.launcher, launcherBuilder)) {
+            launcher = new Launchers.Launcher(launcherBuilder);
+        } else throw new IllegalStateException();
+    }
+
+    public DefaultableConfig(Builder builder, DefaultableConfig defaultable) {
+        this.custom = true;
+        ClassUtil.mergeObjectsDefaultReference(this, defaultable, DefaultableConfigFields.class);
+        ClassUtil.mergeObjectsDefaultNewObject(this, builder, DefaultableConfigFields.class);
+
+        var launcherBuilder = new Launchers.Launcher.Builder();
+        if (ClosureUtil.delegateNullSafe(builder.launcher, launcherBuilder)) {
+            launcher = new Launchers.Launcher(launcherBuilder);
+        } else if (defaultable.getLauncher() != null){
+            launcher = defaultable.getLauncher();
+        } else throw new IllegalStateException();
     }
 
     public boolean isCustom() {
@@ -54,11 +71,13 @@ public final class DefaultableConfig extends DefaultableConfigFields {
         return generateGradleTasks;
     }
 
-    public Closure getLauncher(){
+    public Launchers.Launcher getLauncher() {
         return launcher;
     }
 
     public static class Builder extends DefaultableConfigFields implements DefaultableBuilder {
+        private Closure launcher;
+
         @Override
         public void keepGitUpdated(Boolean keepGitUpdated) {
             this.keepGitUpdated = keepGitUpdated;

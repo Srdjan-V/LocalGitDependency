@@ -3,6 +3,7 @@ package io.github.srdjanv.localgitdependency.config;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.LauncherBuilder;
+import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfig;
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfigFields;
 import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
@@ -62,16 +63,24 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         builder.enableIdeSupport(false);
         builder.registerDependencyRepositoryToProject(true);
         builder.buildLauncher(ClosureUtil.ofDelegate(launcherObj -> {
-            // TODO: 01/06/2023
             var launcher = (LauncherBuilder) launcherObj;
             launcher.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
-            launcher.startup(ClosureUtil.ofDelegate(obj -> obj));
-            launcher.probe(ClosureUtil.ofDelegate(obj -> obj));
-            launcher.build(ClosureUtil.ofDelegate(obj -> obj));
+            launcher.startup(ClosureUtil.ofDelegate(obj -> {
+                ((Launchers.Base) obj).forwardOutput(true);
+                return obj;
+            }));
+            launcher.probe(ClosureUtil.ofDelegate(obj -> {
+                ((Launchers.Base) obj).forwardOutput(true);
+                return obj;
+            }));
+            launcher.build(ClosureUtil.ofDelegate(obj -> {
+                ((Launchers.Base) obj).forwardOutput(true);
+                return obj;
+            }));
             return launcherObj;
         }));
 
-        defaultableConfig = new DefaultableConfig(builder, false);
+        defaultableConfig = new DefaultableConfig(builder);
     }
 
 
@@ -84,9 +93,9 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         if (ClosureUtil.delegateNullSafe(configureClosure, pluginConfigBuilder)) {
             var newPluginConfig = new PluginConfig(pluginConfigBuilder, true);
             customPathsCheck(newPluginConfig);
-            ClassUtil.mergeObjects(newPluginConfig, pluginConfig, PluginConfigFields.class);
-            var list = ClassUtil.validateData(newPluginConfig, PluginConfigFields.class);
-            if (list != null) {
+            ClassUtil.mergeObjectsDefaultReference(newPluginConfig, pluginConfig, PluginConfigFields.class);
+            var list = ClassUtil.validateDataDefault(newPluginConfig);
+            if (list.size() != 0) {
                 list.add(0, "Unable to configurePlugin some fields are null:");
                 throw new GradleException(list.stream().collect(Collectors.joining(Constants.TAB_INDENT, System.lineSeparator(), "")));
             } else {
@@ -102,10 +111,10 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         }
         var defaultableConfigBuilder = new DefaultableConfig.Builder();
         if (ClosureUtil.delegateNullSafe(configureClosure, defaultableConfigBuilder)) {
-            var newDefaultableConfig = new DefaultableConfig(defaultableConfigBuilder, true);
-            ClassUtil.mergeObjects(newDefaultableConfig, defaultableConfig, DefaultableConfigFields.class);
-            var list = ClassUtil.validateData(newDefaultableConfig, DefaultableConfigFields.class);
-            if (list != null) {
+            var newDefaultableConfig = new DefaultableConfig(defaultableConfigBuilder, defaultableConfig);
+            ClassUtil.mergeObjectsDefaultReference(newDefaultableConfig, defaultableConfig, DefaultableConfigFields.class);
+            var list = ClassUtil.validateDataDefault(newDefaultableConfig);
+            if (list.size() != 0) {
                 list.add(0, "Unable to configureDefaultable some fields are null:");
                 throw new GradleException(list.stream().collect(Collectors.joining(Constants.TAB_INDENT, System.lineSeparator(), "")));
             } else {

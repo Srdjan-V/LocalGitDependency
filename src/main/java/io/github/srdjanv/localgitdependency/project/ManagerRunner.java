@@ -75,6 +75,7 @@ final class ManagerRunner<T extends Manager> {
         for (Class<?> anInterface : manager.getClass().getInterfaces()) {
             for (Method declaredMethod : anInterface.getDeclaredMethods()) {
                 if (!declaredMethod.getName().equals(method.getName())) continue;
+                if (declaredMethod.getParameters().length != 0) continue;
 
                 if (declaredMethod.isAnnotationPresent(TaskDescription.class)) {
                     taskName = declaredMethod.getAnnotation(TaskDescription.class).value();

@@ -2,12 +2,9 @@ package io.github.srdjanv.localgitdependency.config.dependency;
 
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
-import org.gradle.jvm.toolchain.JavaLauncher;
 
 public interface LauncherBuilder {
     void setExecutable(Object path);
-
-    void setExecutable(JavaLauncher launcher);
 
     /**
      * For how long should the gradle daemon used for dependency building idle.

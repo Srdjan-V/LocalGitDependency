@@ -3,13 +3,13 @@ package io.github.srdjanv.localgitdependency.config.impl.plugin;
 import io.github.srdjanv.localgitdependency.config.plugin.PluginBuilder;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
-/**
- * Property's used for global configuration
- */
+
+@NonNullData
 public final class PluginConfig extends PluginConfigFields {
     private final boolean custom;
 

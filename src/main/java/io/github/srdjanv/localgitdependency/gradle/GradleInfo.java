@@ -20,7 +20,7 @@ public final class GradleInfo {
 
     public GradleInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
-        this.launchers = GradleLaunchers.build(managers, dependencyConfig, errorBuilder);
+        this.launchers = GradleLaunchers.build(dependencyConfig, errorBuilder);
         if (dependencyConfig.getKeepInitScriptUpdated() == null) {
             errorBuilder.append("DependencyConfig: 'keepInitScriptUpdated' is null");
             this.keepInitScriptUpdated = false;

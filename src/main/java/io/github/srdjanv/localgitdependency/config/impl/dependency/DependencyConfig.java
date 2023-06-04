@@ -7,10 +7,14 @@ import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableC
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
+import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Property's that only a dependency can have
@@ -18,8 +22,35 @@ import java.io.File;
 public final class DependencyConfig extends DependencyConfigFields {
 
     public DependencyConfig(Builder builder, DefaultableConfig defaultableConfig) {
-        ClassUtil.mergeObjects(this, defaultableConfig, DefaultableConfigFields.class);
-        ClassUtil.mergeObjects(this, builder, DependencyConfigFields.class);
+        ClassUtil.mergeObjectsDefaultReference(this, defaultableConfig, DefaultableConfigFields.class);
+        ClassUtil.mergeObjectsDefaultNewObject(this, builder, DependencyConfigFields.class);
+
+        var launcherBuilder = new Launchers.Launcher.Builder();
+        if (ClosureUtil.delegateNullSafe(builder.launcher, launcherBuilder)) {
+            launcher = new Launchers.Launcher(launcherBuilder, launcher);
+        }
+
+        if (builder.configurations != null) {
+            List<ConfigurationConfig> configurationConfigList = new ArrayList<>();
+            for (Closure closure : builder.configurations) {
+                var configurationConfig = new ConfigurationConfig.Builder();
+                if (ClosureUtil.delegateNullSafe(closure, configurationConfig)) {
+                    configurationConfigList.add(new ConfigurationConfig(configurationConfig));
+                } else throw new IllegalStateException();
+            }
+            this.configurationConfig = configurationConfigList;
+        }
+
+        if (builder.mappings != null) {
+            List<SourceSetMapperConfig> sourceSetMapperConfigList = new ArrayList<>();
+            for (Closure closure : builder.mappings) {
+                var sourceSetMapperConfig = new SourceSetMapperConfig.Builder();
+                if (ClosureUtil.delegateNullSafe(closure, sourceSetMapperConfig)) {
+                    sourceSetMapperConfigList.add(new SourceSetMapperConfig(sourceSetMapperConfig));
+                } else throw new IllegalStateException();
+            }
+            this.sourceSetMapperConfig = sourceSetMapperConfigList;
+        }
     }
 
     @Nullable
@@ -48,17 +79,17 @@ public final class DependencyConfig extends DependencyConfigFields {
     }
 
     @Nullable
-    public Closure[] getConfigurations() {
-        return configurations;
+    public List<ConfigurationConfig> getConfigurations() {
+        return configurationConfig;
     }
 
     @Nullable
-    public Closure[] getMappings() {
-        return mappings;
+    public List<SourceSetMapperConfig> getMappings() {
+        return sourceSetMapperConfig;
     }
 
-    @Nullable
-    public Closure getLauncher() {
+    @NotNull
+    public Launchers.Launcher getLauncher() {
         return launcher;
     }
 
@@ -118,6 +149,10 @@ public final class DependencyConfig extends DependencyConfigFields {
     }
 
     public static class Builder extends DependencyConfigFields implements DependencyBuilder {
+        protected Closure[] configurations;
+        protected Closure[] mappings;
+        protected Closure launcher;
+
         public Builder(String url) {
             this.url = url;
         }
@@ -177,7 +212,8 @@ public final class DependencyConfig extends DependencyConfigFields {
 
         @Override
         public void mavenDir(Object mavenDir) {
-            this.mavenDir = FileUtil.toFile(mavenDir, "mavenDir");;
+            this.mavenDir = FileUtil.toFile(mavenDir, "mavenDir");
+            ;
         }
 
         @Override

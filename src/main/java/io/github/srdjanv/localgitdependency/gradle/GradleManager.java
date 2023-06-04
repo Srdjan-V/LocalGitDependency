@@ -61,7 +61,6 @@ final class GradleManager extends ManagerBase implements IGradleManager {
     public void initGradleAPI() {
         validateMainInitScript();
         for (Dependency dependency : getDependencyManager().getDependencies()) {
-            validateDependencyInitScript(dependency);
             if (checkForNeedlesTaskRunning(dependency,
                     GradleLaunchers::getStartup,
                     dep -> dep.getPersistentInfo().isSuccessfulStartup(),
@@ -77,6 +76,8 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                     dep -> !dep.getPersistentInfo().isValidModel())) {
                 startProbeTasks(dependency);
             }
+
+            validateDependencyInitScript(dependency);
         }
     }
 
@@ -106,6 +107,12 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             return true;
         }
 
+        if (customChecks != null) {
+            if (customChecks.test(dependency)) {
+                return true;
+            }
+        }
+
         if (!persistentSuccessStatus.test(dependency)) {
             final var targetLauncher = launcher.apply(dependency.getGradleInfo().getLaunchers());
             List<String> tasks = Stream.of(
@@ -117,12 +124,11 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             if (tasks.size() == 0) {
                 statusUpdater.accept(dependency.getPersistentInfo());
                 return false;
+            } else {
+                return true;
             }
         }
-        if (customChecks == null) {
-            return false;
-        }
-        return customChecks.test(dependency);
+        return false;
     }
 
     @Override
@@ -215,7 +221,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             List<String> tasks,
             Function<Dependency, ResultHandler<Void>> function
     ) {
-        if (tasks.size() == 0) return;
+        if (tasks.size() == 0 && args.size() == 0) return;
 
         final String[] arrArgs = args.toArray(new String[0]);
         ManagerLogger.info("Args: {}", (Object) arrArgs);
@@ -245,7 +251,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             List<String> args,
             List<String> tasks
     ) {
-        if (tasks.size() == 0) return;
+        if (tasks.size() == 0 && args.size() == 0) return;
 
         final String[] arrArgs = args.toArray(new String[0]);
         ManagerLogger.info("Args: {}", (Object) arrArgs);

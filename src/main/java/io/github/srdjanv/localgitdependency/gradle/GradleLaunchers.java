@@ -10,7 +10,6 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,13 +24,10 @@ import java.util.function.BiFunction;
 import static io.github.srdjanv.localgitdependency.config.impl.dependency.Launchers.BaseLauncherConfig;
 
 public final class GradleLaunchers {
-    public static GradleLaunchers build(Managers managers, DependencyConfig dependencyConfig, ErrorUtil errorBuilder) {
-        Launcher.Builder builder = new Launcher.Builder();
-        if (ClosureUtil.delegateNullSafe(dependencyConfig.getLauncher(), builder)) {
-            return new GradleLaunchers(managers, dependencyConfig, new Launcher(builder), errorBuilder);
-        }
-        errorBuilder.append("DependencyConfig: 'buildLauncher' is null");
-        return null;
+    public static GradleLaunchers build(DependencyConfig dependencyConfig, ErrorUtil errorBuilder) {
+        return new GradleLaunchers(
+                dependencyConfig.getLauncher(),
+                errorBuilder);
     }
 
     private final File executable;
@@ -40,32 +36,29 @@ public final class GradleLaunchers {
     private final Probe probe;
     private final Build build;
 
-    private GradleLaunchers(Managers managers, DependencyConfig dependencyConfig, Launcher launcher, ErrorUtil errorBuilder) {
+    private GradleLaunchers(Launcher launcher, ErrorUtil errorBuilder) {
         this.executable = launcher.getExecutable();
         if (launcher.getGradleDaemonMaxIdleTime() == null) {
             errorBuilder.append("BuildLauncher: 'gradleDaemonMaxIdleTime' is null");
             this.gradleDaemonMaxIdleTime = 0;
         } else this.gradleDaemonMaxIdleTime = launcher.getGradleDaemonMaxIdleTime();
 
-        StartupConfig.Builder startupConfigBuilder = new StartupConfig.Builder();
-        if (ClosureUtil.delegateNullSafe(launcher.getStartup(), startupConfigBuilder)) {
-            startup = new Startup(new StartupConfig(startupConfigBuilder), errorBuilder);
+        if (launcher.getStartup() != null) {
+            startup = new Startup(launcher.getStartup(), errorBuilder);
         } else {
             errorBuilder.append("BuildLauncher: 'startup' is null");
             startup = null;
         }
 
-        ProbeConfig.Builder probeConfigBuilder = new ProbeConfig.Builder();
-        if (ClosureUtil.delegateNullSafe(launcher.getProbe(), probeConfigBuilder)) {
-            probe = new Probe(new ProbeConfig(probeConfigBuilder), errorBuilder);
+        if (launcher.getProbe() != null) {
+            probe = new Probe(launcher.getProbe(), errorBuilder);
         } else {
             errorBuilder.append("BuildLauncher: 'probe' is null");
             probe = null;
         }
 
-        BuildConfig.Builder buildConfigBuilder = new BuildConfig.Builder();
-        if (ClosureUtil.delegateNullSafe(launcher.getBuild(), buildConfigBuilder)) {
-            build = new Build(new BuildConfig(buildConfigBuilder), errorBuilder);
+        if (launcher.getBuild() != null) {
+            build = new Build(launcher.getBuild(), errorBuilder);
         } else {
             errorBuilder.append("BuildLauncher: 'build' is null");
             build = null;
@@ -103,8 +96,13 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected String customArgumentsWarning() {
-            return null;
+        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+            if (args != null) {
+                final List<String> argsList = Arrays.asList(args);
+                return (managers, dep) -> argsList;
+            } else {
+                return (managers, dep) -> Collections.emptyList();
+            }
         }
 
         @Override
@@ -125,8 +123,18 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected String customArgumentsWarning() {
-            return null;
+        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+            if (args != null) {
+                PluginLogger.warn("Custom main tasks arguments detected for Probe launcher, this is not recommended");
+                final List<String> argsList = Arrays.asList(args);
+                return (managers, dep) -> argsList;
+            } else {
+                return (managers, dep) -> {
+                    File initScriptFolder = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                    File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
+                    return Arrays.asList("--init-script", mainInit.getAbsolutePath());
+                };
+            }
         }
 
         @Override
@@ -151,8 +159,18 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected String customArgumentsWarning() {
-            return "Custom main tasks arguments detected, this is not recommended";
+        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+            if (args != null) {
+                PluginLogger.warn("Custom main tasks arguments detected for Build launcher, this is not recommended");
+                final List<String> argsList = Arrays.asList(args);
+                return (managers, dep) -> argsList;
+            } else {
+                return (managers, dep) -> {
+                    File initScriptFolder = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                    File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
+                    return Arrays.asList("--init-script", mainInit.getAbsolutePath());
+                };
+            }
         }
 
         @Override
@@ -166,15 +184,15 @@ public final class GradleLaunchers {
                     switch (dep.getDependencyType()) {
                         case Jar:
                         case JarFlatDir:
-                            return Arrays.asList("build");
+                            return Collections.singletonList("build");
 
                         case MavenLocal:
-                            return Arrays.asList(Constants.PublicationTaskName.apply(dep.getPersistentInfo().getProbeData().getPublicationData()));
+                            return Collections.singletonList(Constants.PublicationTaskName.apply(dep.getPersistentInfo().getProbeData().getPublicationData()));
 
                         case MavenProjectDependencyLocal:
                         case MavenProjectLocal:
                             PublicationData publicationData = dep.getPersistentInfo().getProbeData().getPublicationData();
-                            return Arrays.asList(Constants.FilePublicationTaskName.apply(publicationData));
+                            return Collections.singletonList(Constants.FilePublicationTaskName.apply(publicationData));
 
                         default:
                             throw new IllegalStateException();
@@ -207,13 +225,13 @@ public final class GradleLaunchers {
         public Base(BaseLauncherConfig config, ErrorUtil errorBuilder) {
             this.explicit = config.getExplicit() != null && config.getExplicit();
 
-            this.preTasksArguments = defaultArguments(config, config.getPreTasksArguments());
+            this.preTasksArguments = defaultArguments(config.getPreTasksArguments());
             this.preTasks = getTasks(config.getPreTasks());
 
-            this.mainTasksArguments = defaultArguments(config, config.getMainTasksArguments());
+            this.mainTasksArguments = defaultArguments(config.getMainTasksArguments());
             this.mainTasks = defaultMainTasks(config);
 
-            this.postTasksArguments = defaultArguments(config, config.getPostTasksArguments());
+            this.postTasksArguments = defaultArguments(config.getPostTasksArguments());
             this.postTasks = getTasks(config.getPostTasks());
 
             if (config.getSetTaskTriggers() != null && config.getSetTaskTriggers().length > 0) {
@@ -236,25 +254,7 @@ public final class GradleLaunchers {
             return tasks == null ? Collections.emptyList() : Arrays.asList(tasks);
         }
 
-        private BiFunction<Managers, Dependency, List<String>> defaultArguments(BaseLauncherConfig config, String[] argsSup) {
-            if (config.getMainTasksArguments() == null) {
-                return (managers, dep) -> {
-                    final var warning = customArgumentsWarning();
-                    if (warning != null) {
-                        PluginLogger.warn(warning);
-                    }
-
-                    File initScriptFolder = managers.getPropertyManager().getPluginConfig().getPersistentDir();
-                    File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
-                    return Arrays.asList("--init-script", mainInit.getAbsolutePath());
-                };
-            } else {
-                final List<String> args = Arrays.asList(config.getMainTasksArguments());
-                return (managers, dep) -> args;
-            }
-        }
-
-        protected abstract String customArgumentsWarning();
+        protected abstract BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args);
 
         protected abstract BiFunction<Managers, Dependency, List<String>> defaultMainTasks(BaseLauncherConfig config);
 

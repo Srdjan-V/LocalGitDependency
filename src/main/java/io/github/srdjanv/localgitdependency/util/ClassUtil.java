@@ -2,7 +2,7 @@ package io.github.srdjanv.localgitdependency.util;
 
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 import io.github.srdjanv.localgitdependency.util.annotations.NullableData;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public final class ClassUtil {
         } while (currentClazz != Object.class);
     }
 
-    public static <D> void mergeObjects(D newObject, D referenceObject, Class<D> clazz) {
+    public static <D> void mergeObjectsDefaultReference(D newObject, D referenceObject, Class<D> clazz) {
         Class<?> currentClazz = clazz;
         do {
             for (Field field : currentClazz.getDeclaredFields()) {
@@ -48,23 +48,62 @@ public final class ClassUtil {
         } while (currentClazz != Object.class);
     }
 
-    @Nullable
-    public static <D> List<String> validateData(D object, Class<D> clazz) {
-        List<String> nulls = null;
+    public static <D> void mergeObjectsDefaultNewObject(D newObject, D referenceObject, Class<D> clazz) {
         Class<?> currentClazz = clazz;
         do {
             for (Field field : currentClazz.getDeclaredFields()) {
                 try {
                     field.setAccessible(true);
+                    Object referenceObjectField = field.get(referenceObject);
+
+                    if (referenceObjectField != null) {
+                        field.set(newObject, referenceObjectField);
+                    }
+
+                } catch (Exception e) {
+                    throw new RuntimeException(String.format("Unexpected error while reflecting %s class", currentClazz.getSimpleName()), e);
+                }
+            }
+            currentClazz = currentClazz.getSuperclass();
+        } while (currentClazz != Object.class);
+    }
+
+    @NotNull
+    public static List<String> validateDataDefault(Object object) {
+        List<String> nulls = new ArrayList<>();
+        validateDataDefaultInternal(object, defaultDataNullable(object.getClass()), nulls);
+
+        return nulls;
+    }
+
+    private static void validateDataDefaultInternal(Object object, Boolean defaultDataNullable, List<String> nulls) {
+        Class<?> currentClazz = object.getClass();
+        do {
+            for (Field field : currentClazz.getDeclaredFields()) {
+                try {
+                    field.setAccessible(true);
                     var obj = field.get(object);
-                    if (obj == null) {
-                        if (field.isAnnotationPresent(NullableData.class)) {
-                            continue;
+                    if (defaultDataNullable == null) {
+                        var fieldType = field.getType();
+                        if (isClassAnnotatedWithNullableData(fieldType)
+                                || isClassAnnotatedWithNonNullData(fieldType)) {
+                            validateDataDefaultInternal(obj, defaultDataNullable(fieldType), nulls);
                         }
-                        if (nulls == null) {
-                            nulls = new ArrayList<>();
+                    } else if (defaultDataNullable) {
+                        if (field.isAnnotationPresent(NonNullData.class)) {
+                            if (obj == null) {
+                                nulls.add(String.format("Field %s is null", field.getName()));
+                            }
                         }
-                        nulls.add(String.format("Field %s is null", field.getName()));
+
+                    } else {
+                        if (obj == null) {
+                            if (field.isAnnotationPresent(NullableData.class)) {
+                                continue;
+                            }
+                            nulls.add(String.format("Field %s is null", field.getName()));
+                        }
+
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(String.format("Unexpected error while reflecting %s class", currentClazz.getSimpleName()), e);
@@ -72,7 +111,6 @@ public final class ClassUtil {
             }
             currentClazz = currentClazz.getSuperclass();
         } while (currentClazz != Object.class);
-        return nulls;
     }
 
     public static boolean isClassAnnotatedWithNonNullData(Class<?> clazz) {
@@ -81,5 +119,15 @@ public final class ClassUtil {
 
     public static boolean isClassAnnotatedWithNullableData(Class<?> clazz) {
         return clazz.isAnnotationPresent(NullableData.class);
+    }
+
+    public static Boolean defaultDataNullable(Class<?> clazz) {
+        if (isClassAnnotatedWithNonNullData(clazz)) {
+            return false;
+        } else if (isClassAnnotatedWithNullableData(clazz)) {
+            return true;
+        } else {
+            return null;
+        }
     }
 }

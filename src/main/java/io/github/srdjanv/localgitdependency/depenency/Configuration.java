@@ -3,7 +3,6 @@ package io.github.srdjanv.localgitdependency.depenency;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.ConfigurationConfig;
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
-import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -20,13 +19,8 @@ public class Configuration {
                 configurations.add(new Configuration(new ConfigurationConfig(configurationBuilder)));
             }
         } else {
-            for (var configurationClosure : dependencyConfig.getConfigurations()) {
-                var builder = new ConfigurationConfig.Builder();
-                if (ClosureUtil.delegateNullSafe(configurationClosure, builder)) {
-                    configurations.add(new Configuration(new ConfigurationConfig(builder)));
-                }else {
-                    errorBuilder.append("DependencyConfig: A ConfigurationBuilder is null");
-                }
+            for (var configurationConfig : dependencyConfig.getConfigurations()) {
+                configurations.add(new Configuration(configurationConfig));
             }
         }
         return Collections.unmodifiableList(configurations);
