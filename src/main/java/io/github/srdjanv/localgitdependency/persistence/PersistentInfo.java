@@ -21,7 +21,7 @@ public final class PersistentInfo {
     private final File persistentFile;
     private DependencyData dependencyData;
     private ProjectProbeData projectProbeData;
-    private boolean validModel;
+    private boolean validDataVersion;
     private boolean dependencyTypeChanged;
     private boolean dirty;
 
@@ -59,9 +59,9 @@ public final class PersistentInfo {
         return dependencyData.getWorkingDirSHA1();
     }
 
-    public void setWorkingDirSHA1(String workingDirSHA1) {
+    public void setWorkingDirSHA1(String SHA1) {
         setDirty();
-        dependencyData.setWorkingDirSHA1(workingDirSHA1);
+        dependencyData.setWorkingDirSHA1(SHA1);
     }
 
     @Nullable
@@ -69,13 +69,13 @@ public final class PersistentInfo {
         return dependencyData.getInitFileSHA1();
     }
 
-    public void setInitFileSHA1(String initFileSHA1) {
+    public void setInitFileSHA1(String SHA1) {
         setDirty();
-        dependencyData.setInitFileSHA1(initFileSHA1);
+        dependencyData.setInitFileSHA1(SHA1);
     }
 
-    public boolean isValidModel() {
-        return validModel;
+    public boolean isValidDataVersion() {
+        return validDataVersion;
     }
 
     public ProjectProbeData getProbeData() {
@@ -84,7 +84,7 @@ public final class PersistentInfo {
 
     public void setProbeData(String jsonData) {
         setDirty();
-        setValidModel();
+        setValidDataVersion();
         projectProbeData = DataParser.parseJson(jsonData);
     }
 
@@ -94,16 +94,46 @@ public final class PersistentInfo {
                 status);
     }
 
+    @Nullable
+    public String getStartupTasksTriggersSHA1() {
+        return dependencyData.getStartupTasksTriggersSHA1();
+    }
+
+    public void setStartupTasksTriggersSHA1(String SHA1) {
+        setDirty();
+        dependencyData.setStartupTasksTriggersSHA1(SHA1);
+    }
+
     public void setProbeTasksStatus(boolean status) {
         setTaskData(dependencyData::getProbeTasksSuccessful,
                 dependencyData::setProbeTasksSuccessful,
                 status);
     }
 
+    @Nullable
+    public String getProbeTasksTriggersSHA1() {
+        return dependencyData.getProbeTasksTriggersSHA1();
+    }
+
+    public void setProbeTasksTriggersSHA1(String SHA1) {
+        setDirty();
+        dependencyData.setProbeTasksTriggersSHA1(SHA1);
+    }
+
     public void setBuildStatus(boolean status) {
         setTaskData(dependencyData::getBuildTasksSuccessful,
                 dependencyData::setBuildTasksSuccessful,
                 status);
+    }
+
+    @Nullable
+    public String getBuildTasksTriggersSHA1() {
+        return dependencyData.getBuildTasksTriggersSHA1();
+    }
+
+    public void setBuildTasksTriggersSHA1(String SHA1) {
+        setDirty();
+        dependencyData.setBuildTasksTriggersSHA1(SHA1);
     }
 
     private void setTaskData(Supplier<Boolean> data, Consumer<Boolean> dataSetter, boolean status) {
@@ -159,8 +189,8 @@ public final class PersistentInfo {
         this.projectProbeData = projectProbeData;
     }
 
-    void setValidModel() {
-        validModel = true;
+    void setValidDataVersion() {
+        validDataVersion = true;
     }
 
     void setDependencyTypeChanged() {

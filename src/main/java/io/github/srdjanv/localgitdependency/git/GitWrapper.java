@@ -8,12 +8,14 @@ import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.util.sha1.SHA1;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static io.github.srdjanv.localgitdependency.git.GitInfo.TargetType.BRANCH;
 import static org.eclipse.jgit.lib.Constants.*;
@@ -22,7 +24,11 @@ import static org.eclipse.jgit.lib.Constants.*;
 // https://github.com/alexvasilkov/GradleGitDependenciesPlugin/blob/master/src/main/groovy/com/alexvasilkov/gradle/git/utils/GitUtils.groovy
 final class GitWrapper implements AutoCloseable {
     private List<Exception> gitExceptions;
-    private String shaLocalChanges;
+    private boolean checkedForLocalChanges;
+    private String startupTasksTriggersSHA1;
+    private String probeTasksTriggersSHA1;
+    private String buildTasksTriggersSHA1;
+
     Git git;
     GitInfo gitInfo;
 
@@ -75,36 +81,76 @@ final class GitWrapper implements AutoCloseable {
             addGitExceptions(e);
         } finally {
             try {
-                checkSHA1();
+                updatePersistentSHA1();
             } catch (IOException | GitAPIException e) {
                 addGitExceptions(e);
             }
         }
     }
 
-    private void checkSHA1() throws IOException, GitAPIException {
-        String persistentWorkingDirSHA1 = gitInfo.getDependency().getPersistentInfo().getWorkingDirSHA1();
-        String workingDirSHA1;
+    private void updatePersistentSHA1() throws IOException, GitAPIException {
+        final String startupTasksTriggersSHA1;
+        final String probeTasksTriggersSHA1;
+        final String buildTasksTriggersSHA1;
+
         if (hasLocalChanges()) {
-            workingDirSHA1 = shaLocalChanges;
+            startupTasksTriggersSHA1 = this.startupTasksTriggersSHA1;
+            probeTasksTriggersSHA1 = this.probeTasksTriggersSHA1;
+            buildTasksTriggersSHA1 = this.buildTasksTriggersSHA1;
         } else {
-            workingDirSHA1 = head();
+            var head = head();
+            startupTasksTriggersSHA1 = head;
+            probeTasksTriggersSHA1 = head;
+            buildTasksTriggersSHA1 = head;
         }
 
-        if (persistentWorkingDirSHA1 == null) {
-            gitInfo.setRefreshed();
-            gitInfo.getDependency().getPersistentInfo().setWorkingDirSHA1(workingDirSHA1);
-            return;
+        var persistentInfo = gitInfo.getDependency().getPersistentInfo();
+        var launchers = gitInfo.getDependency().getGradleInfo().getLaunchers();
+
+        boolean dirty = false;
+        final String persistentStartupTasksTriggersSHA1 = persistentInfo.getStartupTasksTriggersSHA1();
+
+        if (persistentStartupTasksTriggersSHA1 == null) {
+            dirty = true;
+            launchers.getStartup().setRunNeeded();
+            persistentInfo.setStartupTasksTriggersSHA1(startupTasksTriggersSHA1);
         }
 
-        if (persistentWorkingDirSHA1.equals(workingDirSHA1)) return;
-        gitInfo.setRefreshed();
-        gitInfo.getDependency().getPersistentInfo().setWorkingDirSHA1(workingDirSHA1);
-        ManagerLogger.info("Dependency {} has new local changes, marking dependency to be rebuild", gitInfo.getDependency().getName());
+        final String persistentProbeTasksTriggersSHA1 = persistentInfo.getProbeTasksTriggersSHA1();
+        if (persistentProbeTasksTriggersSHA1 == null) {
+            dirty = true;
+            launchers.getProbe().setRunNeeded();
+            persistentInfo.setProbeTasksTriggersSHA1(probeTasksTriggersSHA1);
+        }
+
+        final String persistentBuildTasksTriggersSHA1 = persistentInfo.getBuildTasksTriggersSHA1();
+        if (persistentBuildTasksTriggersSHA1 == null) {
+            dirty = true;
+            launchers.getBuild().setRunNeeded();
+            persistentInfo.setBuildTasksTriggersSHA1(buildTasksTriggersSHA1);
+        }
+
+        if (dirty) return;
+
+        if (!persistentStartupTasksTriggersSHA1.equals(startupTasksTriggersSHA1)) {
+            ManagerLogger.info("Dependency {} has new local changes, for startupTasks marking dependency for reStartup", gitInfo.getDependency().getName());
+            launchers.getStartup().setRunNeeded();
+            persistentInfo.setStartupTasksTriggersSHA1(startupTasksTriggersSHA1);
+        }
+        if (!persistentProbeTasksTriggersSHA1.equals(probeTasksTriggersSHA1)) {
+            ManagerLogger.info("Dependency {} has new local changes, for probeTasks marking dependency for reProbe", gitInfo.getDependency().getName());
+            launchers.getProbe().setRunNeeded();
+            persistentInfo.setProbeTasksTriggersSHA1(probeTasksTriggersSHA1);
+        }
+        if (persistentBuildTasksTriggersSHA1.equals(buildTasksTriggersSHA1)) {
+            ManagerLogger.info("Dependency {} has new local changes, for buildTasks marking dependency to be rebuild", gitInfo.getDependency().getName());
+            launchers.getBuild().setRunNeeded();
+            persistentInfo.setBuildTasksTriggersSHA1(buildTasksTriggersSHA1);
+        }
     }
 
     boolean hasLocalChanges() throws GitAPIException, IOException {
-        if (shaLocalChanges != null) return true;
+        if (checkedForLocalChanges) return true;
 
         try {
             Status status = git.status().call();
@@ -118,31 +164,60 @@ final class GitWrapper implements AutoCloseable {
             changes.addAll(status.getMissing());
 
             if (!changes.isEmpty()) {
-                SHA1 sha1 = SHA1.newInstance();
-                byte[] buffer = new byte[4096];
-                int read;
-                for (String file : changes) {
-                    var filePath = new File(gitInfo.getDir(), file);
+                var launchers = gitInfo.getDependency().getGradleInfo().getLaunchers();
+                startupTasksTriggersSHA1 = calculateSHA1(
+                        changes.stream().filter(
+                                string -> launchers.getStartup().
+                                        getTaskTriggers().contains(string)).collect(Collectors.toList()));
 
-                    if (filePath.exists()) {
-                        try (FileInputStream inputStream = new FileInputStream(filePath)) {
-                            while ((read = inputStream.read(buffer)) > 0) {
-                                sha1.update(buffer, 0, read);
-                            }
-                        }
-                    } else {
-                        sha1.update(file.getBytes(StandardCharsets.UTF_8));
-                    }
+                probeTasksTriggersSHA1 = calculateSHA1(
+                        changes.stream().filter(
+                                string -> launchers.getProbe().
+                                        getTaskTriggers().contains(string)).collect(Collectors.toList()));
+
+                if (launchers.getBuild().getTaskTriggers().isEmpty()) {
+                    buildTasksTriggersSHA1 = calculateSHA1(changes);
+                } else {
+                    buildTasksTriggersSHA1 = calculateSHA1(
+                            changes.stream().filter(
+                                    string -> launchers.getBuild().
+                                            getTaskTriggers().contains(string)).collect(Collectors.toList()));
                 }
-                shaLocalChanges = sha1.toObjectId().getName();
+
+                checkedForLocalChanges = true;
                 return true;
             } else {
+                checkedForLocalChanges = true;
                 return false;
             }
         } catch (GitAPIException | IOException e) {
+            checkedForLocalChanges = true;
             addGitExceptions(e);
             throw e;
         }
+    }
+
+    @Nullable
+    private String calculateSHA1(List<String> changes) throws IOException {
+        if (changes.isEmpty()) return null;
+
+        SHA1 sha1 = SHA1.newInstance();
+        byte[] buffer = new byte[4096];
+        int read;
+        for (String file : changes) {
+            var filePath = new File(gitInfo.getDir(), file);
+
+            if (filePath.exists()) {
+                try (FileInputStream inputStream = new FileInputStream(filePath)) {
+                    while ((read = inputStream.read(buffer)) > 0) {
+                        sha1.update(buffer, 0, read);
+                    }
+                }
+            } else {
+                sha1.update(file.getBytes(StandardCharsets.UTF_8));
+            }
+        }
+        return sha1.toObjectId().getName();
     }
 
     private void cloneRepo() throws GitAPIException, IOException {
@@ -259,7 +334,7 @@ final class GitWrapper implements AutoCloseable {
         }
     }
 
-    String head() throws IOException {
+    private String head() throws IOException {
         return ObjectId.toString(git.getRepository().resolve(Constants.HEAD));
     }
 

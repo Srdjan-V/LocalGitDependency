@@ -73,7 +73,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                     GradleLaunchers::getProbe,
                     dep -> dep.getPersistentInfo().isSuccessfulProbe(),
                     info -> info.setProbeTasksStatus(true),
-                    dep -> !dep.getPersistentInfo().isValidModel())) {
+                    dep -> !dep.getPersistentInfo().isValidDataVersion())) {
                 startProbeTasks(dependency);
             }
 
@@ -88,8 +88,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                     GradleLaunchers::getBuild,
                     dep -> dep.getPersistentInfo().isSuccessfulBuild(),
                     info -> info.setBuildStatus(true),
-                    dep -> !dep.getGitInfo().hasRefreshed()
-                            || dep.getPersistentInfo().hasDependencyTypeChanged())) {
+                    dep ->  dep.getPersistentInfo().hasDependencyTypeChanged())) {
                 startBuildTasks(dependency);
             }
         }
@@ -103,9 +102,9 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             Consumer<PersistentInfo> statusUpdater,
             @Nullable Predicate<Dependency> customChecks
     ) {
-        if (launcher.apply(dependency.getGradleInfo().getLaunchers()).isExplicit()) {
-            return true;
-        }
+        if (launcher.apply(dependency.getGradleInfo().getLaunchers()).isExplicit()) return true;
+        if (dependency.getGitInfo().hasRefreshed()) return true;
+        if (launcher.apply(dependency.getGradleInfo().getLaunchers()).isRunNeeded()) return true;
 
         if (customChecks != null) {
             if (customChecks.test(dependency)) {

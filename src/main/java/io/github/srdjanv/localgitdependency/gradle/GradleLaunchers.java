@@ -112,7 +112,7 @@ public final class GradleLaunchers {
 
         @Override
         protected List<String> defaultTriggers() {
-            return Collections.emptyList();
+            return Collections.emptyList(); // no files will trigger reStartup
         }
     }
 
@@ -203,15 +203,12 @@ public final class GradleLaunchers {
 
         @Override
         protected List<String> defaultTriggers() {
-            List<String> triggers = new ArrayList<>();
-            triggers.add("settings.gradle");
-            triggers.add("build.gradle");
-            triggers.add("gradle.properties");
-            return triggers;
+            return Collections.emptyList();// A empty list will make sure all files are targeted
         }
     }
 
     public static abstract class Base {
+        private boolean runNeeded;
         private final boolean explicit;
         private final BiFunction<Managers, Dependency, List<String>> preTasksArguments;
         private final List<String> preTasks;
@@ -301,6 +298,14 @@ public final class GradleLaunchers {
 
         public boolean isForwardOutput() {
             return forwardOutput;
+        }
+
+        public boolean isRunNeeded() {
+            return runNeeded;
+        }
+
+        public void setRunNeeded() {
+            this.runNeeded = true;
         }
     }
 }
