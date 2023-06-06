@@ -238,7 +238,7 @@ public final class GradleLaunchers {
                 triggers.addAll(Arrays.asList(config.getAddTaskTriggers()));
                 taskTriggers = (List<String>) Collections.unmodifiableCollection(triggers);
             } else {
-                taskTriggers = Collections.emptyList();
+                taskTriggers = defaultTriggers();
             }
 
             if (config.getForwardOutput() == null) {

@@ -5,7 +5,6 @@ import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 
 @NonNullData
 public class DependencyData {
-    private String workingDirSHA1;
     private String initFileSHA1;
     private Boolean startupTasksSuccessful;
     private String startupTasksTriggersSHA1;
@@ -14,14 +13,6 @@ public class DependencyData {
     private Boolean buildTasksSuccessful;
     private String buildTasksTriggersSHA1;
     private Dependency.Type dependencyType;
-
-    public String getWorkingDirSHA1() {
-        return workingDirSHA1;
-    }
-
-    public void setWorkingDirSHA1(String workingDirSHA1) {
-        this.workingDirSHA1 = workingDirSHA1;
-    }
 
     public String getInitFileSHA1() {
         return initFileSHA1;

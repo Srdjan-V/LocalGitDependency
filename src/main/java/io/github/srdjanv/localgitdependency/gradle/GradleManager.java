@@ -88,7 +88,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                     GradleLaunchers::getBuild,
                     dep -> dep.getPersistentInfo().isSuccessfulBuild(),
                     info -> info.setBuildStatus(true),
-                    dep ->  dep.getPersistentInfo().hasDependencyTypeChanged())) {
+                    dep -> dep.getPersistentInfo().hasDependencyTypeChanged())) {
                 startBuildTasks(dependency);
             }
         }
@@ -102,17 +102,20 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             Consumer<PersistentInfo> statusUpdater,
             @Nullable Predicate<Dependency> customChecks
     ) {
-        if (launcher.apply(dependency.getGradleInfo().getLaunchers()).isExplicit()) return true;
-        if (dependency.getGitInfo().hasRefreshed()) return true;
-        if (launcher.apply(dependency.getGradleInfo().getLaunchers()).isRunNeeded()) return true;
-
-        if (customChecks != null) {
+        boolean checkTasks = false;
+        if (launcher.apply(dependency.getGradleInfo().getLaunchers()).isExplicit()) {
+            checkTasks = true;
+        } else if (dependency.getGitInfo().hasRefreshed()) {
+            checkTasks = true;
+        } else if (launcher.apply(dependency.getGradleInfo().getLaunchers()).isRunNeeded()) {
+            checkTasks = true;
+        } else if (customChecks != null) {
             if (customChecks.test(dependency)) {
-                return true;
+                checkTasks = true;
             }
         }
 
-        if (!persistentSuccessStatus.test(dependency)) {
+        if (checkTasks || !persistentSuccessStatus.test(dependency)) {
             final var targetLauncher = launcher.apply(dependency.getGradleInfo().getLaunchers());
             List<String> tasks = Stream.of(
                             targetLauncher.getPreTasks(),
@@ -127,6 +130,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                 return true;
             }
         }
+        statusUpdater.accept(dependency.getPersistentInfo());
         return false;
     }
 
@@ -489,12 +493,12 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             @Override
             public void onComplete(LocalGitDependencyJsonInfoModel result) {
                 dependency.getPersistentInfo().setProbeData(result.getJson());
-                dependency.getPersistentInfo().setStartupTasksStatus(true);
+                dependency.getPersistentInfo().setProbeTasksStatus(true);
             }
 
             @Override
             public void onFailure(GradleConnectionException failure) {
-                dependency.getPersistentInfo().setStartupTasksStatus(false);
+                dependency.getPersistentInfo().setProbeTasksStatus(false);
                 throw failure;
             }
         };

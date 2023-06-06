@@ -8,12 +8,14 @@ import org.jetbrains.annotations.NotNull;
 public final class SourceSetMapperConfig {
     private final String projectSet;
     private final String[] dependencySet;
-    private final Boolean recursive;
+    private final boolean recursive;
 
     public SourceSetMapperConfig(Builder builder) {
         this.projectSet = builder.projectSet;
         this.dependencySet = builder.dependencySet;
-        this.recursive = builder.recursive;
+        if (builder.recursive != null) {
+            this.recursive = builder.recursive;
+        } else throw new NullPointerException("Recursive config cant be null");
     }
 
     @NotNull
@@ -26,15 +28,14 @@ public final class SourceSetMapperConfig {
         return dependencySet;
     }
 
-    @NotNull
-    public Boolean isRecursive() {
+    public boolean isRecursive() {
         return recursive;
     }
 
     public static class Builder implements SourceSetMapperBuilder {
         private String projectSet;
         private String[] dependencySet;
-        private Boolean recursive;
+        private Boolean recursive = true;
 
         @Override
         public void map(String projectSet, String... dependencySet) {

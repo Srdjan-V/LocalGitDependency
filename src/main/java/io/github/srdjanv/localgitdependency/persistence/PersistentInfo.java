@@ -55,16 +55,6 @@ public final class PersistentInfo {
     }
 
     @Nullable
-    public String getWorkingDirSHA1() {
-        return dependencyData.getWorkingDirSHA1();
-    }
-
-    public void setWorkingDirSHA1(String SHA1) {
-        setDirty();
-        dependencyData.setWorkingDirSHA1(SHA1);
-    }
-
-    @Nullable
     public String getInitFileSHA1() {
         return dependencyData.getInitFileSHA1();
     }

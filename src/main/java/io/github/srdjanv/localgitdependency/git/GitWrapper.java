@@ -93,12 +93,12 @@ final class GitWrapper implements AutoCloseable {
         final String probeTasksTriggersSHA1;
         final String buildTasksTriggersSHA1;
 
+        var head = head();
         if (hasLocalChanges()) {
-            startupTasksTriggersSHA1 = this.startupTasksTriggersSHA1;
-            probeTasksTriggersSHA1 = this.probeTasksTriggersSHA1;
-            buildTasksTriggersSHA1 = this.buildTasksTriggersSHA1;
+            startupTasksTriggersSHA1 = this.startupTasksTriggersSHA1 == null ? head : this.startupTasksTriggersSHA1;
+            probeTasksTriggersSHA1 = this.probeTasksTriggersSHA1 == null ? head : this.probeTasksTriggersSHA1;
+            buildTasksTriggersSHA1 = this.buildTasksTriggersSHA1 == null ? head : this.buildTasksTriggersSHA1;
         } else {
-            var head = head();
             startupTasksTriggersSHA1 = head;
             probeTasksTriggersSHA1 = head;
             buildTasksTriggersSHA1 = head;
@@ -107,42 +107,31 @@ final class GitWrapper implements AutoCloseable {
         var persistentInfo = gitInfo.getDependency().getPersistentInfo();
         var launchers = gitInfo.getDependency().getGradleInfo().getLaunchers();
 
-        boolean dirty = false;
         final String persistentStartupTasksTriggersSHA1 = persistentInfo.getStartupTasksTriggersSHA1();
-
         if (persistentStartupTasksTriggersSHA1 == null) {
-            dirty = true;
+            launchers.getStartup().setRunNeeded();
+            persistentInfo.setStartupTasksTriggersSHA1(startupTasksTriggersSHA1);
+        } else if (!persistentStartupTasksTriggersSHA1.equals(startupTasksTriggersSHA1)) {
+            ManagerLogger.info("Dependency {} has new local changes, for startupTasks marking dependency for reStartup", gitInfo.getDependency().getName());
             launchers.getStartup().setRunNeeded();
             persistentInfo.setStartupTasksTriggersSHA1(startupTasksTriggersSHA1);
         }
 
         final String persistentProbeTasksTriggersSHA1 = persistentInfo.getProbeTasksTriggersSHA1();
         if (persistentProbeTasksTriggersSHA1 == null) {
-            dirty = true;
+            launchers.getProbe().setRunNeeded();
+            persistentInfo.setProbeTasksTriggersSHA1(probeTasksTriggersSHA1);
+        } else if (!persistentProbeTasksTriggersSHA1.equals(probeTasksTriggersSHA1)) {
+            ManagerLogger.info("Dependency {} has new local changes, for probeTasks marking dependency for reProbe", gitInfo.getDependency().getName());
             launchers.getProbe().setRunNeeded();
             persistentInfo.setProbeTasksTriggersSHA1(probeTasksTriggersSHA1);
         }
 
         final String persistentBuildTasksTriggersSHA1 = persistentInfo.getBuildTasksTriggersSHA1();
         if (persistentBuildTasksTriggersSHA1 == null) {
-            dirty = true;
             launchers.getBuild().setRunNeeded();
             persistentInfo.setBuildTasksTriggersSHA1(buildTasksTriggersSHA1);
-        }
-
-        if (dirty) return;
-
-        if (!persistentStartupTasksTriggersSHA1.equals(startupTasksTriggersSHA1)) {
-            ManagerLogger.info("Dependency {} has new local changes, for startupTasks marking dependency for reStartup", gitInfo.getDependency().getName());
-            launchers.getStartup().setRunNeeded();
-            persistentInfo.setStartupTasksTriggersSHA1(startupTasksTriggersSHA1);
-        }
-        if (!persistentProbeTasksTriggersSHA1.equals(probeTasksTriggersSHA1)) {
-            ManagerLogger.info("Dependency {} has new local changes, for probeTasks marking dependency for reProbe", gitInfo.getDependency().getName());
-            launchers.getProbe().setRunNeeded();
-            persistentInfo.setProbeTasksTriggersSHA1(probeTasksTriggersSHA1);
-        }
-        if (persistentBuildTasksTriggersSHA1.equals(buildTasksTriggersSHA1)) {
+        } else if (!persistentBuildTasksTriggersSHA1.equals(buildTasksTriggersSHA1)) {
             ManagerLogger.info("Dependency {} has new local changes, for buildTasks marking dependency to be rebuild", gitInfo.getDependency().getName());
             launchers.getBuild().setRunNeeded();
             persistentInfo.setBuildTasksTriggersSHA1(buildTasksTriggersSHA1);
