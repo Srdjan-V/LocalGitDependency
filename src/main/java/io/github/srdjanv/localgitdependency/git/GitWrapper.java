@@ -24,7 +24,6 @@ import static org.eclipse.jgit.lib.Constants.*;
 // https://github.com/alexvasilkov/GradleGitDependenciesPlugin/blob/master/src/main/groovy/com/alexvasilkov/gradle/git/utils/GitUtils.groovy
 final class GitWrapper implements AutoCloseable {
     private List<Exception> gitExceptions;
-    private boolean checkedForLocalChanges;
     private String startupTasksTriggersSHA1;
     private String probeTasksTriggersSHA1;
     private String buildTasksTriggersSHA1;
@@ -138,8 +137,9 @@ final class GitWrapper implements AutoCloseable {
         }
     }
 
+    private Boolean hasLocalChanges;
     boolean hasLocalChanges() throws GitAPIException, IOException {
-        if (checkedForLocalChanges) return true;
+        if (hasLocalChanges != null) return hasLocalChanges;
 
         try {
             Status status = git.status().call();
@@ -173,14 +173,11 @@ final class GitWrapper implements AutoCloseable {
                                             getTaskTriggers().contains(string)).collect(Collectors.toList()));
                 }
 
-                checkedForLocalChanges = true;
-                return true;
+                return hasLocalChanges = true;
             } else {
-                checkedForLocalChanges = true;
-                return false;
+                return hasLocalChanges = false;
             }
         } catch (GitAPIException | IOException e) {
-            checkedForLocalChanges = true;
             addGitExceptions(e);
             throw e;
         }

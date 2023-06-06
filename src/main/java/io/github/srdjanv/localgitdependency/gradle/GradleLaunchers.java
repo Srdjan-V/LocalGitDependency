@@ -96,6 +96,16 @@ public final class GradleLaunchers {
         }
 
         @Override
+        protected BiFunction<Managers, Dependency, List<String>> defaultMainArguments(@Nullable String[] args) {
+            if (args != null) {
+                final List<String> argsList = Arrays.asList(args);
+                return (managers, dep) -> argsList;
+            } else {
+                return (managers, dep) -> Collections.emptyList();
+            }
+        }
+
+        @Override
         protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
             if (args != null) {
                 final List<String> argsList = Arrays.asList(args);
@@ -123,9 +133,23 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+        protected BiFunction<Managers, Dependency, List<String>> defaultMainArguments(@Nullable String[] args) {
             if (args != null) {
                 PluginLogger.warn("Custom main tasks arguments detected for Probe launcher, this is not recommended");
+                final List<String> argsList = Arrays.asList(args);
+                return (managers, dep) -> argsList;
+            } else {
+                return (managers, dep) -> {
+                    File initScriptFolder = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                    File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
+                    return Arrays.asList("--init-script", mainInit.getAbsolutePath());
+                };
+            }
+        }
+
+        @Override
+        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+            if (args != null) {
                 final List<String> argsList = Arrays.asList(args);
                 return (managers, dep) -> argsList;
             } else {
@@ -159,9 +183,23 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+        protected BiFunction<Managers, Dependency, List<String>> defaultMainArguments(@Nullable String[] args) {
             if (args != null) {
                 PluginLogger.warn("Custom main tasks arguments detected for Build launcher, this is not recommended");
+                final List<String> argsList = Arrays.asList(args);
+                return (managers, dep) -> argsList;
+            } else {
+                return (managers, dep) -> {
+                    File initScriptFolder = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                    File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
+                    return Arrays.asList("--init-script", mainInit.getAbsolutePath());
+                };
+            }
+        }
+
+        @Override
+        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+            if (args != null) {
                 final List<String> argsList = Arrays.asList(args);
                 return (managers, dep) -> argsList;
             } else {
@@ -225,7 +263,7 @@ public final class GradleLaunchers {
             this.preTasksArguments = defaultArguments(config.getPreTasksArguments());
             this.preTasks = getTasks(config.getPreTasks());
 
-            this.mainTasksArguments = defaultArguments(config.getMainTasksArguments());
+            this.mainTasksArguments = defaultMainArguments(config.getMainTasksArguments());
             this.mainTasks = defaultMainTasks(config);
 
             this.postTasksArguments = defaultArguments(config.getPostTasksArguments());
@@ -250,6 +288,8 @@ public final class GradleLaunchers {
         protected List<String> getTasks(@Nullable String[] tasks) {
             return tasks == null ? Collections.emptyList() : Arrays.asList(tasks);
         }
+
+        protected abstract BiFunction<Managers, Dependency, List<String>> defaultMainArguments(@Nullable String[] args);
 
         protected abstract BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args);
 

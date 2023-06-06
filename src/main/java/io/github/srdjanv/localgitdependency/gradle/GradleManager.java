@@ -117,6 +117,10 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         if (checkTasks || !persistentSuccessStatus.test(dependency)) {
             final var targetLauncher = launcher.apply(dependency.getGradleInfo().getLaunchers());
+            if (targetLauncher instanceof GradleLaunchers.Probe) {
+                return true;
+            }
+
             List<String> tasks = Stream.of(
                             targetLauncher.getPreTasks(),
                             targetLauncher.getMainTasks(this, dependency),
