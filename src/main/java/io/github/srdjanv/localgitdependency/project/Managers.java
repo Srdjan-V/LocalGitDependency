@@ -13,7 +13,7 @@ import org.gradle.api.Project;
 public interface Managers {
     Project getProject();
     IProjectManager getProjectManager();
-    IConfigManager getPropertyManager();
+    IConfigManager getConfigManager();
     IDependencyManager getDependencyManager();
     IGitManager getGitManager();
     IGradleManager getGradleManager();

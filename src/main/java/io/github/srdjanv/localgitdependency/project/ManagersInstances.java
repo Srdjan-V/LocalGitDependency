@@ -17,7 +17,7 @@ import java.util.List;
 final class ManagersInstances implements Managers {
     private final Project project;
     private final IProjectManager projectManager;
-    private final IConfigManager propertyManager;
+    private final IConfigManager configManager;
     private final IDependencyManager dependencyManager;
     private final IGitManager gitManager;
     private final IGradleManager gradleManager;
@@ -29,11 +29,11 @@ final class ManagersInstances implements Managers {
     ManagersInstances(Project project) {
         this.project = project;
 
-        final List<ManagerBase> managerList = new ArrayList<>();
+        final List<ManagerBase> managerList = new ArrayList<>(9);
         managerList.add((ManagerBase) (projectManager = IProjectManager.createInstance(this)));
         managerList.add(localGitDependencyExtension = project.getExtensions().create(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION, LocalGitDependencyExtension.class, this));
         managerList.add((ManagerBase) (dependencyManager = IDependencyManager.createInstance(this)));
-        managerList.add((ManagerBase) (propertyManager = IConfigManager.createInstance(this)));
+        managerList.add((ManagerBase) (configManager = IConfigManager.createInstance(this)));
         managerList.add((ManagerBase) (gitManager = IGitManager.createInstance(this)));
         managerList.add((ManagerBase) (gradleManager = IGradleManager.createInstance(this)));
         managerList.add((ManagerBase) (persistenceManager = IPersistenceManager.createInstance(this)));
@@ -56,8 +56,8 @@ final class ManagersInstances implements Managers {
     }
 
     @Override
-    public IConfigManager getPropertyManager() {
-        return propertyManager;
+    public IConfigManager getConfigManager() {
+        return configManager;
     }
 
     @Override

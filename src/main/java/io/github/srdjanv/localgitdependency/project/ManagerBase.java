@@ -55,8 +55,8 @@ public abstract class ManagerBase implements Manager {
     }
 
     @Override
-    public IConfigManager getPropertyManager() {
-        return managers.getPropertyManager();
+    public IConfigManager getConfigManager() {
+        return managers.getConfigManager();
     }
 
     @Override

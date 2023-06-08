@@ -31,7 +31,7 @@ public final class GradleInfo {
             if (dependencyConfig.getPersistentDir() != null) {
                 dir = dependencyConfig.getPersistentDir();
             } else {
-                dir = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                dir = managers.getConfigManager().getPluginConfig().getPersistentDir();
             }
             this.initScript = Constants.persistentInitScript.apply(dir,
                     dependency.getName());

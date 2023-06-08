@@ -29,8 +29,8 @@ public class LocalGitDependencyManagerInstance implements Managers {
     }
 
     @Override
-    public IConfigManager getPropertyManager() {
-        return manager.getPropertyManager();
+    public IConfigManager getConfigManager() {
+        return manager.getConfigManager();
     }
 
     @Override

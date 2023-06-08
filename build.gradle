@@ -28,13 +28,15 @@ dependencies {
     //implementation 'com.google.guava:guava:31.1-jre'
 
     //enables java 17 features on java 8
-    annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+    String jabelPlugin = 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
     compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
 
+    annotationProcessor jabelPlugin
+    testAnnotationProcessor jabelPlugin
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
 }
 
-configure([tasks.compileJava]) {
+configure([tasks.compileJava, tasks.compileTestJava]) {
     sourceCompatibility = 17 // for the IDE support
     options.release = 8
 

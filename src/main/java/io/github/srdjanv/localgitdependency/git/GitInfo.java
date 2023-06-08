@@ -60,7 +60,7 @@ public final class GitInfo {
             if (dependencyConfig.getGitDir() != null) {
                 dir = dependencyConfig.getGitDir();
             } else {
-                dir = managers.getPropertyManager().getPluginConfig().getGitDir();
+                dir = managers.getConfigManager().getPluginConfig().getGitDir();
             }
             this.dir = Constants.concatFile.apply(dir,
                     dependency.getName());

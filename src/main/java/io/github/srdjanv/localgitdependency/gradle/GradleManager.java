@@ -381,11 +381,11 @@ final class GradleManager extends ManagerBase implements IGradleManager {
     }
 
     private void validateMainInitScript() {
-        PluginConfig globalProperty = getPropertyManager().getPluginConfig();
-        File mainInit = Constants.concatFile.apply(globalProperty.getPersistentDir(), Constants.MAIN_INIT_SCRIPT_GRADLE);
+        PluginConfig pluginConfig = getConfigManager().getPluginConfig();
+        File mainInit = Constants.concatFile.apply(pluginConfig.getPersistentDir(), Constants.MAIN_INIT_SCRIPT_GRADLE);
         validateScript(
                 mainInit,
-                globalProperty.getKeepInitScriptUpdated(),
+                pluginConfig.getKeepInitScriptUpdated(),
                 GradleInit::createInitProbe,
                 getPersistenceManager()::getInitScriptSHA,
                 getPersistenceManager()::setInitScriptSHA);

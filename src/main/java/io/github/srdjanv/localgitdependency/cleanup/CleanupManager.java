@@ -25,7 +25,7 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
 
     @Override
     public void init() {
-        PluginConfig props = getPropertyManager().getPluginConfig();
+        PluginConfig props = getConfigManager().getPluginConfig();
 
         if (!props.getAutomaticCleanup()) {
             ManagerLogger.info("Skipping cleanup");
@@ -81,7 +81,7 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
     }
 
     private void deleteDir(Path path) throws IOException {
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

@@ -25,7 +25,7 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
     static {
         PROJECT_RUNNERS = new ArrayList<>();
         PROJECT_RUNNERS.add(ManagerRunner.<IConfigManager>create(managerRunner -> {
-            managerRunner.setManagerSupplier(Managers::getPropertyManager);
+            managerRunner.setManagerSupplier(Managers::getConfigManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("createEssentialDirectories"));
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<ICleanupManager>create(managerRunner -> {

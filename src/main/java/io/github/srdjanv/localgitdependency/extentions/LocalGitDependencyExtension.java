@@ -48,12 +48,12 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
     public void configurePlugin(
             @DelegatesTo(value = PluginBuilder.class, strategy = Closure.DELEGATE_FIRST)
             Closure configureClosure) {
-        getPropertyManager().configurePlugin(configureClosure);
+        getConfigManager().configurePlugin(configureClosure);
     }
     public void configureDefaultable(
             @DelegatesTo(value = DefaultableBuilder.class, strategy = Closure.DELEGATE_FIRST)
             Closure configureClosure) {
-        getPropertyManager().configureDefaultable(configureClosure);
+        getConfigManager().configureDefaultable(configureClosure);
     }
 
     public void add(String dependencyURL) {

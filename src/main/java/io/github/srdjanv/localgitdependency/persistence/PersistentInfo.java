@@ -33,7 +33,7 @@ public final class PersistentInfo {
             if (dependencyConfig.getPersistentDir() != null) {
                 dir = dependencyConfig.getPersistentDir();
             } else {
-                dir = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                dir = managers.getConfigManager().getPluginConfig().getPersistentDir();
             }
             this.persistentFile = Constants.persistentJsonFile.apply(dir,
                     dependency.getName());

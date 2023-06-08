@@ -59,7 +59,7 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
 
     @Override
     public void loadProjectPersistentData() {
-        File initScriptFolder = getPropertyManager().getPluginConfig().getPersistentDir();
+        File initScriptFolder = getConfigManager().getPluginConfig().getPersistentDir();
         projectDataJson = Constants.concatFile.apply(initScriptFolder, Constants.PROJECT_DATA_JSON);
 
         if (projectDataJson.exists()) {

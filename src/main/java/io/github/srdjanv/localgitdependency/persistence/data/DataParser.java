@@ -63,12 +63,12 @@ public class DataParser {
                         return false;
                     }
 
-                    //inner objects that implement NonNullData
+                    //inner objects that are annotated NonNullData
                     if (!validDataForClass(declaredField.getType(), declaredField.get(data))) {
                         return false;
                     }
 
-                    //inner List objects with a generic type that implement NonNullData
+                    //inner List objects with a generic type that is annotated with NonNullData
                     if (declaredField.getType() == List.class) {
                         Type genericType = declaredField.getGenericType();
                         if (genericType instanceof ParameterizedType parameterizedType) {

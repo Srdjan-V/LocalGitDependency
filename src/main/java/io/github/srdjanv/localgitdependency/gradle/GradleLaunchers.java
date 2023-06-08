@@ -140,7 +140,7 @@ public final class GradleLaunchers {
                 return (managers, dep) -> argsList;
             } else {
                 return (managers, dep) -> {
-                    File initScriptFolder = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                    File initScriptFolder = managers.getConfigManager().getPluginConfig().getPersistentDir();
                     File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
                     return Arrays.asList("--init-script", mainInit.getAbsolutePath());
                 };
@@ -154,7 +154,7 @@ public final class GradleLaunchers {
                 return (managers, dep) -> argsList;
             } else {
                 return (managers, dep) -> {
-                    File initScriptFolder = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                    File initScriptFolder = managers.getConfigManager().getPluginConfig().getPersistentDir();
                     File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
                     return Arrays.asList("--init-script", mainInit.getAbsolutePath());
                 };
@@ -190,7 +190,7 @@ public final class GradleLaunchers {
                 return (managers, dep) -> argsList;
             } else {
                 return (managers, dep) -> {
-                    File initScriptFolder = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                    File initScriptFolder = managers.getConfigManager().getPluginConfig().getPersistentDir();
                     File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
                     return Arrays.asList("--init-script", mainInit.getAbsolutePath());
                 };
@@ -204,7 +204,7 @@ public final class GradleLaunchers {
                 return (managers, dep) -> argsList;
             } else {
                 return (managers, dep) -> {
-                    File initScriptFolder = managers.getPropertyManager().getPluginConfig().getPersistentDir();
+                    File initScriptFolder = managers.getConfigManager().getPluginConfig().getPersistentDir();
                     File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
                     return Arrays.asList("--init-script", mainInit.getAbsolutePath());
                 };

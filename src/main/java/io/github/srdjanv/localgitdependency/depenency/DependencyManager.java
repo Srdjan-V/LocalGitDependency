@@ -59,12 +59,12 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     public void registerDependency(@Nullable String configurationName, @NotNull String dependencyURL, @Nullable @SuppressWarnings("rawtypes") Closure configureClosure) {
         DependencyConfig dependencyConfig;
         {
-            DependencyConfig.Builder dependencyPropertyBuilder = new DependencyConfig.Builder(dependencyURL);
-            dependencyPropertyBuilder.configuration(configurationName);
+            DependencyConfig.Builder dependencyConfigBuilder = new DependencyConfig.Builder(dependencyURL);
+            dependencyConfigBuilder.configuration(configurationName);
             if (configureClosure != null) {
-                ClosureUtil.delegate(configureClosure, dependencyPropertyBuilder);
+                ClosureUtil.delegate(configureClosure, dependencyConfigBuilder);
             }
-            dependencyConfig = new DependencyConfig(dependencyPropertyBuilder, getPropertyManager().getDefaultableConfig());
+            dependencyConfig = new DependencyConfig(dependencyConfigBuilder, getConfigManager().getDefaultableConfig());
         }
 
         dependencies.add(new Dependency(this, dependencyConfig));
@@ -112,7 +112,7 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     }
 
     private void addRepositoryMavenProjectLocal() {
-        final File mavenRepo = Constants.MavenProjectLocal.apply(getPropertyManager().getPluginConfig().getMavenDir());
+        final File mavenRepo = Constants.MavenProjectLocal.apply(getConfigManager().getPluginConfig().getMavenDir());
         ManagerLogger.info("Adding MavenProjectLocal repository at {}", mavenRepo.getAbsolutePath());
         getProject().getRepositories().maven(mavenArtifactRepository -> {
             mavenArtifactRepository.setName(Constants.RepositoryMavenProjectLocal);
