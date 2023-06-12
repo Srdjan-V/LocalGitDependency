@@ -195,29 +195,32 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
                 buildResourcesDir = sourceSet.getOutput().getResourcesDir().getAbsolutePath();
             }
 
-            final List<String> sourcePaths = new ArrayList<>();
-            final List<String> resourcePaths = new ArrayList<>();
+            final List<String> sourcePaths = sourceSet.getJava().getSourceDirectories().getFiles().
+                    stream().map(File::getAbsolutePath).collect(ArrayList::new, List::add, List::addAll);
+
+            final List<String> resourcePaths = sourceSet.getResources().getSourceDirectories().getFiles().
+                    stream().map(File::getAbsolutePath).collect(ArrayList::new, List::add, List::addAll);
+
             final List<String> compileClasspath = new ArrayList<>();
             final Set<String> dependentSourceSets = new HashSet<>();
 
-            sourceSet.getJava().getSourceDirectories().getFiles().
-                    stream().map(File::getAbsolutePath).collect(() -> sourcePaths, List::add, List::addAll);
-
-            sourceSet.getResources().getSourceDirectories().getFiles().
-                    stream().map(File::getAbsolutePath).collect(() -> resourcePaths, List::add, List::addAll);
-
-            // TODO: 18/05/2023 make it recursive
             topFor:
             for (File file : sourceSet.getCompileClasspath()) {
                 var absolutePath = file.getAbsolutePath();
 
                 for (SourceSet innerSourceSet : sourceContainer) {
-                    for (File classesDir : innerSourceSet.getOutput().getClassesDirs()) {
+                    for (File classesDir : innerSourceSet.getOutput().getClassesDirs())
                         if (absolutePath.equals(classesDir.getAbsolutePath())) {
                             dependentSourceSets.add(innerSourceSet.getName());
                             continue topFor;
                         }
-                    }
+
+                    var resourcesDir = innerSourceSet.getOutput().getResourcesDir();
+                    if (resourcesDir != null)
+                        if (absolutePath.equals(resourcesDir.getAbsolutePath())) {
+                            dependentSourceSets.add(innerSourceSet.getName());
+                            continue topFor;
+                        }
                 }
 
                 compileClasspath.add(absolutePath);
@@ -237,4 +240,6 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         builder.setSourceSetsData(sourceSets);
     }
 
+    // TODO: 12/06/2023 build subDep list 
+    
 }
