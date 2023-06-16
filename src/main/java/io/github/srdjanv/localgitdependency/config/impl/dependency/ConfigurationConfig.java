@@ -51,12 +51,11 @@ public final class ConfigurationConfig {
         private final List<String> includeNotations;
         private final List<String> excludeNotations;
         private Closure closure;
-        private final Map<String, Closure> closureMap;
+        private Map<String, Closure> closureMap;
 
         public Builder() {
             includeNotations = new ArrayList<>();
             excludeNotations = new ArrayList<>();
-            closureMap = new HashMap<>();
         }
 
         @Override
@@ -65,23 +64,23 @@ public final class ConfigurationConfig {
         }
 
         @Override
-        public void include(String... notation) {
-            includeNotations.addAll(Arrays.asList(notation));
-        }
-
-        @Override
-        public void exclude(String... notation) {
-            excludeNotations.addAll(Arrays.asList(notation));
-        }
-
-        @Override
         public void closure(Closure closure) {
             this.closure = closure;
         }
 
         @Override
-        public void closure(String notation, Closure closure) {
-            closureMap.put(notation, closure);
+        public void include(String... notation) {
+            includeNotations.addAll(Arrays.asList(notation));
+        }
+
+        @Override
+        public void include(Map<String, Closure> notation) {
+            closureMap = notation;
+        }
+
+        @Override
+        public void exclude(String... notation) {
+            excludeNotations.addAll(Arrays.asList(notation));
         }
     }
 }

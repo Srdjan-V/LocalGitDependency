@@ -27,6 +27,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.github.srdjanv.localgitdependency.Constants.TASKS_GROUP_INTERNAL;
+
 final class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
     private SourceSetContainer rootSourceSetContainer;
@@ -254,7 +256,9 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
 
             for (String task : taskSupplier.apply(sourceSet)) {
                 try {
-                    rootProject.getTasks().getByName(task).setEnabled(false);
+                    var sourceTask = rootProject.getTasks().getByName(task);
+                    sourceTask.setEnabled(false);
+                    sourceTask.setGroup(TASKS_GROUP_INTERNAL);
                 } catch (UnknownTaskException ignore) {
                 }
             }

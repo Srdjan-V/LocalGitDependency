@@ -60,12 +60,12 @@ class TasksManager extends ManagerBase implements ITasksManager {
 
     private <T extends Task> void register(String name, Class<T> taskClass, Object... constructorArgs) {
         TaskProvider<T> taskProvider = getProject().getTasks().register(name, taskClass, constructorArgs);
-        taskProvider.configure(configurationAction -> configurationAction.setGroup(Constants.EXTENSION_NAME));
+        taskProvider.configure(configurationAction -> configurationAction.setGroup(Constants.TASKS_GROUP));
     }
 
     private <T extends Task> void createTask(String name, Class<T> taskClass, Object... constructorArgs) {
         T task = getProject().getTasks().create(name, taskClass, constructorArgs);
-        task.setGroup(Constants.EXTENSION_NAME);
+        task.setGroup(Constants.TASKS_GROUP);
     }
 
 }

@@ -37,14 +37,13 @@ public class Configuration {
         Set<Property> properties = new HashSet<>();
         if (configurationConfig.getIncludeNotations() != null)
             for (String includeNotation : configurationConfig.getIncludeNotations()) {
-                Property prop;
-                var closure = configurationConfig.getClosureMap().get(includeNotation);
-                if (closure == null) {
-                    prop = new Property(includeNotation, this.closure);
-                } else {
-                    prop = new Property(includeNotation, closure);
-                }
-                properties.add(prop);
+                properties.add(new Property(includeNotation, closure));
+            }
+
+        if (configurationConfig.getClosureMap() != null)
+            for (Map.Entry<String, Closure> entry : configurationConfig.getClosureMap().entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) continue;
+                properties.add(new Property(entry.getKey(), entry.getValue()));
             }
 
         if (configurationConfig.getExcludeNotations() != null)

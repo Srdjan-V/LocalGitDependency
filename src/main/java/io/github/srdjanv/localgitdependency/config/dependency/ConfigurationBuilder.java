@@ -2,6 +2,8 @@ package io.github.srdjanv.localgitdependency.config.dependency;
 
 import groovy.lang.Closure;
 
+import java.util.Map;
+
 public interface ConfigurationBuilder {
     /**
      * The target configuration for artifacts
@@ -12,6 +14,16 @@ public interface ConfigurationBuilder {
      * @see org.gradle.api.artifacts.ConfigurationContainer
      */
     void configuration(String configuration);
+
+    /**
+     * This closure will be passed to the DependencyHandler
+     * <p>
+     *  If left empty the closure  of the dependency builder will be used
+     *
+     * @param closure artifact closure
+     * @see org.gradle.api.artifacts.dsl.DependencyHandler
+     */
+    void closure(Closure closure);
 
     /**
      * If the dependency type is Jar then the plugin will use string contains to filter what jars are going to be added
@@ -27,6 +39,8 @@ public interface ConfigurationBuilder {
      */
     void include(String... notation);
 
+    void include(Map<String, Closure> notation);
+
     /**
      * Same as the above but is used for exclusion, this should not be used alongside include
      *
@@ -36,21 +50,4 @@ public interface ConfigurationBuilder {
      */
     void exclude(String... notation);
 
-    /**
-     * This closure will be passed to the DependencyHandler
-     * <p>
-     *  If left empty the closure  of the dependency builder will be used
-     *
-     * @param closure artifact closure
-     * @see org.gradle.api.artifacts.dsl.DependencyHandler
-     */
-    void closure(Closure closure);
-
-    /**
-     * Same as above but its used for specific artifacts, the notation's must match for this to work
-     *
-     * @param closure artifact closure
-     * @see org.gradle.api.artifacts.dsl.DependencyHandler
-     */
-    void closure(String notation, Closure closure);
 }

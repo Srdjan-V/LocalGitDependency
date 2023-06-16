@@ -1,11 +1,10 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
-import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.gradle.api.GradleException;
