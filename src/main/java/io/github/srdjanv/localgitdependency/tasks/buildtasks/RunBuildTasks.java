@@ -7,10 +7,10 @@ import org.gradle.api.tasks.TaskAction;
 
 import javax.inject.Inject;
 
-public class BuildGitDependency extends BaseDependencyTask implements BaseBuildGitTask {
+public class RunBuildTasks extends BaseDependencyTask implements BaseBuildGitTask {
 
     @Inject
-    public BuildGitDependency(Managers managers, Dependency dependency) {
+    public RunBuildTasks(Managers managers, Dependency dependency) {
         super(managers, dependency);
         setDescription(String.format("This task will explicitly rebuild this dependency: %s", dependency.getName()));
     }

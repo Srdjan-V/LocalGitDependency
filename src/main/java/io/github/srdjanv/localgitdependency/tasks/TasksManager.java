@@ -5,11 +5,12 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.tasks.buildtasks.BuildAllGitDependencies;
-import io.github.srdjanv.localgitdependency.tasks.buildtasks.BuildGitDependency;
+import io.github.srdjanv.localgitdependency.tasks.buildtasks.RunBuildTasks;
 import io.github.srdjanv.localgitdependency.tasks.printtasks.PrintAllDependenciesInfo;
 import io.github.srdjanv.localgitdependency.tasks.printtasks.PrintDependencyInfo;
 import io.github.srdjanv.localgitdependency.tasks.probetasks.ProbeAllDependenciesTask;
-import io.github.srdjanv.localgitdependency.tasks.probetasks.ProbeDependencyTask;
+import io.github.srdjanv.localgitdependency.tasks.probetasks.RunProbeTasks;
+import io.github.srdjanv.localgitdependency.tasks.startuptasks.RunStartupTasks;
 import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoAllLocalGitChanges;
 import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoLocalGitChanges;
 import org.gradle.api.Task;
@@ -47,9 +48,10 @@ class TasksManager extends ManagerBase implements ITasksManager {
             if (!dependency.isGenerateGradleTasks()) continue;
 
             taskCreator.create(Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency), UndoLocalGitChanges.class, getProjectManagers(), dependency);
-            taskCreator.create(Constants.PROBE_DEPENDENCY.apply(dependency), ProbeDependencyTask.class, getProjectManagers(), dependency);
-            taskCreator.create(Constants.BUILD_GIT_DEPENDENCY.apply(dependency), BuildGitDependency.class, getProjectManagers(), dependency);
             taskCreator.create(Constants.PRINT_DEPENDENCY_INFO.apply(dependency), PrintDependencyInfo.class, getProjectManagers(), dependency);
+            taskCreator.create(Constants.STARTUP_DEPENDENCY.apply(dependency), RunStartupTasks.class, getProjectManagers(), dependency);
+            taskCreator.create(Constants.PROBE_DEPENDENCY.apply(dependency), RunProbeTasks.class, getProjectManagers(), dependency);
+            taskCreator.create(Constants.BUILD_GIT_DEPENDENCY.apply(dependency), RunBuildTasks.class, getProjectManagers(), dependency);
         }
     }
 

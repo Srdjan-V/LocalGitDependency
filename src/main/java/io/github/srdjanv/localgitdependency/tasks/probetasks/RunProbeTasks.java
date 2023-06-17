@@ -7,9 +7,9 @@ import org.gradle.api.tasks.TaskAction;
 
 import javax.inject.Inject;
 
-public class ProbeDependencyTask extends BaseDependencyTask implements BaseProbeTask {
+public class RunProbeTasks extends BaseDependencyTask implements BaseProbeTask {
     @Inject
-    public ProbeDependencyTask(Managers managers, Dependency dependency) {
+    public RunProbeTasks(Managers managers, Dependency dependency) {
         super(managers, dependency);
         setDescription(String.format("This task will trigger probing for this dependency: %s", dependency.getName()));
     }

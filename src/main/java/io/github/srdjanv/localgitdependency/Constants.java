@@ -26,14 +26,16 @@ public final class Constants {
     public final static String TAB_INDENTX2 = TAB_INDENT + TAB_INDENT;
 
     //Custom Tasks generated for each dependency
-    public final static String PROBE_ALL_DEPENDENCIES = "!ProbeAllDependencies";
-    public final static Function<Dependency, String> PROBE_DEPENDENCY = s -> s.getName() + "-ProbeDependency";
+    public final static String STARTUP_ALL_DEPENDENCIES = "!StartupAllDependencies";
+    public final static Function<Dependency, String> STARTUP_DEPENDENCY = s -> s.getName() + "-Startup";
+    public final static String PROBE_ALL_DEPENDENCIES = "!ProbeAll";
+    public final static Function<Dependency, String> PROBE_DEPENDENCY = s -> s.getName() + "-Probe";
     public final static String UNDO_ALL_LOCAL_GIT_CHANGES = "!UndoAllLocalGitChanges";
     public final static Function<Dependency, String> UNDO_LOCAL_GIT_CHANGES = s -> s.getName() + "-UndoLocalGitChanges";
-    public final static String BUILD_ALL_GIT_DEPENDENCIES = "!BuildAllGitDependencies";
-    public final static Function<Dependency, String> BUILD_GIT_DEPENDENCY = s -> s.getName() + "-BuildGitDependency";
-    public final static String PRINT_ALL_DEPENDENCIES_INFO = "!PrintAllDependenciesInfo";
-    public final static Function<Dependency, String> PRINT_DEPENDENCY_INFO = s -> s.getName() + "-PrintDependencyInfo";
+    public final static String BUILD_ALL_GIT_DEPENDENCIES = "!BuildAll";
+    public final static Function<Dependency, String> BUILD_GIT_DEPENDENCY = s -> s.getName() + "-Build";
+    public final static String PRINT_ALL_DEPENDENCIES_INFO = "!PrintAllInfo";
+    public final static Function<Dependency, String> PRINT_DEPENDENCY_INFO = s -> s.getName() + "-PrintInfo";
 
     //Main plugin data
     public final static String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
