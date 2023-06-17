@@ -16,6 +16,7 @@ public abstract class DependencyConfigFields extends DefaultableConfigFields {
     protected GitInfo.TargetType targetType;
     protected String configuration;
     protected List<ConfigurationConfig> configurationConfig;
+    protected List<SubConfigurationConfig> subConfigurationConfig;
     protected List<SourceSetMapperConfig> sourceSetMapperConfig;
     protected File gitDir;
     protected File persistentDir;

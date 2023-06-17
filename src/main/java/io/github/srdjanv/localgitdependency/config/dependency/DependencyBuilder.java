@@ -24,6 +24,12 @@ public interface DependencyBuilder extends DefaultableBuilder {
             strategy = Closure.DELEGATE_FIRST) Closure... configurations);
 
     /**
+     * @see ConfigurationBuilder
+     */
+    void subConfiguration(@DelegatesTo(value = SubConfigurationBuilder.class,
+            strategy = Closure.DELEGATE_FIRST) Closure... configurations);
+
+    /**
      * @see SourceSetMapperBuilder
      */
     void mapSourceSets(@DelegatesTo(value = SourceSetMapperBuilder.class,

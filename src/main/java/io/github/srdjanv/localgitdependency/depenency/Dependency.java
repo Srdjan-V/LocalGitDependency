@@ -20,7 +20,8 @@ import java.util.regex.Pattern;
 
 public class Dependency {
     private final String name;
-    private final List<Configuration> configurations;
+    private final List<Configurations.Configuration> configurations;
+    private final List<Configurations.SubConfiguration> subConfigurations;
     private final List<SourceSetMapper> mappers;
     private final boolean ideSupport;
     private final boolean shouldRegisterRepository;
@@ -38,7 +39,8 @@ public class Dependency {
             errorBuilder.append("DependencyConfig: 'name' is null");
         }
 
-        this.configurations = Configuration.build(dependencyConfig, errorBuilder);
+        this.configurations = Configurations.build(dependencyConfig);
+        this.subConfigurations = Configurations.buildSub(dependencyConfig, errorBuilder);
         this.mappers = SourceSetMapper.build(dependencyConfig, errorBuilder);
 
         if (dependencyConfig.getEnableIdeSupport() == null) {
@@ -57,26 +59,22 @@ public class Dependency {
         } else this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks();
 
         this.dependencyType = dependencyConfig.getDependencyType();
-        if (dependencyType == null || dependencyConfig.getMavenDir() == null) {
-            if (dependencyType == null) {
-                errorBuilder.append("DependencyConfig: 'dependencyType' is null");
-            } else {
-                switch (dependencyType) {
-                    case MavenProjectLocal:
-                    case MavenProjectDependencyLocal:
-                        errorBuilder.append("DependencyConfig: 'mavenDir' is null");
-                }
-            }
-
+        if (dependencyType == null) {
+            errorBuilder.append("DependencyConfig: 'dependencyType' is null");
             this.mavenFolder = null;
         } else {
+            File dir;
+            if (dependencyConfig.getMavenDir() == null) {
+                dir = managers.getConfigManager().getPluginConfig().getMavenDir();
+            } else dir = dependencyConfig.getMavenDir();
+
             switch (dependencyType) {
                 case MavenProjectLocal:
-                    this.mavenFolder = Constants.MavenProjectLocal.apply(dependencyConfig.getMavenDir());
+                    this.mavenFolder = Constants.MavenProjectLocal.apply(dir);
                     break;
 
                 case MavenProjectDependencyLocal:
-                    this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dependencyConfig.getMavenDir(), name);
+                    this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dir, name);
                     break;
 
                 default:
@@ -101,8 +99,14 @@ public class Dependency {
 
     @NotNull
     @Unmodifiable
-    public List<Configuration> getConfigurations() {
+    public List<Configurations.Configuration> getConfigurations() {
         return configurations;
+    }
+
+    @NotNull
+    @Unmodifiable
+    public List<Configurations.SubConfiguration> getSubConfigurations() {
+        return subConfigurations;
     }
 
     @NotNull
@@ -111,7 +115,7 @@ public class Dependency {
         return mappers;
     }
 
-    public boolean isIdeSupport() {
+    public boolean isIdeSupportEnabled() {
         return ideSupport;
     }
 

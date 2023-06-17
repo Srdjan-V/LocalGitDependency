@@ -2,6 +2,7 @@ package io.github.srdjanv.localgitdependency.persistence.data.probe;
 
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
@@ -73,6 +74,11 @@ public class ProjectProbeData extends ProjectProbeDataFields {
             return this;
         }
 
+        public Builder setSubDependencyData(List<SubDependencyData> subDependencyData) {
+            this.subDependencyData = subDependencyData;
+            return this;
+        }
+
         public ProjectProbeData create() {
             return new ProjectProbeData(this);
         }
@@ -82,7 +88,7 @@ public class ProjectProbeData extends ProjectProbeDataFields {
         return version;
     }
 
-    public String getProjectId() {
+    public String getProjectID() {
         return projectId;
     }
 
@@ -116,5 +122,9 @@ public class ProjectProbeData extends ProjectProbeDataFields {
 
     public PublicationData getPublicationData() {
         return publicationData;
+    }
+
+    public List<SubDependencyData> getSubDependencyData() {
+        return subDependencyData;
     }
 }

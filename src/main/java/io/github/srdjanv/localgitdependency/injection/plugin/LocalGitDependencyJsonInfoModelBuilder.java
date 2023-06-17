@@ -1,16 +1,20 @@
 package io.github.srdjanv.localgitdependency.injection.plugin;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
 import io.github.srdjanv.localgitdependency.injection.model.DefaultLocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.UnknownDomainObjectException;
+import org.gradle.api.UnknownTaskException;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.plugins.BasePluginConvention;
 import org.gradle.api.plugins.BasePluginExtension;
@@ -55,6 +59,7 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         List<String> artifactTasksNames = buildArtifactTasks();
         buildMavenPublicationData(artifactTasksNames);
         buildSources();
+        buildSubDependencies();
 
         var projectProbeData = builder.create();
         var json = DataParser.projectProbeDataJson(projectProbeData);
@@ -72,14 +77,16 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         var gradleVersion = GradleVersion.version(project.getGradle().getGradleVersion());
         if (gradleVersion.compareTo(GradleVersion.version("7.1")) >= 0) {
             SourceSet main = javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-            for (Task task : project.getTasks()) {
-                if (task.getName().equals(main.getSourcesJarTaskName())) {
-                    canProjectUseWithSourcesJar = false;
-                }
-
-                if (task.getName().equals(main.getJavadocJarTaskName())) {
-                    canProjectUseWithJavadocJar = false;
-                }
+            var tasks = project.getTasks();
+            try {
+                tasks.getByName(main.getSourcesJarTaskName());
+            } catch (UnknownTaskException ignore) {
+                canProjectUseWithSourcesJar = false;
+            }
+            try {
+                tasks.getByName(main.getJavadocJarTaskName());
+            } catch (UnknownTaskException ignore) {
+                canProjectUseWithJavadocJar = false;
             }
 
             var base = project.getExtensions().getByType(BasePluginExtension.class);
@@ -125,7 +132,6 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
                     javaDocTaskName = javaDocTaskName + Math.random();
                 }
             }
-
 
             artifactTasks.add(TaskData.builder().
                     setName(javaDocTaskName).
@@ -240,6 +246,43 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         builder.setSourceSetsData(sourceSets);
     }
 
-    // TODO: 12/06/2023 build subDep list 
-    
+    private void buildSubDependencies() {
+        List<SubDependencyData> subDependencyDataList = new ArrayList<>();
+        LocalGitDependencyManagerInstance lgdInstance;
+        try {
+            lgdInstance = project.getExtensions().getByType(LocalGitDependencyManagerInstance.class);
+        } catch (UnknownDomainObjectException ignore) {
+            builder.setSubDependencyData(subDependencyDataList);
+            return;
+        }
+
+        for (Dependency dependency : lgdInstance.getDependencyManager().getDependencies()) {
+            var builder = SubDependencyData.builder();
+            builder.setName(dependency.getName()).
+                    setProjectID(dependency.getPersistentInfo().getProbeData().getProjectID()).
+                    setDependencyType(dependency.getDependencyType()).
+                    setGitDir(dependency.getGitInfo().getDir().getAbsolutePath()).
+                    setArchivesBaseName(dependency.getPersistentInfo().getProbeData().getArchivesBaseName());
+
+            if (dependency.getMavenFolder() != null) {
+                builder.setMavenFolder(dependency.getMavenFolder().getAbsolutePath());
+            }
+
+            subDependencyDataList.add(builder.create());
+
+            for (SubDependencyData subDependencyData : dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
+                subDependencyDataList.add(
+                        SubDependencyData.builder().
+                                setName(dependency.getName() + ":" + subDependencyData.getName()).
+                                setProjectID(subDependencyData.getProjectID()).
+                                setDependencyType(subDependencyData.getDependencyType()).
+                                setGitDir(subDependencyData.getGitDir()).
+                                setArchivesBaseName(subDependencyData.getArchivesBaseName()).
+                                setMavenFolder(subDependencyData.getMavenFolder()).create());
+            }
+        }
+
+        builder.setSubDependencyData(subDependencyDataList);
+    }
+
 }

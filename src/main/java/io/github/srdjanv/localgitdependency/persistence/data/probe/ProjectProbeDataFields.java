@@ -2,6 +2,7 @@ package io.github.srdjanv.localgitdependency.persistence.data.probe;
 
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import org.gradle.api.JavaVersion;
 
@@ -18,4 +19,5 @@ class ProjectProbeDataFields {
     PublicationData publicationData;
     List<TaskData> artifactTasks;
     List<SourceSetData> sourceSetsData;
+    List<SubDependencyData> subDependencyData;
 }

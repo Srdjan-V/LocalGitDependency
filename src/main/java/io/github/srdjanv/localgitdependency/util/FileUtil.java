@@ -1,5 +1,9 @@
 package io.github.srdjanv.localgitdependency.util;
 
+import org.gradle.api.file.RegularFile;
+import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
+import org.gradle.jvm.toolchain.JavaLauncher;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -25,16 +29,24 @@ public final class FileUtil {
         return new File(defaultDir, String.valueOf(dir)).toPath().normalize().toFile();
     }
 
-    public static File toFile(Object path, String methodName) {
-        if (path instanceof File file) {
+    public static File toFile(Object object, String methodName) {
+        if (object instanceof File file) {
             return file;
-        } else if (path instanceof Path file) {
+        } else if (object instanceof RegularFile file) {
+            return file.getAsFile();
+        } else if (object instanceof Path file) {
             return file.toFile();
-        } else if (path instanceof String file) {
+        } else if (object instanceof String file) {
             return new File(file);
+        } else if (object instanceof Property property) {
+            return toFile(property.get(), methodName);
+        } else if (object instanceof Provider provider) {
+            return toFile(provider.get(), methodName);
+        } else if (object instanceof JavaLauncher javaLauncher) {
+            return javaLauncher.getMetadata().getInstallationPath().getAsFile();
         } else {
             throw new UncheckedIOException(
-                    new InvalidObjectException(String.format("Invalid data for method: %s, acceptable types are File, Path, String", methodName))
+                    new InvalidObjectException(String.format("Invalid data for method: %s, acceptable types are JavaLauncher, RegularFile, File, Path, String and Property, Provider of anny of these types", methodName))
             );
         }
     }

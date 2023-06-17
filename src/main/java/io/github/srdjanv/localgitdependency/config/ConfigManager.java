@@ -106,6 +106,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         }
         var defaultableConfigBuilder = new DefaultableConfig.Builder();
         if (ClosureUtil.delegateNullSafe(configureClosure, defaultableConfigBuilder)) {
+            // TODO: 17/06/2023 fix buildLauncher
             var newDefaultableConfig = new DefaultableConfig(defaultableConfigBuilder, defaultableConfig);
             ClassUtil.mergeObjectsDefaultReference(newDefaultableConfig, defaultableConfig, DefaultableConfigFields.class);
             var list = ClassUtil.validateDataDefault(newDefaultableConfig);

@@ -2,6 +2,7 @@ package io.github.srdjanv.localgitdependency;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import org.gradle.api.Project;
 
 import java.io.File;
@@ -54,7 +55,9 @@ public final class Constants {
     };
 
     public static final Function<Dependency, String> RepositoryFlatDir = dependency -> dependency.getName() + "FlatDir";
+    public static final Function<SubDependencyData, String> RepositorySubFlatDir = dependency -> dependency.getName() + "FlatDir";
     public static final Function<Dependency, String> RepositoryMavenProjectDependencyLocal = dependency -> dependency.getName() + "Repo";
+    public static final Function<SubDependencyData, String> RepositoryMavenProjectSubDependencyLocal = dependency -> dependency.getName() + "Repo";
 
     //Default plugin dirs
     public static final Function<Project, File> defaultDir = project -> new File(project.getLayout().getProjectDirectory().getAsFile(), "/localGitDependency");

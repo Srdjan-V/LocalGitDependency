@@ -10,7 +10,10 @@ public final class LocalGitDependencyPlugin implements Plugin<Project> {
     public void apply(@NotNull Project project) {
         project.getPluginManager().apply("java");
         project.getExtensions().add(LocalGitDependencyManagerInstance.class, Constants.LOCAL_GIT_DEPENDENCY_MANAGER_INSTANCE_EXTENSION, new LocalGitDependencyManagerInstance(project));
-        project.afterEvaluate(p -> p.getExtensions().getByType(LocalGitDependencyManagerInstance.class).getProjectManager().startPlugin());
+        project.afterEvaluate(p -> {
+            if (p.getState().getFailure() != null) return;
+            p.getExtensions().getByType(LocalGitDependencyManagerInstance.class).getProjectManager().startPlugin();
+        });
     }
 
 }

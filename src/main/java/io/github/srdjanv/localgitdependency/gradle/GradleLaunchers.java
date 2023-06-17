@@ -176,7 +176,6 @@ public final class GradleLaunchers {
         }
     }
 
-
     public static class Build extends Base {
         private Build(BuildConfig config, ErrorUtil errorBuilder) {
             super(config, errorBuilder);

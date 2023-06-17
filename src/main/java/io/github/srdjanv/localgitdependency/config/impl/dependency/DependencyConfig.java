@@ -43,6 +43,18 @@ public final class DependencyConfig extends DependencyConfigFields {
             this.configurationConfig = configurationConfigList;
         }
 
+        if (builder.subConfigurations != null) {
+            List<SubConfigurationConfig> subConfigurationConfigList = new ArrayList<>();
+            for (Closure closure : builder.subConfigurations) {
+                var configurationConfig = new SubConfigurationConfig.Builder();
+                if (ClosureUtil.delegateNullSafe(closure, configurationConfig)) {
+                    subConfigurationConfigList.add(new SubConfigurationConfig(configurationConfig));
+                } else throw new GradleException("Null provided as a configuration closure");
+            }
+            this.subConfigurationConfig = subConfigurationConfigList;
+        }
+
+
         if (builder.mappings != null) {
             List<SourceSetMapperConfig> sourceSetMapperConfigList = new ArrayList<>();
             for (Closure closure : builder.mappings) {
@@ -83,6 +95,11 @@ public final class DependencyConfig extends DependencyConfigFields {
     @Nullable
     public List<ConfigurationConfig> getConfigurations() {
         return configurationConfig;
+    }
+
+    @Nullable
+    public List<SubConfigurationConfig> getSubConfigurations() {
+        return subConfigurationConfig;
     }
 
     @Nullable
@@ -152,6 +169,7 @@ public final class DependencyConfig extends DependencyConfigFields {
 
     public static class Builder extends DependencyConfigFields implements DependencyBuilder {
         protected Closure[] configurations;
+        protected Closure[] subConfigurations;
         protected Closure[] mappings;
         protected Closure launcher;
 
@@ -167,6 +185,11 @@ public final class DependencyConfig extends DependencyConfigFields {
         @Override
         public void configuration(Closure... configurations) {
             this.configurations = configurations;
+        }
+
+        @Override
+        public void subConfiguration(Closure... configurations) {
+            subConfigurations = configurations;
         }
 
         @Override
@@ -215,7 +238,6 @@ public final class DependencyConfig extends DependencyConfigFields {
         @Override
         public void mavenDir(Object mavenDir) {
             this.mavenDir = FileUtil.toFile(mavenDir, "mavenDir");
-            ;
         }
 
         @Override
