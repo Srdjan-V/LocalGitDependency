@@ -10,6 +10,7 @@ import io.github.srdjanv.localgitdependency.tasks.printtasks.PrintAllDependencie
 import io.github.srdjanv.localgitdependency.tasks.printtasks.PrintDependencyInfo;
 import io.github.srdjanv.localgitdependency.tasks.probetasks.ProbeAllDependenciesTask;
 import io.github.srdjanv.localgitdependency.tasks.probetasks.RunProbeTasks;
+import io.github.srdjanv.localgitdependency.tasks.startuptasks.RunAllStartupTasks;
 import io.github.srdjanv.localgitdependency.tasks.startuptasks.RunStartupTasks;
 import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoAllLocalGitChanges;
 import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoLocalGitChanges;
@@ -38,6 +39,7 @@ class TasksManager extends ManagerBase implements ITasksManager {
         }
 
         if (Boolean.TRUE.equals(getConfigManager().getPluginConfig().getGenerateGradleTasks())) {
+            taskCreator.create(Constants.STARTUP_ALL_DEPENDENCIES, RunAllStartupTasks.class, getProjectManagers());
             taskCreator.create(Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class, getProjectManagers());
             taskCreator.create(Constants.PROBE_ALL_DEPENDENCIES, ProbeAllDependenciesTask.class, getProjectManagers());
             taskCreator.create(Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class, getProjectManagers());
