@@ -13,59 +13,30 @@ public final class ClassUtil {
     }
 
     public static <D> void instantiateObjectWithBuilder(D object, D builder, final Class<D> fieldsClazz) {
-        Class<?> currentClazz = fieldsClazz;
-        do {
-            for (Field field : currentClazz.getDeclaredFields()) {
-                try {
-                    field.setAccessible(true);
-                    field.set(object, field.get(builder));
-                } catch (Exception e) {
-                    throw new RuntimeException(String.format("Unexpected error while reflecting %s class", currentClazz.getSimpleName()), e);
-                }
-            }
-            currentClazz = currentClazz.getSuperclass();
-        } while (currentClazz != Object.class);
+        iterateFields(fieldsClazz, field -> {
+                field.set(object, field.get(builder));
+        });
     }
 
     public static <D> void mergeObjectsDefaultReference(D newObject, D referenceObject, Class<D> clazz) {
-        Class<?> currentClazz = clazz;
-        do {
-            for (Field field : currentClazz.getDeclaredFields()) {
-                try {
-                    field.setAccessible(true);
-                    Object newObjectField = field.get(newObject);
-                    Object referenceObjectField = field.get(referenceObject);
+        iterateFields(clazz, field -> {
+            Object newObjectField = field.get(newObject);
+            Object referenceObjectField = field.get(referenceObject);
 
-                    if (newObjectField == null) {
-                        field.set(newObject, referenceObjectField);
-                    }
-
-                } catch (Exception e) {
-                    throw new RuntimeException(String.format("Unexpected error while reflecting %s class", currentClazz.getSimpleName()), e);
-                }
+            if (newObjectField == null) {
+                field.set(newObject, referenceObjectField);
             }
-            currentClazz = currentClazz.getSuperclass();
-        } while (currentClazz != Object.class);
+        });
     }
 
     public static <D> void mergeObjectsDefaultNewObject(D newObject, D referenceObject, Class<D> clazz) {
-        Class<?> currentClazz = clazz;
-        do {
-            for (Field field : currentClazz.getDeclaredFields()) {
-                try {
-                    field.setAccessible(true);
-                    Object referenceObjectField = field.get(referenceObject);
+        iterateFields(clazz, field -> {
+            Object referenceObjectField = field.get(referenceObject);
 
-                    if (referenceObjectField != null) {
-                        field.set(newObject, referenceObjectField);
-                    }
-
-                } catch (Exception e) {
-                    throw new RuntimeException(String.format("Unexpected error while reflecting %s class", currentClazz.getSimpleName()), e);
-                }
+            if (referenceObjectField != null) {
+                field.set(newObject, referenceObjectField);
             }
-            currentClazz = currentClazz.getSuperclass();
-        } while (currentClazz != Object.class);
+        });
     }
 
     @NotNull
@@ -77,43 +48,52 @@ public final class ClassUtil {
     }
 
     private static void validateDataDefaultInternal(Object object, Boolean defaultDataNullable, List<String> nulls) {
-        Class<?> currentClazz = object.getClass();
-        do {
-            for (Field field : currentClazz.getDeclaredFields()) {
-                try {
-                    field.setAccessible(true);
-                    var obj = field.get(object);
-                    if (defaultDataNullable == null) {
-                        var fieldType = field.getType();
-                        if (isClassAnnotatedWithNullableData(fieldType)
-                                || isClassAnnotatedWithNonNullData(fieldType)) {
-                            validateDataDefaultInternal(obj, defaultDataNullable(fieldType), nulls);
-                        }
-                    } else if (defaultDataNullable) {
-                        if (field.isAnnotationPresent(NonNullData.class)) {
-                            if (obj == null) {
-                                nulls.add(String.format("Field %s is null", field.getName()));
-                            } else {
-                                validateDataDefaultInternalListOrArr(field, obj, defaultDataNullable, nulls);
-                            }
-                        }
-
+        iterateFields(object.getClass(), field -> {
+            var obj = field.get(object);
+            if (defaultDataNullable == null) {
+                var fieldType = field.getType();
+                if (isClassAnnotatedWithNullableData(fieldType)
+                        || isClassAnnotatedWithNonNullData(fieldType)) {
+                    validateDataDefaultInternal(obj, defaultDataNullable(fieldType), nulls);
+                }
+            } else if (defaultDataNullable) {
+                if (field.isAnnotationPresent(NonNullData.class)) {
+                    if (obj == null) {
+                        nulls.add(String.format("Field %s is null", field.getName()));
                     } else {
-                        if (obj == null) {
-                            if (field.isAnnotationPresent(NullableData.class)) {
-                                continue;
-                            }
-                            nulls.add(String.format("Field %s is null", field.getName()));
-                        } else {
-                            validateDataDefaultInternalListOrArr(field, obj, defaultDataNullable, nulls);
-                        }
+                        validateDataDefaultInternalListOrArr(field, obj, defaultDataNullable, nulls);
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException(String.format("Unexpected error while reflecting %s class", currentClazz.getSimpleName()), e);
+                }
+
+            } else {
+                if (obj == null) {
+                    if (field.isAnnotationPresent(NullableData.class)) {
+                        return;
+                    }
+                    nulls.add(String.format("Field %s is null", field.getName()));
+                } else {
+                    validateDataDefaultInternalListOrArr(field, obj, defaultDataNullable, nulls);
                 }
             }
-            currentClazz = currentClazz.getSuperclass();
-        } while (currentClazz != Object.class);
+        });
+    }
+
+    private static void iterateFields(Class<?> clazz, FieldConsumer action) {
+        try {
+            do {
+                for (Field field : clazz.getDeclaredFields()) {
+                    field.setAccessible(true);
+                    action.accept(field);
+                }
+                clazz = clazz.getSuperclass();
+            } while (clazz != Object.class);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Unexpected error while reflecting %s class", clazz.getSimpleName()), e);
+        }
+    }
+
+    private interface FieldConsumer {
+        void accept(Field field) throws Exception;
     }
 
     //this may or may not work, no config is currently using a list or string arr to store data
