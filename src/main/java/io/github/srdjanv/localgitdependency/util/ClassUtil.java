@@ -14,7 +14,7 @@ public final class ClassUtil {
 
     public static <D> void instantiateObjectWithBuilder(D object, D builder, final Class<D> fieldsClazz) {
         iterateFields(fieldsClazz, field -> {
-                field.set(object, field.get(builder));
+            field.set(object, field.get(builder));
         });
     }
 
@@ -40,6 +40,14 @@ public final class ClassUtil {
     }
 
     @NotNull
+    public static <T> List<String> validateDataDefault(T object, Class<T> clazz) {
+        List<String> nulls = new ArrayList<>();
+        validateDataDefaultInternal(clazz, object, defaultDataNullable(clazz), nulls);
+
+        return nulls;
+    }
+
+    @NotNull
     public static List<String> validateDataDefault(Object object) {
         List<String> nulls = new ArrayList<>();
         validateDataDefaultInternal(object, defaultDataNullable(object.getClass()), nulls);
@@ -48,7 +56,11 @@ public final class ClassUtil {
     }
 
     private static void validateDataDefaultInternal(Object object, Boolean defaultDataNullable, List<String> nulls) {
-        iterateFields(object.getClass(), field -> {
+        validateDataDefaultInternal(object.getClass(), object, defaultDataNullable, nulls);
+    }
+
+    private static void validateDataDefaultInternal(Class<?> clazz, Object object, Boolean defaultDataNullable, List<String> nulls) {
+        iterateFields(clazz, field -> {
             var obj = field.get(object);
             if (defaultDataNullable == null) {
                 var fieldType = field.getType();

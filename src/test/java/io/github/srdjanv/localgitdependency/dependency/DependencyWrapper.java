@@ -120,7 +120,7 @@ public class DependencyWrapper {
     }
 
     public void onlyRegisterDependencyAndRunTests() {
-        projectManager = ProjectInstance.getManager(ProjectInstance.createProject());
+        projectManager = ProjectInstance.getProjectManager(ProjectInstance.createProject());
         setState(State.OnlyDependencyRegistered);
         checkDependencyState();
 
@@ -132,7 +132,7 @@ public class DependencyWrapper {
     }
 
     public void startPluginAndRunTests() {
-        projectManager = ProjectInstance.getManager(ProjectInstance.createProject());
+        projectManager = ProjectInstance.getProjectManager(ProjectInstance.createProject());
         setState(State.Complete);
         checkDependencyState();
 

@@ -16,17 +16,25 @@ import java.util.List;
 final class ProjectManager extends ManagerBase implements IProjectManager {
     private static final List<ManagerRunner<?>> PROJECT_RUNNERS;
 
-    public static final ManagerRunner<IPersistenceManager> savePersistentDataTask =
+    private static final ManagerRunner<IPersistenceManager> savePersistentDataTask =
             ManagerRunner.create(managerRunner -> {
                 managerRunner.setManagerSupplier(Managers::getPersistenceManager);
                 managerRunner.setTask(clazz -> clazz.getDeclaredMethod("savePersistentData"));
             });
 
     static {
-        PROJECT_RUNNERS = new ArrayList<>();
+        PROJECT_RUNNERS = new ArrayList<>(10);
+        PROJECT_RUNNERS.add(ManagerRunner.<IConfigManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getConfigManager);
+            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("configureConfigs"));
+        }));
         PROJECT_RUNNERS.add(ManagerRunner.<IConfigManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getConfigManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("createEssentialDirectories"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getDependencyManager);
+            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("resolveRegisteredDependencies"));
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<ICleanupManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getCleanupManager);

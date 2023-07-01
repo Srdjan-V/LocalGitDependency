@@ -15,6 +15,9 @@ public interface LauncherBuilder {
      */
     void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime);
 
+    // TODO: 24/06/2023
+    void forwardOutput(Boolean forwardOutput);
+
     void startup(@DelegatesTo(value = Launchers.Startup.class,
             strategy = Closure.DELEGATE_FIRST) Closure startup);
 

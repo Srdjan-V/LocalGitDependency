@@ -11,15 +11,27 @@ import java.io.File;
 
 @NonNullData
 public final class PluginConfig extends PluginConfigFields {
-    private final boolean custom;
 
-    public PluginConfig(Builder builder, boolean custom) {
-        this.custom = custom;
+    public PluginConfig(Builder builder) {
         ClassUtil.instantiateObjectWithBuilder(this, builder, PluginConfigFields.class);
-    }
 
-    public boolean isCustom() {
-        return custom;
+        if (builder.newDefaultDir != null) {
+            var newFile = FileUtil.toFile(builder.newDefaultDir, "defaultDir");
+            if (newFile.isAbsolute()) {
+                this.defaultDir = newFile;
+            } else {
+                this.defaultDir = new File(this.defaultDir.getParentFile(), newFile.getName());
+            }
+        }
+
+        if (builder.gitDir != null)
+            this.gitDir = FileUtil.configureFilePath(defaultDir, FileUtil.toFile(builder.gitDir, "gitDir"));
+
+        if (builder.persistentDir != null)
+            this.persistentDir = FileUtil.configureFilePath(defaultDir, FileUtil.toFile(builder.persistentDir, "persistentDir"));
+
+        if (builder.mavenDir != null)
+            this.mavenDir = FileUtil.configureFilePath(defaultDir, FileUtil.toFile(builder.mavenDir, "mavenDir"));
     }
 
     @NotNull
@@ -58,7 +70,13 @@ public final class PluginConfig extends PluginConfigFields {
     }
 
     public static class Builder extends PluginConfigFields implements PluginBuilder {
-        public Builder() {
+        private Object newDefaultDir;
+        private Object gitDir;
+        private Object persistentDir;
+        private Object mavenDir;
+
+        public Builder(File defaultDir) {
+            this.defaultDir = defaultDir;
         }
 
         @Override
@@ -77,44 +95,23 @@ public final class PluginConfig extends PluginConfigFields {
         }
 
         @Override
-        public void defaultDir(File defaultDir) {
-            this.defaultDir = defaultDir;
+        public void defaultDir(Object defaultDir) {
+            this.newDefaultDir = defaultDir;
         }
 
         @Override
-        public void defaultDir(String defaultDir) {
-            if (defaultDir != null)
-                this.defaultDir = new File(defaultDir);
+        public void gitDir(Object dir) {
+            this.gitDir = dir;
         }
 
         @Override
-        public void gitDir(File dir) {
-            this.gitDir = FileUtil.configureFilePath(defaultDir, dir);
+        public void persistentDir(Object persistentDir) {
+            this.persistentDir = persistentDir;
         }
 
         @Override
-        public void gitDir(String dir) {
-            this.gitDir = FileUtil.configureFilePath(defaultDir, dir);
-        }
-
-        @Override
-        public void persistentDir(File persistentDir) {
-            this.persistentDir = FileUtil.configureFilePath(defaultDir, persistentDir);
-        }
-
-        @Override
-        public void persistentDir(String persistentDir) {
-            this.persistentDir = FileUtil.configureFilePath(defaultDir, persistentDir);
-        }
-
-        @Override
-        public void mavenDir(File mavenDir) {
-            this.mavenDir = FileUtil.configureFilePath(defaultDir, mavenDir);
-        }
-
-        @Override
-        public void mavenDir(String mavenDir) {
-            this.mavenDir = FileUtil.configureFilePath(defaultDir, mavenDir);
+        public void mavenDir(Object mavenDir) {
+            this.mavenDir = mavenDir;
         }
 
     }

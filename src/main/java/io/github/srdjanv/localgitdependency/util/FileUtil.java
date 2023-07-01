@@ -17,15 +17,10 @@ public final class FileUtil {
     }
 
     @Nullable
-    public static File configureFilePath(@Nullable File defaultDir, @Nullable String dir) {
-        if (dir == null) return null;
-        return configureFilePath(defaultDir, new File(dir));
-    }
-
-    @Nullable
     public static File configureFilePath(@Nullable File defaultDir, @Nullable File dir) {
-        if (defaultDir == null || dir == null) return null;
+        if (dir == null) return null;
         if (dir.isAbsolute()) return dir;
+        if (defaultDir == null) return null;
         return new File(defaultDir, String.valueOf(dir)).toPath().normalize().toFile();
     }
 

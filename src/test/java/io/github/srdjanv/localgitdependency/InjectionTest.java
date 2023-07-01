@@ -2,7 +2,6 @@ package io.github.srdjanv.localgitdependency;
 
 import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.injection.plugin.LocalGitDependencyJsonInfoModelBuilder;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
@@ -23,7 +22,7 @@ public class InjectionTest {
         project.getRepositories().mavenLocal();
         project.getRepositories().gradlePluginPortal();
 
-        var lgdInstance = project.getExtensions().getByType(LocalGitDependencyManagerInstance.class);
+        var lgdInstance = ProjectInstance.getLGDManager(project);
         var emptyUrl = "url";
 
         lgdInstance.getDependencyManager().

@@ -18,4 +18,6 @@ public interface IConfigManager extends Manager {
     DefaultableConfig getDefaultableConfig();
     @TaskDescription("create essential directories")
     void createEssentialDirectories();
+    @TaskDescription("configure configs")
+    void configureConfigs();
 }

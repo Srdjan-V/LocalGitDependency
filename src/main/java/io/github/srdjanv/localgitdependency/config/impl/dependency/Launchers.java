@@ -132,6 +132,7 @@ public final class Launchers {
             private Closure startup;
             private Closure probe;
             private Closure build;
+            private Boolean forwardOutput;
 
             @Override
             public void setExecutable(Object path) {
@@ -141,6 +142,12 @@ public final class Launchers {
             @Override
             public void gradleDaemonMaxIdleTime(Integer gradleDaemonMaxIdleTime) {
                 this.gradleDaemonMaxIdleTime = gradleDaemonMaxIdleTime;
+            }
+
+
+            @Override
+            public void forwardOutput(Boolean forwardOutput) {
+                this.forwardOutput = forwardOutput;
             }
 
             @Override

@@ -13,32 +13,18 @@ import org.eclipse.jgit.annotations.Nullable;
 @NonNullData
 @SuppressWarnings("unused")
 public final class DefaultableConfig extends DefaultableConfigFields {
-    private final boolean custom;
 
     public DefaultableConfig(Builder builder) {
-        this.custom = false;
         ClassUtil.instantiateObjectWithBuilder(this, builder, DefaultableConfigFields.class);
         var launcherBuilder = new Launchers.Launcher.Builder();
         if (ClosureUtil.delegateNullSafe(builder.launcher, launcherBuilder)) {
             launcher = new Launchers.Launcher(launcherBuilder);
-        } else throw new NullPointerException("buildLauncher is null");
+        }
     }
 
-    public DefaultableConfig(Builder builder, DefaultableConfig defaultable) {
-        this.custom = true;
+    public DefaultableConfig(DefaultableConfig builder, DefaultableConfig defaultable) {
         ClassUtil.mergeObjectsDefaultReference(this, defaultable, DefaultableConfigFields.class);
         ClassUtil.mergeObjectsDefaultNewObject(this, builder, DefaultableConfigFields.class);
-
-        var launcherBuilder = new Launchers.Launcher.Builder();
-        if (ClosureUtil.delegateNullSafe(builder.launcher, launcherBuilder)) {
-            launcher = new Launchers.Launcher(launcherBuilder);
-        } else if (defaultable.getLauncher() != null){
-            launcher = defaultable.getLauncher();
-        } else throw new NullPointerException("buildLauncher is null");
-    }
-
-    public boolean isCustom() {
-        return custom;
     }
 
     @Nullable

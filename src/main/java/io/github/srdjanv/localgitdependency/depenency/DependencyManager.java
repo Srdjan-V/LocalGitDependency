@@ -32,6 +32,7 @@ import static io.github.srdjanv.localgitdependency.Constants.TASKS_GROUP_INTERNA
 
 final class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
+    private final List<DependencyConfig.Builder> unResolvedDependencies = new ArrayList<>();
     private SourceSetContainer rootSourceSetContainer;
     private Function<SourceSet, String[]> taskSupplier;
 
@@ -60,17 +61,19 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
 
     @Override
     public void registerDependency(@Nullable String configurationName, @NotNull String dependencyURL, @Nullable @SuppressWarnings("rawtypes") Closure configureClosure) {
-        DependencyConfig dependencyConfig;
-        {
-            DependencyConfig.Builder dependencyConfigBuilder = new DependencyConfig.Builder(dependencyURL);
-            dependencyConfigBuilder.configuration(configurationName);
-            if (configureClosure != null) {
-                ClosureUtil.delegate(configureClosure, dependencyConfigBuilder);
-            }
-            dependencyConfig = new DependencyConfig(dependencyConfigBuilder, getConfigManager().getDefaultableConfig());
-        }
+        DependencyConfig.Builder dependencyConfigBuilder = new DependencyConfig.Builder(dependencyURL);
+        dependencyConfigBuilder.configuration(configurationName);
+        ClosureUtil.delegateNullSafe(configureClosure, dependencyConfigBuilder);
+        unResolvedDependencies.add(dependencyConfigBuilder);
+    }
 
-        dependencies.add(new Dependency(this, dependencyConfig));
+    @Override
+    public void resolveRegisteredDependencies() {
+        for (DependencyConfig.Builder unResolvedDependency : unResolvedDependencies) {
+            DependencyConfig dependencyConfig = new DependencyConfig(unResolvedDependency, getConfigManager().getDefaultableConfig());
+            dependencies.add(new Dependency(this, dependencyConfig));
+        }
+        unResolvedDependencies.clear();
     }
 
     @Override

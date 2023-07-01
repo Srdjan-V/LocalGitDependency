@@ -2,11 +2,8 @@ package io.github.srdjanv.localgitdependency.config.plugin;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
-import java.io.File;
-
 public interface PluginBuilder {
-    void defaultDir(File dir);
-    void defaultDir(String dir);
+    void defaultDir(Object dir);
 
     /**
      * This will set the directory in which the dependency will be created, it will not set the folder.
@@ -14,14 +11,7 @@ public interface PluginBuilder {
      *
      * @param gitDir directory target
      */
-    void gitDir(File gitDir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param gitDir directory target
-     */
-    void gitDir(String gitDir);
+    void gitDir(Object gitDir);
 
     /**
      * This will set the directory in which the dependency data will be stored, it will not set the folder.
@@ -29,14 +19,7 @@ public interface PluginBuilder {
      *
      * @param persistentDir directory target
      */
-    void persistentDir(File persistentDir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param persistentDir directory target
-     */
-    void persistentDir(String persistentDir);
+    void persistentDir(Object persistentDir);
 
     /**
      * Some Dependency types will publish the artifact to local maven repo.
@@ -44,14 +27,7 @@ public interface PluginBuilder {
      * @param mavenDir directory target
      * @see Dependency.Type
      */
-    void mavenDir(File mavenDir);
-
-    /**
-     * Same as the above, but takes a string
-     *
-     * @param mavenDir directory target
-     */
-    void mavenDir(String mavenDir);
+    void mavenDir(Object mavenDir);
 
     /**
      * If set to false the generated mainInitScript will never be updated of fixed if changes are detected

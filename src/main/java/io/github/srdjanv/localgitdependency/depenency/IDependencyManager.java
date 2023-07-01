@@ -15,6 +15,8 @@ public interface IDependencyManager extends Manager {
         return new DependencyManager(managers);
     }
     void registerDependency(@Nullable String configurationName, @NotNull String dependencyURL, @Nullable @SuppressWarnings("rawtypes") Closure configureClosure);
+    @TaskDescription("resolving registered dependencies")
+    void resolveRegisteredDependencies();
     @TaskDescription("adding built dependencies")
     void addBuiltDependencies();
     @Unmodifiable
