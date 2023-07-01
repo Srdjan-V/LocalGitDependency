@@ -53,4 +53,12 @@ public class InjectionTest {
         Assertions.assertEquals(2, data.getSourceSetsData().get(0).getCompileClasspath().size());
     }
 
+    @Test
+    void testFailOnIncompleteData() {
+        var builder = new ProjectProbeData.Builder();
+        builder.setVersion(Constants.PROJECT_VERSION);
+
+        Assertions.assertThrows(IllegalStateException.class, () -> DataParser.projectProbeDataJson(builder.create()), "Invalid Json Data");
+    }
+
 }

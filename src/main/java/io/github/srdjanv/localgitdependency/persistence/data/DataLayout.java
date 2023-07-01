@@ -3,9 +3,10 @@ package io.github.srdjanv.localgitdependency.persistence.data;
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -37,7 +38,7 @@ public class DataLayout implements Comparator<Object> {
         return data;
     }
 
-    private final List<DataMapper<?>> dataMappers = new ArrayList<>();
+    private final Set<DataMapper<?>> dataMappers = new HashSet<>();
     private int layoutIndex;
 
     private DataLayout() {
@@ -46,10 +47,12 @@ public class DataLayout implements Comparator<Object> {
     public <T> void registerDataMapper(Consumer<DataMapper<T>> dataMapper) {
         DataMapper<T> data = new DataMapper<>();
         dataMapper.accept(data);
-        dataMappers.add(data);
+        if (!dataMappers.add(data)) {
+            throw new RuntimeException(String.format("Duplicate dataMapper: %s for DataLayout", data.getDataType().name()));
+        }
     }
 
-    public List<DataMapper<?>> getDataMappers() {
+    public Set<DataMapper<?>> getDataMappers() {
         return dataMappers;
     }
 
@@ -117,6 +120,18 @@ public class DataLayout implements Comparator<Object> {
             return clazz;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DataMapper<?> that = (DataMapper<?>) o;
+            return dataType == that.dataType;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(dataType);
+        }
     }
 
 }
