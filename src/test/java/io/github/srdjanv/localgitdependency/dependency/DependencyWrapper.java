@@ -2,13 +2,13 @@ package io.github.srdjanv.localgitdependency.dependency;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.ProjectInstance;
-import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableBuilder;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyBuilder;
-import io.github.srdjanv.localgitdependency.config.plugin.PluginBuilder;
 import io.github.srdjanv.localgitdependency.config.dependency.LauncherBuilder;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
+import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableBuilder;
+import io.github.srdjanv.localgitdependency.config.plugin.PluginBuilder;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.junit.jupiter.api.Assertions;
 
@@ -19,6 +19,7 @@ public class DependencyWrapper {
     private IProjectManager projectManager;
     private final String dependencyName;
     private final String gitUrl;
+    private final String gitRev;
     private String testName;
     private State state;
     private Consumer<DependencyWrapper> test;
@@ -32,6 +33,7 @@ public class DependencyWrapper {
         state = State.Starting;
         this.dependencyName = registry.dependencyName;
         this.gitUrl = registry.gitUrl;
+        this.gitRev = registry.gitRev;
         this.startupTasks = registry.startupTasks;
     }
 
@@ -74,6 +76,7 @@ public class DependencyWrapper {
                 DependencyBuilder builder = (DependencyBuilder) getDelegate();
                 dependencyClosure.accept(builder);
                 builder.name(getTestName());
+                builder.commit(gitRev);
                 builder.buildLauncher(ClosureUtil.configure((LauncherBuilder launcher) -> {
                     launcher.startup(ClosureUtil.configure((Launchers.Startup startup) -> {
                         startup.mainTasks(startupTasks);
@@ -108,7 +111,9 @@ public class DependencyWrapper {
 
     private void registerDepToExtension() {
         projectManager.getLocalGitDependencyExtension().add(gitUrl, dependencyClosure);
+    }
 
+    private void resolveDep() {
         Optional<Dependency> optionalDependency = projectManager.getDependencyManager().getDependencies().stream().
                 filter(dependency1 -> dependency1.getName().equals(getTestName())).findFirst();
 
@@ -121,25 +126,26 @@ public class DependencyWrapper {
 
     public void onlyRegisterDependencyAndRunTests() {
         projectManager = ProjectInstance.getProjectManager(ProjectInstance.createProject());
-        setState(State.OnlyDependencyRegistered);
         checkDependencyState();
 
         setPluginConfiguration();
         setDefaultableConfiguration();
         registerDepToExtension();
+        projectManager.getConfigManager().configureConfigs();
+        setState(State.OnlyDependencyRegistered);
 
         test.accept(this);
     }
 
     public void startPluginAndRunTests() {
         projectManager = ProjectInstance.getProjectManager(ProjectInstance.createProject());
-        setState(State.Complete);
         checkDependencyState();
 
         setPluginConfiguration();
         setDefaultableConfiguration();
         registerDepToExtension();
         initPluginTasks();
+        setState(State.Complete);
 
         test.accept(this);
     }
@@ -162,11 +168,11 @@ public class DependencyWrapper {
         }
     }
 
-
     private void setState(State state) {
         if (this.state != State.Starting) {
             throw new IllegalStateException();
         }
+        resolveDep();
         this.state = state;
     }
 

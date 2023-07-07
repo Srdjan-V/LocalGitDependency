@@ -101,54 +101,38 @@ public class PluginDependencyTests {
     }
 
     public static void assertTest(DependencyWrapper dependencyWrapper) {
-        String repo;
-        switch (dependencyWrapper.getDependency().getDependencyType()) {
-            case JarFlatDir:
-                repo = Constants.RepositoryFlatDir.apply(dependencyWrapper.getDependency());
-                break;
-            case MavenLocal:
-                repo = "MavenLocal";
-                break;
-            case MavenProjectDependencyLocal:
-                repo = Constants.RepositoryMavenProjectDependencyLocal.apply(dependencyWrapper.getDependency());
-                break;
-            case MavenProjectLocal:
-                repo = Constants.RepositoryMavenProjectLocal;
-                break;
-            default:
-                repo = null;
-        }
+        final String repo;
+        repo = switch (dependencyWrapper.getDependency().getDependencyType()) {
+            case JarFlatDir -> Constants.RepositoryFlatDir.apply(dependencyWrapper.getDependency());
+            case MavenLocal -> "MavenLocal";
+            case MavenProjectDependencyLocal ->
+                    Constants.RepositoryMavenProjectDependencyLocal.apply(dependencyWrapper.getDependency());
+            case MavenProjectLocal -> Constants.RepositoryMavenProjectLocal;
+            default -> null;
+        };
 
         if (repo != null) {
-            final String finalRepo = repo;
             long dependencyCount = dependencyWrapper.getProjectManager().getProject().getRepositories().stream()
-                    .filter(d -> d.getName().equals(finalRepo)).count();
+                    .filter(d -> d.getName().equals(repo)).count();
 
             Assertions.assertEquals(1, dependencyCount, () -> dependencyWrapper.getDependencyName() + " repository is not registered wih gradle");
         }
 
-        long dependencyCount;
+        final long dependencyCount;
         switch (dependencyWrapper.getDependency().getDependencyType()) {
-            case Jar: {
+            case Jar -> {
                 dependencyCount = dependencyWrapper.getProjectManager().getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
                         .getDependencies().size();
-                break;
             }
-
-            case MavenProjectLocal:
-            case MavenProjectDependencyLocal: {
+            case MavenProjectLocal, MavenProjectDependencyLocal -> {
                 dependencyCount = dependencyWrapper.getProjectManager().getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
                         .getDependencies().stream().filter(d -> d.getName().equals(dependencyWrapper.getDependency().getName())).count();
-                break;
             }
-            case JarFlatDir:
-            case MavenLocal: {
+            case JarFlatDir, MavenLocal -> {
                 dependencyCount = dependencyWrapper.getProjectManager().getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
                         .getDependencies().stream().filter(d -> d.getName().equals(dependencyWrapper.getDependency().getPersistentInfo().getProbeData().getArchivesBaseName())).count();
-                break;
             }
-            default:
-                throw new IllegalStateException();
+            default -> throw new IllegalStateException();
         }
 
 

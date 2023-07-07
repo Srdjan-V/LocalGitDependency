@@ -45,10 +45,10 @@ final class ManagerRunner<T extends Manager> {
         T manager = managerRunner.apply(managers);
         oneTimeRuntimeSetup(manager);
 
-        PluginLogger.info("{}: Started {}", manager.getManagerName(), taskName);
+        PluginLogger.task("{}: Started {}", manager.getManagerName(), taskName);
         invokeMethod(manager);
         final long spent = System.currentTimeMillis() - start;
-        PluginLogger.info("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
+        PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
     }
 
     private void invokeMethod(T manager) {

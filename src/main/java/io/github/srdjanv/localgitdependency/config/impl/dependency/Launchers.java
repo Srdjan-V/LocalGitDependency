@@ -42,32 +42,28 @@ public final class Launchers {
             ClassUtil.mergeObjectsDefaultNewObject(this, builder, LauncherFields.class);
 
             startupConfig = buildLauncher(
-                    builder,
                     new StartupConfig.Builder(),
                     builder.startup,
                     StartupConfig::new
             );
             probeConfig = buildLauncher(
-                    builder,
                     new ProbeConfig.Builder(),
                     builder.probe,
                     ProbeConfig::new
             );
             buildConfig = buildLauncher(
-                    builder,
                     new BuildConfig.Builder(),
                     builder.build,
                     BuildConfig::new
             );
         }
 
-        private static <B extends BaseBuilder, C extends BaseLauncherConfig> C buildLauncher(
-                Builder builder,
+        private <B extends BaseBuilder, C extends BaseLauncherConfig> C buildLauncher(
                 @NotNull B configBuilder,
                 @Nullable Closure closure,
                 Function<B, C> configFunction
         ) {
-            configBuilder.forwardOutput(builder.forwardOutput);
+            configBuilder.forwardOutput(forwardOutput);
             ClosureUtil.delegateNullSafe(closure, configBuilder);
             return configFunction.apply(configBuilder);
         }
@@ -101,7 +97,6 @@ public final class Launchers {
             private Closure startup;
             private Closure probe;
             private Closure build;
-            private Boolean forwardOutput;
 
             @Override
             public void setExecutable(Object path) {

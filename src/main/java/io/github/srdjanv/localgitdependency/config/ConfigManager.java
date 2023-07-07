@@ -2,8 +2,8 @@ package io.github.srdjanv.localgitdependency.config;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.dependency.LauncherBuilder;
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfig;
+import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableLauncherConfig;
 import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfigFields;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
@@ -28,8 +28,10 @@ import static io.github.srdjanv.localgitdependency.util.FileUtil.checkExistsAndM
 final class ConfigManager extends ManagerBase implements IConfigManager {
     private PluginConfig pluginConfig;
     private PluginConfig.Builder pluginConfigBuilder;
+    private boolean pluginConfigBuilderConfigured;
     private DefaultableConfig defaultableConfig;
     private DefaultableConfig.Builder defaultableConfigBuilder;
+    private boolean defaultableConfigBuilderConfigured;
 
     ConfigManager(Managers managers) {
         super(managers);
@@ -43,11 +45,13 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
 
     @Override
     public void configurePlugin(Closure configureClosure) {
+        pluginConfigBuilderConfigured = true;
         ClosureUtil.delegateNullSafe(configureClosure, pluginConfigBuilder);
     }
 
     @Override
     public void configureDefaultable(@SuppressWarnings("rawtypes") Closure configureClosure) {
+        defaultableConfigBuilderConfigured = true;
         ClosureUtil.delegateNullSafe(configureClosure, defaultableConfigBuilder);
     }
 
@@ -64,7 +68,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
     @Override
     public void configureConfigs() {
         var defaultPluginConfig = defaultPluginConfig();
-        if (pluginConfigBuilder == null) {
+        if (!pluginConfigBuilderConfigured) {
             pluginConfig = defaultPluginConfig;
         } else {
             pluginConfig = new PluginConfig(pluginConfigBuilder, getDefaultDir());
@@ -79,7 +83,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         }
 
         var defaultDefaultableConfig = defaultDefaultableConfig();
-        if (defaultableConfigBuilder == null) {
+        if (!defaultableConfigBuilderConfigured) {
             defaultableConfig = defaultDefaultableConfig;
         } else {
             defaultableConfig = new DefaultableConfig(defaultableConfigBuilder, defaultDefaultableConfig);
@@ -173,7 +177,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         builder.tryGeneratingJavaDocJar(false);
         builder.enableIdeSupport(false);
         builder.registerDependencyRepositoryToProject(true);
-        builder.buildLauncher(ClosureUtil.<LauncherBuilder>configure(launcher -> {
+        builder.buildLauncher(ClosureUtil.<DefaultableLauncherConfig.Builder>configure(launcher -> {
             launcher.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
             launcher.forwardOutput(true);
         }));

@@ -59,7 +59,7 @@ public class Dependency {
         } else this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks();
 
         this.dependencyType = dependencyConfig.getDependencyType();
-        if (dependencyType == null) {
+        if (dependencyType == null) {// TODO: 07/07/2023 rework
             errorBuilder.append("DependencyConfig: 'dependencyType' is null");
             this.mavenFolder = null;
         } else {
