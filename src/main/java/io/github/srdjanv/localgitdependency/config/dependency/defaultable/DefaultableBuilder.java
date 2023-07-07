@@ -2,7 +2,6 @@ package io.github.srdjanv.localgitdependency.config.dependency.defaultable;
 
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
-import io.github.srdjanv.localgitdependency.config.dependency.LauncherBuilder;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
 public interface DefaultableBuilder {
@@ -69,8 +68,8 @@ public interface DefaultableBuilder {
     void generateGradleTasks(Boolean generateGradleTasks);
 
     /**
-     * @see LauncherBuilder
+     * @see DefaultableLauncherBuilder
      */
-    void buildLauncher(@DelegatesTo(value = LauncherBuilder.class,
+    void buildLauncher(@DelegatesTo(value = DefaultableLauncherBuilder.class,
             strategy = Closure.DELEGATE_FIRST) Closure launcher);
 }

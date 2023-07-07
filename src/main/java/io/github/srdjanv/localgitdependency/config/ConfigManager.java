@@ -3,7 +3,6 @@ package io.github.srdjanv.localgitdependency.config;
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.LauncherBuilder;
-import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfig;
 import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfigFields;
@@ -28,7 +27,9 @@ import static io.github.srdjanv.localgitdependency.util.FileUtil.checkExistsAndM
 // TODO: 10/05/2023 Refactor
 final class ConfigManager extends ManagerBase implements IConfigManager {
     private PluginConfig pluginConfig;
+    private PluginConfig.Builder pluginConfigBuilder;
     private DefaultableConfig defaultableConfig;
+    private DefaultableConfig.Builder defaultableConfigBuilder;
 
     ConfigManager(Managers managers) {
         super(managers);
@@ -36,29 +37,18 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
 
     @Override
     protected void managerConstructor() {
+        pluginConfigBuilder = new PluginConfig.Builder();
+        defaultableConfigBuilder = new DefaultableConfig.Builder();
     }
 
     @Override
-    public void configurePlugin(@SuppressWarnings("rawtypes") Closure configureClosure) {
-        if (pluginConfig != null) {
-            throw new GradleException("You can't change the pluginConfig once its set");
-        }
-        var pluginConfigBuilder = new PluginConfig.Builder(getDefaultDir());
-        if (ClosureUtil.delegateNullSafe(configureClosure, pluginConfigBuilder)) {
-            pluginConfig = new PluginConfig(pluginConfigBuilder);
-        }
+    public void configurePlugin(Closure configureClosure) {
+        ClosureUtil.delegateNullSafe(configureClosure, pluginConfigBuilder);
     }
 
     @Override
     public void configureDefaultable(@SuppressWarnings("rawtypes") Closure configureClosure) {
-        if (defaultableConfig != null) {
-            throw new GradleException("You can't change the defaultableConfig once its set");
-        }
-        var defaultableConfigBuilder = new DefaultableConfig.Builder();
-        if (ClosureUtil.delegateNullSafe(configureClosure, defaultableConfigBuilder)) {
-            // TODO: 17/06/2023 fix buildLauncher
-            defaultableConfig = new DefaultableConfig(defaultableConfigBuilder);
-        }
+        ClosureUtil.delegateNullSafe(configureClosure, defaultableConfigBuilder);
     }
 
     @Override
@@ -74,9 +64,11 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
     @Override
     public void configureConfigs() {
         var defaultPluginConfig = defaultPluginConfig();
-        if (pluginConfig == null) {
+        if (pluginConfigBuilder == null) {
             pluginConfig = defaultPluginConfig;
         } else {
+            pluginConfig = new PluginConfig(pluginConfigBuilder, getDefaultDir());
+            pluginConfigBuilder = null;
             customPathsCheck(pluginConfig);
             ClassUtil.mergeObjectsDefaultReference(pluginConfig, defaultPluginConfig, PluginConfigFields.class);
             var list = ClassUtil.validateDataDefault(pluginConfig, PluginConfigFields.class);
@@ -87,10 +79,11 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         }
 
         var defaultDefaultableConfig = defaultDefaultableConfig();
-        if (defaultableConfig == null) {
+        if (defaultableConfigBuilder == null) {
             defaultableConfig = defaultDefaultableConfig;
         } else {
-            defaultableConfig = new DefaultableConfig(defaultableConfig, defaultDefaultableConfig);
+            defaultableConfig = new DefaultableConfig(defaultableConfigBuilder, defaultDefaultableConfig);
+            defaultableConfigBuilder = null;
             var list = ClassUtil.validateDataDefault(defaultableConfig);
             if (list.size() != 0) {
                 list.add(0, "Unable to configureDefaultable some fields are null:");
@@ -103,6 +96,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         if (pluginConfig.getAutomaticCleanup() == null) {
             Optional<File> optional = streamAllDirectories(pluginConfig).filter(Objects::nonNull).findAny();
             if (optional.isPresent()) {
+                if (optional.get().equals(getDefaultDir())) return;
                 throw new GradleException("Custom global directory paths detected, automaticCleanup must explicitly be set to true or false");
             }
             return;
@@ -133,25 +127,16 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
             if (!deps.isEmpty()) {
                 createPersistentDir = true;
                 createGitDir = true;
-            }
-            for (Dependency dependency : deps) {
-                switch (dependency.getDependencyType()) {
-                    case MavenProjectLocal:
-                    case MavenProjectDependencyLocal:
-                        createMavenDir = true;
-                }
+                for (Dependency dependency : deps)
+                    switch (dependency.getDependencyType()) {
+                        case MavenProjectLocal, MavenProjectDependencyLocal -> createMavenDir = true;
+                    }
             }
         }
 
-        if (createPersistentDir) {
-            checkExistsAndMkdirs(pluginConfig.getPersistentDir());
-        }
-        if (createGitDir) {
-            checkExistsAndMkdirs(pluginConfig.getGitDir());
-        }
-        if (createMavenDir) {
-            checkExistsAndMkdirs(pluginConfig.getMavenDir());
-        }
+        if (createPersistentDir) checkExistsAndMkdirs(pluginConfig.getPersistentDir());
+        if (createGitDir) checkExistsAndMkdirs(pluginConfig.getGitDir());
+        if (createMavenDir) checkExistsAndMkdirs(pluginConfig.getMavenDir());
     }
 
     private static Stream<File> streamEssentialDirectories(PluginConfig pluginConfig) {
@@ -165,7 +150,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
     PluginConfig defaultPluginConfig() {
         File defaultDir = getDefaultDir();
 
-        PluginConfig.Builder builder = new PluginConfig.Builder(defaultDir);
+        PluginConfig.Builder builder = new PluginConfig.Builder();
         builder.defaultDir(defaultDir);
         builder.persistentDir(Constants.defaultPersistentDir.apply(defaultDir));
         builder.gitDir(Constants.defaultLibsDir.apply(defaultDir));
@@ -175,7 +160,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         builder.generateGradleTasks(true);
         builder.generateGradleTasks(true);
 
-        return new PluginConfig(builder);
+        return new PluginConfig(builder, defaultDir);
     }
 
     DefaultableConfig defaultDefaultableConfig() {
@@ -190,21 +175,13 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         builder.registerDependencyRepositoryToProject(true);
         builder.buildLauncher(ClosureUtil.<LauncherBuilder>configure(launcher -> {
             launcher.gradleDaemonMaxIdleTime((int) TimeUnit.MINUTES.toSeconds(2));
-            launcher.startup(ClosureUtil.<Launchers.Base>configure(obj -> {
-                obj.forwardOutput(true);
-            }));
-            launcher.probe(ClosureUtil.<Launchers.Base>configure(obj -> {
-                obj.forwardOutput(true);
-            }));
-            launcher.build(ClosureUtil.<Launchers.Base>configure(obj -> {
-                obj.forwardOutput(true);
-            }));
+            launcher.forwardOutput(true);
         }));
 
         return new DefaultableConfig(builder);
     }
 
-    private File getDefaultDir() {
+    File getDefaultDir() {
         return Constants.defaultDir.apply(getProject());
     }
 }

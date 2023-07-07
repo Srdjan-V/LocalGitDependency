@@ -4,9 +4,10 @@ import org.gradle.internal.impldep.com.google.common.base.Function;
 
 import java.util.function.BiConsumer;
 
-public abstract class ConfigMapper <C, B, T> {
+public abstract class ConfigMapper<C, B, T> {
     private String name;
     private Function<C, T> valueGetter;
+    private Function<B, T> valueSetter;
     private Function<C, T> newValue;
     private BiConsumer<B, T> builderConfig;
 

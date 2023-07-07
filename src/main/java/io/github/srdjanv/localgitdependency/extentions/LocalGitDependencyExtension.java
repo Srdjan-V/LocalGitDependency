@@ -2,12 +2,12 @@ package io.github.srdjanv.localgitdependency.extentions;
 
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyBuilder;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableBuilder;
+import io.github.srdjanv.localgitdependency.config.plugin.PluginBuilder;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.config.dependency.DependencyBuilder;
-import io.github.srdjanv.localgitdependency.config.plugin.PluginBuilder;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.MethodAccess;
 import org.gradle.internal.metaobject.MethodMixIn;

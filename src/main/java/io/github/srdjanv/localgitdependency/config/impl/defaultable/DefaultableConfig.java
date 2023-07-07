@@ -2,73 +2,78 @@ package io.github.srdjanv.localgitdependency.config.impl.defaultable;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableBuilder;
-import io.github.srdjanv.localgitdependency.config.impl.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
-import org.eclipse.jgit.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
-// non null data is used for you supply a custom default config, all data is otherwise nullable
 @NonNullData
 @SuppressWarnings("unused")
 public final class DefaultableConfig extends DefaultableConfigFields {
+    private DefaultableLauncherConfig launcher;
 
+    //defaultBuilder only constructor
     public DefaultableConfig(Builder builder) {
         ClassUtil.instantiateObjectWithBuilder(this, builder, DefaultableConfigFields.class);
-        var launcherBuilder = new Launchers.Launcher.Builder();
-        if (ClosureUtil.delegateNullSafe(builder.launcher, launcherBuilder)) {
-            launcher = new Launchers.Launcher(launcherBuilder);
+        var launcherBuilder = new DefaultableLauncherConfig.Builder();
+        ClosureUtil.delegateNullSafe(builder.launcher, launcherBuilder);
+        launcher = new DefaultableLauncherConfig(launcherBuilder);
+    }
+
+    //merging constructor
+    public DefaultableConfig(Builder builder, DefaultableConfig defaultConfig) {
+        ClassUtil.instantiateObjectWithBuilder(this, defaultConfig, DefaultableConfigFields.class);
+        ClassUtil.mergeObjectsDefaultNewObject(this, builder, DefaultableConfigFields.class);
+        if (builder.launcher != null) {
+            var launcherBuilder = new DefaultableLauncherConfig.Builder();
+            ClosureUtil.delegate(builder.launcher, launcherBuilder);
+            launcher = new DefaultableLauncherConfig(launcherBuilder, defaultConfig.launcher);
         }
     }
 
-    public DefaultableConfig(DefaultableConfig builder, DefaultableConfig defaultable) {
-        ClassUtil.mergeObjectsDefaultReference(this, defaultable, DefaultableConfigFields.class);
-        ClassUtil.mergeObjectsDefaultNewObject(this, builder, DefaultableConfigFields.class);
-    }
-
-    @Nullable
+    @NotNull
     public Boolean getKeepGitUpdated() {
         return keepGitUpdated;
     }
 
-    @Nullable
+    @NotNull
     public Dependency.Type getDependencyType() {
         return dependencyType;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getKeepDependencyInitScriptUpdated() {
         return keepInitScriptUpdated;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getTryGeneratingSourceJar() {
         return tryGeneratingSourceJar;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getTryGeneratingJavaDocJar() {
         return tryGeneratingJavaDocJar;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getEnableIdeSupport() {
         return enableIdeSupport;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getRegisterDependencyRepositoryToProject() {
         return registerDependencyRepositoryToProject;
     }
 
-    @Nullable
+    @NotNull
     public Boolean getGenerateGradleTasks() {
         return generateGradleTasks;
     }
 
-    @Nullable
-    public Launchers.Launcher getLauncher() {
+    @NotNull
+    public DefaultableLauncherConfig getLauncher() {
         return launcher;
     }
 

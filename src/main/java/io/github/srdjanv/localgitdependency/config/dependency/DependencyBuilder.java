@@ -8,6 +8,12 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 public interface DependencyBuilder extends DefaultableBuilder {
 
     /**
+     * @see LauncherBuilder
+     */
+    void buildLauncher(@DelegatesTo(value = LauncherBuilder.class,
+            strategy = Closure.DELEGATE_FIRST) Closure launcher);
+
+    /**
      * To what configuration to add all the generated jars
      * <p>
      * preferably this should be a runtimeOnly configuration

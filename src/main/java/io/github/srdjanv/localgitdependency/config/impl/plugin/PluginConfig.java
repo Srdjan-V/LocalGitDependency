@@ -12,8 +12,9 @@ import java.io.File;
 @NonNullData
 public final class PluginConfig extends PluginConfigFields {
 
-    public PluginConfig(Builder builder) {
+    public PluginConfig(Builder builder, File defaultDir) {
         ClassUtil.instantiateObjectWithBuilder(this, builder, PluginConfigFields.class);
+        this.defaultDir = defaultDir;
 
         if (builder.newDefaultDir != null) {
             var newFile = FileUtil.toFile(builder.newDefaultDir, "defaultDir");
@@ -75,8 +76,7 @@ public final class PluginConfig extends PluginConfigFields {
         private Object persistentDir;
         private Object mavenDir;
 
-        public Builder(File defaultDir) {
-            this.defaultDir = defaultDir;
+        public Builder() {
         }
 
         @Override

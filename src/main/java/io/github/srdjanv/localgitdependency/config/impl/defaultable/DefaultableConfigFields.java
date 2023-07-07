@@ -1,6 +1,5 @@
 package io.github.srdjanv.localgitdependency.config.impl.defaultable;
 
-import io.github.srdjanv.localgitdependency.config.impl.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
 public abstract class DefaultableConfigFields {
@@ -14,6 +13,5 @@ public abstract class DefaultableConfigFields {
     protected Boolean enableIdeSupport;
     protected Boolean registerDependencyRepositoryToProject;
     protected Boolean generateGradleTasks;
-    protected Launchers.Launcher launcher;
 
 }

@@ -22,6 +22,8 @@ import java.util.List;
  */
 public final class DependencyConfig extends DependencyConfigFields {
 
+    private final Launchers.Launcher launcher;
+
     public DependencyConfig(Builder builder, DefaultableConfig defaultableConfig) {
         ClassUtil.mergeObjectsDefaultReference(this, defaultableConfig, DefaultableConfigFields.class);
         ClassUtil.mergeObjectsDefaultNewObject(this, builder, DependencyConfigFields.class);
@@ -29,8 +31,8 @@ public final class DependencyConfig extends DependencyConfigFields {
         if (builder.launcher != null) {
             var launcherBuilder = new Launchers.Launcher.Builder();
             ClosureUtil.delegate(builder.launcher, launcherBuilder);
-            launcher = new Launchers.Launcher(launcherBuilder, launcher);
-        }
+            launcher = new Launchers.Launcher(launcherBuilder, defaultableConfig.getLauncher());
+        } else launcher = new Launchers.Launcher(defaultableConfig.getLauncher());
 
         if (builder.configurations != null) {
             List<ConfigurationConfig> configurationConfigList = new ArrayList<>();

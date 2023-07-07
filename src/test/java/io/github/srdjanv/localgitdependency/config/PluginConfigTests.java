@@ -34,43 +34,43 @@ public class PluginConfigTests {
             mapper.setName("keepInitScriptUpdated");
             mapper.setNewValue(pluginConfig -> !pluginConfig.getKeepInitScriptUpdated());
             mapper.setValueGetter(PluginConfig::getKeepInitScriptUpdated);
-            mapper.setBuilder((PluginConfig.Builder::keepInitScriptUpdated));
+            mapper.setBuilder(PluginConfig.Builder::keepInitScriptUpdated);
         });
         generateGradleTasks = PluginConfigMapper.create(mapper -> {
             mapper.setName("generateGradleTasks");
             mapper.setNewValue(pluginConfig -> !pluginConfig.getGenerateGradleTasks());
             mapper.setValueGetter(PluginConfig::getGenerateGradleTasks);
-            mapper.setBuilder((PluginConfig.Builder::generateGradleTasks));
+            mapper.setBuilder(PluginConfig.Builder::generateGradleTasks);
         });
         automaticCleanup = PluginConfigMapper.create(mapper -> {
             mapper.setName("automaticCleanup");
             mapper.setNewValue(pluginConfig -> !pluginConfig.getAutomaticCleanup());
             mapper.setValueGetter(PluginConfig::getAutomaticCleanup);
-            mapper.setBuilder((PluginConfig.Builder::automaticCleanup));
+            mapper.setBuilder(PluginConfig.Builder::automaticCleanup);
         });
         defaultDir = PluginConfigMapper.create(mapper -> {
             mapper.setName("defaultDir");
             mapper.setNewValue(pluginConfig -> new File(pluginConfig.getDefaultDir().getParent(), "newDefaultDir"));
             mapper.setValueGetter(PluginConfig::getDefaultDir);
-            mapper.setBuilder((PluginConfig.Builder::defaultDir));
+            mapper.setBuilder(PluginConfig.Builder::defaultDir);
         });
         gitDir = PluginConfigMapper.create(mapper -> {
             mapper.setName("gitDir");
             mapper.setNewValue(pluginConfig -> new File(pluginConfig.getDefaultDir(), "newLib"));
             mapper.setValueGetter(PluginConfig::getGitDir);
-            mapper.setBuilder((PluginConfig.Builder::gitDir));
+            mapper.setBuilder(PluginConfig.Builder::gitDir);
         });
         persistentDir = PluginConfigMapper.create(mapper -> {
             mapper.setName("persistentDir");
             mapper.setNewValue(pluginConfig -> new File(pluginConfig.getDefaultDir(), "newPersistentDir"));
             mapper.setValueGetter(PluginConfig::getPersistentDir);
-            mapper.setBuilder((PluginConfig.Builder::persistentDir));
+            mapper.setBuilder(PluginConfig.Builder::persistentDir);
         });
         mavenDir = PluginConfigMapper.create(mapper -> {
             mapper.setName("mavenDir");
             mapper.setNewValue(pluginConfig -> new File(pluginConfig.getDefaultDir(), "newMavenDir"));
             mapper.setValueGetter(PluginConfig::getMavenDir);
-            mapper.setBuilder((PluginConfig.Builder::mavenDir));
+            mapper.setBuilder(PluginConfig.Builder::mavenDir);
         });
     }
 

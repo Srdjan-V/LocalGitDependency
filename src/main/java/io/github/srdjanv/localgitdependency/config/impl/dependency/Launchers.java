@@ -6,11 +6,12 @@ import io.github.srdjanv.localgitdependency.config.dependency.Launchers.Base;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers.Build;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers.Probe;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers.Startup;
+import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableLauncherConfig;
+import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableLauncherConfigFields;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
-import io.github.srdjanv.localgitdependency.util.annotations.NullableData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,20 +28,33 @@ public final class Launchers {
         private final ProbeConfig probeConfig;
         private final BuildConfig buildConfig;
 
-        public Launcher(Builder builder) {
-            ClassUtil.instantiateObjectWithBuilder(this, builder, LauncherFields.class);
+        public Launcher(DefaultableLauncherConfig defaultable) {
+            ClassUtil.instantiateObjectWithBuilder(this, defaultable, DefaultableLauncherConfigFields.class);
+
+            // TODO: 07/07/2023 remove unnecessary builder
+            startupConfig = new StartupConfig(new StartupConfig.Builder());
+            probeConfig = new ProbeConfig(new ProbeConfig.Builder());
+            buildConfig = new BuildConfig(new BuildConfig.Builder());
+        }
+
+        public Launcher(Builder builder, DefaultableLauncherConfig defaultable) {
+            ClassUtil.mergeObjectsDefaultReference(this, defaultable, DefaultableLauncherConfigFields.class);
+            ClassUtil.mergeObjectsDefaultNewObject(this, builder, LauncherFields.class);
 
             startupConfig = buildLauncher(
+                    builder,
                     new StartupConfig.Builder(),
                     builder.startup,
                     StartupConfig::new
             );
             probeConfig = buildLauncher(
+                    builder,
                     new ProbeConfig.Builder(),
                     builder.probe,
                     ProbeConfig::new
             );
             buildConfig = buildLauncher(
+                    builder,
                     new BuildConfig.Builder(),
                     builder.build,
                     BuildConfig::new
@@ -48,59 +62,14 @@ public final class Launchers {
         }
 
         private static <B extends BaseBuilder, C extends BaseLauncherConfig> C buildLauncher(
+                Builder builder,
                 @NotNull B configBuilder,
                 @Nullable Closure closure,
                 Function<B, C> configFunction
         ) {
-            if (ClosureUtil.delegateNullSafe(closure, configBuilder)) {
-                return configFunction.apply(configBuilder);
-            } else throw new NullPointerException("BuildLauncher: a launcher is null");
-        }
-
-        public Launcher(Builder builder, Launcher defaultable) {
-            ClassUtil.mergeObjectsDefaultReference(this, defaultable, LauncherFields.class);
-            ClassUtil.mergeObjectsDefaultNewObject(this, builder, LauncherFields.class);
-
-            startupConfig = defaultableBuildLauncher(
-                    new StartupConfig.Builder(),
-                    builder.startup,
-                    StartupConfig::new,
-                    defaultable.getStartup(),
-                    StartupConfig.class);
-
-            probeConfig = defaultableBuildLauncher(
-                    new ProbeConfig.Builder(),
-                    builder.probe,
-                    ProbeConfig::new,
-                    defaultable.getProbe(),
-                    ProbeConfig.class);
-
-            buildConfig = defaultableBuildLauncher(
-                    new BuildConfig.Builder(),
-                    builder.build,
-                    BuildConfig::new,
-                    defaultable.getBuild(),
-                    BuildConfig.class);
-        }
-
-        private static <B extends BaseBuilder, C extends BaseLauncherConfig> C defaultableBuildLauncher(
-                @NotNull B configBuilder,
-                @Nullable Closure closure,
-                Function<B, C> configFunction,
-                @Nullable C fallback,
-                Class<C> fields
-        ) {
-            if (ClosureUtil.delegateNullSafe(closure, configBuilder)) {
-                if (fallback != null) {
-                    var conf = configFunction.apply(configBuilder);
-                    ClassUtil.mergeObjectsDefaultReference(conf, fallback, fields);
-                    return conf;
-                }
-
-                return configFunction.apply(configBuilder);
-            } else if (fallback != null) {
-                return fallback;
-            } else throw new NullPointerException("BuildLauncher: a launcher is null");
+            configBuilder.forwardOutput(builder.forwardOutput);
+            ClosureUtil.delegateNullSafe(closure, configBuilder);
+            return configFunction.apply(configBuilder);
         }
 
         @Nullable
@@ -108,7 +77,7 @@ public final class Launchers {
             return executable;
         }
 
-        @Nullable
+        @NotNull
         public Integer getGradleDaemonMaxIdleTime() {
             return gradleDaemonMaxIdleTime;
         }
@@ -144,7 +113,6 @@ public final class Launchers {
                 this.gradleDaemonMaxIdleTime = gradleDaemonMaxIdleTime;
             }
 
-
             @Override
             public void forwardOutput(Boolean forwardOutput) {
                 this.forwardOutput = forwardOutput;
@@ -167,10 +135,7 @@ public final class Launchers {
         }
     }
 
-    public static abstract class LauncherFields {
-        @NullableData
-        protected File executable;
-        protected Integer gradleDaemonMaxIdleTime;
+    public static abstract class LauncherFields extends DefaultableLauncherConfigFields {
     }
 
     public static class StartupConfig extends BaseLauncherConfig {
