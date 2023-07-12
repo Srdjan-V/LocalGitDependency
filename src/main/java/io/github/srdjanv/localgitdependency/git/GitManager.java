@@ -7,7 +7,6 @@ import io.github.srdjanv.localgitdependency.project.Managers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 final class GitManager extends ManagerBase implements IGitManager {
     GitManager(Managers managers) {
@@ -32,7 +31,7 @@ final class GitManager extends ManagerBase implements IGitManager {
             }
         }
         if (gitExceptions != null) {
-            throw new GitException(gitExceptions.stream().flatMap(List::stream).collect(Collectors.toList()));
+            throw new GitException(gitExceptions);
         }
     }
 
@@ -45,7 +44,7 @@ final class GitManager extends ManagerBase implements IGitManager {
     }
 
     @Override
-    public GitReport runRepoCommand(Dependency dependency, Consumer<GitTasks> task) {
+    public GitReport runRepoCommand(Dependency dependency, Consumer<IGitTasks> task) {
         try (IntractableGitWrapper gitWrapper = new IntractableGitWrapper(dependency.getGitInfo())) {
             task.accept(gitWrapper);
             return gitWrapper.getGitReport();

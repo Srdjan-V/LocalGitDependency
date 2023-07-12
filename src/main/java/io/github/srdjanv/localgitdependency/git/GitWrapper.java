@@ -63,10 +63,13 @@ final class GitWrapper implements AutoCloseable {
             if (gitInfo.isKeepGitUpdated()) {
                 saveConfigAndFetch();
                 if (!isUpToDateWithRemote()) {
+                    if (hasLocalChanges() == null) {
+                        return;
+                    }
                     final String localCommit = head().substring(0, 7);
                     ManagerLogger.info("Local version {} is not equal to remote target {} for {}", localCommit, targetCommit, gitInfo.getDependency().getName());
 
-                    if (hasLocalChanges()) {
+                    if (Boolean.TRUE.equals(hasLocalChanges())) {
                         addGitExceptions(new Exception(String.format("Git repo cannot be updated to %s, %s contains local changes. Commit and push or revert all changes manually.", targetCommit, gitInfo.getDir())));
                     } else if (hasBranchLocalCommits()) {
                         addGitExceptions(new Exception(String.format("Git repo cannot be updated to %s, %s contains local commits. Push to the remote or revert all changes manually.", targetCommit, gitInfo.getDir())));
@@ -93,7 +96,7 @@ final class GitWrapper implements AutoCloseable {
         final String buildTasksTriggersSHA1;
 
         var head = head();
-        if (hasLocalChanges()) {
+        if (Boolean.TRUE.equals(hasLocalChanges())) {
             startupTasksTriggersSHA1 = this.startupTasksTriggersSHA1 == null ? head : this.startupTasksTriggersSHA1;
             probeTasksTriggersSHA1 = this.probeTasksTriggersSHA1 == null ? head : this.probeTasksTriggersSHA1;
             buildTasksTriggersSHA1 = this.buildTasksTriggersSHA1 == null ? head : this.buildTasksTriggersSHA1;
@@ -138,7 +141,8 @@ final class GitWrapper implements AutoCloseable {
     }
 
     private Boolean hasLocalChanges;
-    boolean hasLocalChanges() throws GitAPIException, IOException {
+    @Nullable
+    Boolean hasLocalChanges() throws GitAPIException, IOException {
         if (hasLocalChanges != null) return hasLocalChanges;
 
         try {
@@ -179,8 +183,8 @@ final class GitWrapper implements AutoCloseable {
             }
         } catch (GitAPIException | IOException e) {
             addGitExceptions(e);
-            throw e;
         }
+        return null;
     }
 
     @Nullable

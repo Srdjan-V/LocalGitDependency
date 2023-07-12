@@ -8,7 +8,7 @@ import org.eclipse.jgit.transport.TagOpt;
 import java.io.IOException;
 import java.util.Optional;
 
-final class IntractableGitWrapper implements GitTasks, AutoCloseable {
+final class IntractableGitWrapper implements IGitTasks, AutoCloseable {
     private final GitWrapper gitWrapper;
 
     IntractableGitWrapper(GitInfo gitInfo) {
@@ -24,9 +24,9 @@ final class IntractableGitWrapper implements GitTasks, AutoCloseable {
     public Optional<Boolean> hasLocalChanges() {
         if (gitWrapper.hasGitExceptions()) return Optional.empty();
         try {
-            return Optional.of(gitWrapper.hasLocalChanges());
+            return Optional.ofNullable(gitWrapper.hasLocalChanges());
         } catch (GitAPIException | IOException e) {
-            ManagerLogger.error("Unable to check for local changes");
+            ManagerLogger.error("Unable to check for local changes", e);
             gitWrapper.addGitExceptions(e);
             return Optional.empty();
         }
@@ -38,7 +38,7 @@ final class IntractableGitWrapper implements GitTasks, AutoCloseable {
         try {
             return Optional.of(gitWrapper.isUpToDateWithRemote());
         } catch (GitAPIException | IOException e) {
-            ManagerLogger.error("Unable to check if it up to date with remote");
+            ManagerLogger.error("Unable to check if it up to date with remote", e);
             gitWrapper.addGitExceptions(e);
             return Optional.empty();
         }
@@ -49,12 +49,12 @@ final class IntractableGitWrapper implements GitTasks, AutoCloseable {
         if (gitWrapper.hasGitExceptions()) return;
         ManagerLogger.info("Dependency {}, clearing local changes and marking dependency to be rebuild", gitWrapper.gitInfo.getDependency().getName());
         try {
-            if (gitWrapper.hasLocalChanges()) {
+            if (Boolean.TRUE.equals(gitWrapper.hasLocalChanges())) {
                 gitWrapper.git.reset().setMode(ResetCommand.ResetType.HARD).call();
                 gitWrapper.gitInfo.setRefreshed();
             }
         } catch (IOException | GitAPIException e) {
-            ManagerLogger.error("Unable to clear local changes");
+            ManagerLogger.error("Unable to clear local changes", e);
             gitWrapper.addGitExceptions(e);
         }
     }
@@ -66,7 +66,7 @@ final class IntractableGitWrapper implements GitTasks, AutoCloseable {
             gitWrapper.git.fetch().setTagOpt(TagOpt.FETCH_TAGS).call();
             gitWrapper.update();
         } catch (GitAPIException | IOException e) {
-            ManagerLogger.error("Error updating dependency");
+            ManagerLogger.error("Error updating dependency", e);
             gitWrapper.addGitExceptions(e);
         }
     }
