@@ -249,6 +249,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             if (dependency.getGradleInfo().getLaunchers().getExecutable() != null) {
                 build.setJavaHome(dependency.getGradleInfo().getLaunchers().getExecutable());
             }
+            // TODO: 15/07/2023 fix formatting
             if (baseLauncher.isForwardOutput()) {
                 build.setStandardOutput(System.out);
                 build.setStandardError(System.err);
@@ -282,6 +283,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             if (dependency.getGradleInfo().getLaunchers().getExecutable() != null) {
                 customModelBuilder.setJavaHome(dependency.getGradleInfo().getLaunchers().getExecutable());
             }
+            // TODO: 15/07/2023 fix formatting
             if (baseLauncher.isForwardOutput()) {
                 customModelBuilder.setStandardOutput(System.out);
                 customModelBuilder.setStandardError(System.err);

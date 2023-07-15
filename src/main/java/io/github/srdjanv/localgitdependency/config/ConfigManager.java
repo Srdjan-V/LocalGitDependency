@@ -16,7 +16,6 @@ import org.gradle.api.GradleException;
 
 import java.io.File;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -44,15 +43,17 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
     }
 
     @Override
-    public void configurePlugin(Closure configureClosure) {
-        pluginConfigBuilderConfigured = true;
-        ClosureUtil.delegateNullSafe(configureClosure, pluginConfigBuilder);
+    public void configurePlugin(@SuppressWarnings("rawtypes") Closure configureClosure) {
+        if (ClosureUtil.delegateNullSafe(configureClosure, pluginConfigBuilder)) {
+            pluginConfigBuilderConfigured = true;
+        }
     }
 
     @Override
     public void configureDefaultable(@SuppressWarnings("rawtypes") Closure configureClosure) {
-        defaultableConfigBuilderConfigured = true;
-        ClosureUtil.delegateNullSafe(configureClosure, defaultableConfigBuilder);
+        if (ClosureUtil.delegateNullSafe(configureClosure, defaultableConfigBuilder)) {
+            defaultableConfigBuilderConfigured = true;
+        }
     }
 
     @Override
@@ -97,19 +98,21 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
     }
 
     private void customPathsCheck(PluginConfig pluginConfig) {
+        var customPaths = streamAllDirectories(pluginConfig).filter(Objects::nonNull).collect(Collectors.toList());
+
         if (pluginConfig.getAutomaticCleanup() == null) {
-            Optional<File> optional = streamAllDirectories(pluginConfig).filter(Objects::nonNull).findAny();
-            if (optional.isPresent()) {
-                if (optional.get().equals(getDefaultDir())) return;
-                throw new GradleException("Custom global directory paths detected, automaticCleanup must explicitly be set to true or false");
-            }
-            return;
+            if (customPaths.size() == 0) return;
+            throw new GradleException("Custom global directory paths detected, automaticCleanup must explicitly be set to true or false");
         }
         if (pluginConfig.getAutomaticCleanup()) {
-            Optional<File> optional = streamAllDirectories(pluginConfig).filter(Objects::nonNull).findAny();
-            if (optional.isPresent()) {
-                PluginLogger.warn("Custom global directory paths detected and automatic cleanup is on, this might delete unwanted directory's if configured incorrectly");
+            if (customPaths.size() == 0) return;
+
+            if (customPaths.contains(pluginConfig.getDefaultDir())) {
+                if (!getProject().getLayout().getProjectDirectory().getAsFile().equals(pluginConfig.getDefaultDir().getParentFile())) {
+                    PluginLogger.warn("The default directory in not in the root project and automatic cleanup is on, this might delete unwanted directory's if configured incorrectly");
+                }
             }
+            PluginLogger.warn("Custom global directory paths detected and automatic cleanup is on, this might delete unwanted directory's if configured incorrectly");
         }
     }
 
