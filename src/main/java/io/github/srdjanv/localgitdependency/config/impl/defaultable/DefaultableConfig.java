@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 @NonNullData
 @SuppressWarnings("unused")
 public final class DefaultableConfig extends DefaultableConfigFields {
-    private DefaultableLauncherConfig launcher;
+    private final DefaultableLauncherConfig launcher;
 
     //defaultBuilder only constructor
     public DefaultableConfig(Builder builder) {
@@ -29,6 +29,8 @@ public final class DefaultableConfig extends DefaultableConfigFields {
             var launcherBuilder = new DefaultableLauncherConfig.Builder();
             ClosureUtil.delegate(builder.launcher, launcherBuilder);
             launcher = new DefaultableLauncherConfig(launcherBuilder, defaultConfig.launcher);
+        } else {
+            launcher = defaultConfig.launcher;
         }
     }
 

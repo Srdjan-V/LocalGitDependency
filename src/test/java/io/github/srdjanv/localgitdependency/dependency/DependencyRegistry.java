@@ -17,7 +17,7 @@ public class DependencyRegistry {
         registry.add(new DependencyRegistry(
                 "GroovyScriptFG2",
                 "https://github.com/CleanroomMC/GroovyScript.git",
-                "8390e4a2bd8b599856445eef224823164fff0a85",
+                "627ac181f8d586cbc93a4b47daf8436e9fce7eab",
                 "setupDecompWorkspace"));
     }
 

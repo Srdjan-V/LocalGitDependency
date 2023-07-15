@@ -145,20 +145,20 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getStartup(),
-                dependency.getGradleInfo().getLaunchers().getStartup().getPreTasksArguments(this, dependency),
-                dependency.getGradleInfo().getLaunchers().getStartup().getPreTasks(),
+                startup -> startup.getPreTasksArguments(this, dependency),
+                GradleLaunchers.Base::getPreTasks,
                 startupTasksStatusResultHandler);
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getStartup(),
-                dependency.getGradleInfo().getLaunchers().getStartup().getMainTasksArguments(this, dependency),
-                dependency.getGradleInfo().getLaunchers().getStartup().getMainTasks(this, dependency),
+                startup -> startup.getMainTasksArguments(this, dependency),
+                startup -> startup.getMainTasks(this, dependency),
                 startupTasksStatusResultHandler);
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getStartup(),
-                dependency.getGradleInfo().getLaunchers().getStartup().getPostTasksArguments(this, dependency),
-                dependency.getGradleInfo().getLaunchers().getStartup().getPostTasks(),
+                startup -> startup.getPostTasksArguments(this, dependency),
+                GradleLaunchers.Base::getPostTasks,
                 startupTasksStatusResultHandler);
 
         long spent = System.currentTimeMillis() - start;
@@ -173,21 +173,21 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getProbe(),
-                dependency.getGradleInfo().getLaunchers().getProbe().getPreTasksArguments(this, dependency),
-                dependency.getGradleInfo().getLaunchers().getProbe().getPreTasks(),
+                probe -> probe.getPreTasksArguments(this, dependency),
+                GradleLaunchers.Base::getPreTasks,
                 probeTasksStatusResultHandler);
 
         runGradleModel(dependency,
                 dependency.getGradleInfo().getLaunchers().getProbe(),
-                dependency.getGradleInfo().getLaunchers().getProbe().getMainTasksArguments(this, dependency),
-                dependency.getGradleInfo().getLaunchers().getProbe().getMainTasks(this, dependency)
+                probe -> probe.getMainTasksArguments(this, dependency),
+                probe -> probe.getMainTasks(this, dependency)
         );
 
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getProbe(),
-                dependency.getGradleInfo().getLaunchers().getProbe().getPostTasksArguments(this, dependency),
-                dependency.getGradleInfo().getLaunchers().getProbe().getPostTasks(),
+                probe -> probe.getPostTasksArguments(this, dependency),
+                GradleLaunchers.Base::getPostTasks,
                 probeTasksStatusResultHandler);
 
         long spent = System.currentTimeMillis() - start;
@@ -201,35 +201,37 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getBuild(),
-                dependency.getGradleInfo().getLaunchers().getBuild().getPreTasksArguments(this, dependency),
-                dependency.getGradleInfo().getLaunchers().getBuild().getPreTasks(),
+                build -> build.getPreTasksArguments(this, dependency),
+                GradleLaunchers.Base::getPreTasks,
                 buildStatusResultHandler);
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getBuild(),
-                dependency.getGradleInfo().getLaunchers().getBuild().getMainTasksArguments(this, dependency),
-                dependency.getGradleInfo().getLaunchers().getBuild().getMainTasks(this, dependency),
+                build -> build.getMainTasksArguments(this, dependency),
+                build -> build.getMainTasks(this, dependency),
                 buildStatusResultHandler);
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getBuild(),
-                dependency.getGradleInfo().getLaunchers().getBuild().getPostTasksArguments(this, dependency),
-                dependency.getGradleInfo().getLaunchers().getBuild().getPostTasks(),
+                build -> build.getPostTasksArguments(this, dependency),
+                GradleLaunchers.Base::getPostTasks,
                 buildStatusResultHandler);
 
         long spent = System.currentTimeMillis() - start;
         ManagerLogger.info("Finished building in {} ms", spent);
     }
 
-    private void runTaskStage(
+    private <GL extends GradleLaunchers.Base> void runTaskStage(
             Dependency dependency,
-            GradleLaunchers.Base baseLauncher,
-            List<String> args,
-            List<String> tasks,
+            GL baseLauncher,
+            Function<GL, List<String>> argsFunction,
+            Function<GL, List<String>> tasksFunction,
             Function<Dependency, ResultHandler<Void>> function
     ) {
+        var tasks = tasksFunction.apply(baseLauncher);
         if (tasks.size() == 0) return;
 
+        var args = argsFunction.apply(baseLauncher);
         final String[] arrArgs;
         if (args.size() != 0) {
             arrArgs = args.toArray(new String[0]);
@@ -255,12 +257,15 @@ final class GradleManager extends ManagerBase implements IGradleManager {
         }
     }
 
-    private void runGradleModel(
+    private <GL extends GradleLaunchers.Base> void runGradleModel(
             Dependency dependency,
-            GradleLaunchers.Base baseLauncher,
-            List<String> args,
-            List<String> tasks
+            GL baseLauncher,
+            Function<GL, List<String>> argsFunction,
+            Function<GL, List<String>> tasksFunction
     ) {
+        var tasks = tasksFunction.apply(baseLauncher);
+        var args = argsFunction.apply(baseLauncher);
+
         if (tasks.size() == 0 && args.size() == 0) return;
 
         final String[] arrArgs = args.toArray(new String[0]);

@@ -1,10 +1,8 @@
 package io.github.srdjanv.localgitdependency.config;
 
-import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.ProjectInstance;
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfig;
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfigFields;
-import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableLauncherConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
@@ -31,7 +29,7 @@ public class DefaultableConfigTests {
     private static final DefaultableConfigMapper<Boolean> enableIdeSupport;
     private static final DefaultableConfigMapper<Boolean> registerDependencyRepositoryToProject;
     private static final DefaultableConfigMapper<Boolean> generateGradleTasks;
-    private static final DefaultableConfigMapper<DefaultableLauncherConfig> launcher;
+  //  private static final DefaultableConfigMapper<DefaultableLauncherConfig> launcher;
 
     static {
         keepGitUpdated = DefaultableConfigMapper.create(mapper -> {
@@ -82,11 +80,11 @@ public class DefaultableConfigTests {
             mapper.setValueGetter(DefaultableConfig::getGenerateGradleTasks);
             mapper.setBuilder(DefaultableConfig.Builder::generateGradleTasks);
         });
-        launcher = DefaultableConfigMapper.create(mapper -> {// TODO: 07/07/2023 improve
+/*        launcher = DefaultableConfigMapper.create(mapper -> {// TODO: 07/07/2023 improve
             mapper.setName("launcher");
             mapper.setValueGetter(DefaultableConfig::getLauncher);
             mapper.setBuilder((builder, obj) -> builder.buildLauncher((Closure) (Object) obj));
-        });
+        });*/
     }
 
     @Test
@@ -96,7 +94,7 @@ public class DefaultableConfigTests {
 
     @TestFactory
     Stream<DynamicTest> testIndividualDefaultableConfigs() {
-        return mappers.stream().filter(mapper -> !mapper.getName().equals(launcher.getName())).
+        return mappers.stream().
                 map(mapper -> DynamicTest.dynamicTest(mapper.getName(), new DefaultableTestExecutable<>(mapper, ProjectInstance.createProject()) {
                     @Override
                     public void execute() {
