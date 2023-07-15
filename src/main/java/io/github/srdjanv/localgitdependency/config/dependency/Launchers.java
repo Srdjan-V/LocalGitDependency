@@ -14,10 +14,21 @@ public final class Launchers {
     }
 
     public interface Base {
+        /**
+         * Sets the tasks should explicitly run
+         */
         void explicit(Boolean explicit);
 
+        /**
+         * This will set what files should trigger a launcher rerun
+         * <p>
+         * Currently, this checked by String::Contains
+         */
         void setTaskTriggers(String... files);
 
+        /**
+         * Same as above, but it adds to the default existing ones
+         */
         void addTaskTriggers(String... files);
 
         void preTasksWithArguments(String... args);

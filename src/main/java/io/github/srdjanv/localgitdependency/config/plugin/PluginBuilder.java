@@ -3,6 +3,12 @@ package io.github.srdjanv.localgitdependency.config.plugin;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 
 public interface PluginBuilder {
+
+    /**
+     * This will set the directory for all the default folder.
+     * The default is localGitDependency
+     * @param dir directory target
+     */
     void defaultDir(Object dir);
 
     /**
