@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-class GitManager extends ManagerBase implements IGitManager {
+final class GitManager extends ManagerBase implements IGitManager {
     GitManager(Managers managers) {
         super(managers);
     }
@@ -31,26 +31,23 @@ class GitManager extends ManagerBase implements IGitManager {
             }
         }
         if (gitExceptions != null) {
-            RuntimeException runtimeException = new RuntimeException("Exception(s) occurred while interacting with git");
-            gitExceptions.stream().flatMap(List::stream).forEach(runtimeException::addSuppressed);
-            throw runtimeException;
+            throw new GitException(gitExceptions);
         }
     }
 
     @Override
     public GitReport initRepo(Dependency dependency) {
-        try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
-            gitObjectWrapper.setup();
-            return gitObjectWrapper.getGitReport();
+        try (GitWrapper gitWrapper = new GitWrapper(dependency.getGitInfo())) {
+            gitWrapper.setup();
+            return gitWrapper.getGitReport();
         }
     }
 
     @Override
-    public GitReport runRepoCommand(Dependency dependency, Consumer<GitTasks> task) {
-        try (GitObjectWrapper gitObjectWrapper = new GitObjectWrapper(dependency.getGitInfo())) {
-            task.accept(gitObjectWrapper);
-            return gitObjectWrapper.getGitReport();
+    public GitReport runRepoCommand(Dependency dependency, Consumer<IGitTasks> task) {
+        try (IntractableGitWrapper gitWrapper = new IntractableGitWrapper(dependency.getGitInfo())) {
+            task.accept(gitWrapper);
+            return gitWrapper.getGitReport();
         }
     }
-
 }

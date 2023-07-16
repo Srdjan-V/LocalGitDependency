@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-class ManagerRunner<T extends Manager> {
+final class ManagerRunner<T extends Manager> {
     private Function<Managers, T> managerRunner;
     private ReflectionFunction<Class<T>, Method> methodFunction;
     private Method method;
@@ -45,10 +45,10 @@ class ManagerRunner<T extends Manager> {
         T manager = managerRunner.apply(managers);
         oneTimeRuntimeSetup(manager);
 
-        PluginLogger.info("{}: Started {}", manager.getManagerName(), taskName);
+        PluginLogger.task("{}: Started {}", manager.getManagerName(), taskName);
         invokeMethod(manager);
         final long spent = System.currentTimeMillis() - start;
-        PluginLogger.info("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
+        PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
     }
 
     private void invokeMethod(T manager) {
@@ -75,6 +75,7 @@ class ManagerRunner<T extends Manager> {
         for (Class<?> anInterface : manager.getClass().getInterfaces()) {
             for (Method declaredMethod : anInterface.getDeclaredMethods()) {
                 if (!declaredMethod.getName().equals(method.getName())) continue;
+                if (declaredMethod.getParameters().length != 0) continue;
 
                 if (declaredMethod.isAnnotationPresent(TaskDescription.class)) {
                     taskName = declaredMethod.getAnnotation(TaskDescription.class).value();

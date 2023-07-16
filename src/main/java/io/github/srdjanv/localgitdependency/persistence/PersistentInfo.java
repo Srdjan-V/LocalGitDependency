@@ -1,29 +1,43 @@
 package io.github.srdjanv.localgitdependency.persistence;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.gradle.internal.impldep.org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class PersistentInfo {
+public final class PersistentInfo {
     private final Dependency dependency;
     private final File persistentFile;
     private DependencyData dependencyData;
     private ProjectProbeData projectProbeData;
-    private boolean validModel;
+    private boolean validDataVersion;
     private boolean dependencyTypeChanged;
     private boolean dirty;
 
-    public PersistentInfo(DependencyProperty dependencyConfig, Dependency dependency) {
+    public PersistentInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
-        this.persistentFile = Constants.persistentJsonFile.apply(dependencyConfig.getPersistentDir(), dependency.getName());
+
+        if (dependency.getName() != null) {
+            File dir;
+            if (dependencyConfig.getPersistentDir() != null) {
+                dir = dependencyConfig.getPersistentDir();
+            } else {
+                dir = managers.getConfigManager().getPluginConfig().getPersistentDir();
+            }
+            this.persistentFile = Constants.persistentJsonFile.apply(dir,
+                    dependency.getName());
+        } else this.persistentFile = null;
     }
 
     public boolean hasDependencyTypeChanged() {
@@ -41,27 +55,17 @@ public class PersistentInfo {
     }
 
     @Nullable
-    public String getWorkingDirSHA1() {
-        return dependencyData.getWorkingDirSHA1();
-    }
-
-    public void setWorkingDirSHA1(String workingDirSHA1) {
-        setDirty();
-        dependencyData.setWorkingDirSHA1(workingDirSHA1);
-    }
-
-    @Nullable
     public String getInitFileSHA1() {
         return dependencyData.getInitFileSHA1();
     }
 
-    public void setInitFileSHA1(String initFileSHA1) {
+    public void setInitFileSHA1(String SHA1) {
         setDirty();
-        dependencyData.setInitFileSHA1(initFileSHA1);
+        dependencyData.setInitFileSHA1(SHA1);
     }
 
-    public boolean isValidModel() {
-        return validModel;
+    public boolean isValidDataVersion() {
+        return validDataVersion;
     }
 
     public ProjectProbeData getProbeData() {
@@ -70,47 +74,87 @@ public class PersistentInfo {
 
     public void setProbeData(String jsonData) {
         setDirty();
-        setValidModel();
+        setValidDataVersion();
         projectProbeData = DataParser.parseJson(jsonData);
     }
 
-    public void setBuildStatus(boolean status) {
-        if (dependencyData.getBuildSuccessful() != null) {
-            if (status != dependencyData.getBuildSuccessful()) {
-                setDirty();
-                dependencyData.setBuildSuccessful(status);
-            }
-        } else {
-            setDirty();
-            dependencyData.setBuildSuccessful(status);
-        }
-    }
-
     public void setStartupTasksStatus(boolean status) {
-        if (dependencyData.getStartupTasksRun() != null) {
-            if (status != dependencyData.getStartupTasksRun()) {
+        setTaskData(dependencyData::getStartupTasksSuccessful,
+                dependencyData::setStartupTasksSuccessful,
+                status);
+    }
+
+    @Nullable
+    public String getStartupTasksTriggersSHA1() {
+        return dependencyData.getStartupTasksTriggersSHA1();
+    }
+
+    public void setStartupTasksTriggersSHA1(String SHA1) {
+        setDirty();
+        dependencyData.setStartupTasksTriggersSHA1(SHA1);
+    }
+
+    public void setProbeTasksStatus(boolean status) {
+        setTaskData(dependencyData::getProbeTasksSuccessful,
+                dependencyData::setProbeTasksSuccessful,
+                status);
+    }
+
+    @Nullable
+    public String getProbeTasksTriggersSHA1() {
+        return dependencyData.getProbeTasksTriggersSHA1();
+    }
+
+    public void setProbeTasksTriggersSHA1(String SHA1) {
+        setDirty();
+        dependencyData.setProbeTasksTriggersSHA1(SHA1);
+    }
+
+    public void setBuildStatus(boolean status) {
+        setTaskData(dependencyData::getBuildTasksSuccessful,
+                dependencyData::setBuildTasksSuccessful,
+                status);
+    }
+
+    @Nullable
+    public String getBuildTasksTriggersSHA1() {
+        return dependencyData.getBuildTasksTriggersSHA1();
+    }
+
+    public void setBuildTasksTriggersSHA1(String SHA1) {
+        setDirty();
+        dependencyData.setBuildTasksTriggersSHA1(SHA1);
+    }
+
+    private void setTaskData(Supplier<Boolean> data, Consumer<Boolean> dataSetter, boolean status) {
+        if (data.get() != null) {
+            if (status != data.get()) {
                 setDirty();
-                dependencyData.setStartupTasksRun(status);
+                dataSetter.accept(status);
             }
         } else {
             setDirty();
-            dependencyData.setStartupTasksRun(status);
+            dataSetter.accept(status);
         }
     }
 
-    public boolean getBuildStatus() {
-        if (dependencyData.getBuildSuccessful() == null) {
-            return false;
-        } else {
-            return dependencyData.getBuildSuccessful();
-        }
+    public boolean isSuccessfulStartup() {
+        return getTaskData(dependencyData::getStartupTasksSuccessful);
     }
 
-    public boolean getRunStatus() {
-        if (dependencyData.getStartupTasksRun() == null) {
+    public boolean isSuccessfulProbe() {
+        return getTaskData(dependencyData::getProbeTasksSuccessful);
+    }
+
+    public boolean isSuccessfulBuild() {
+        return getTaskData(dependencyData::getBuildTasksSuccessful);
+    }
+
+    private boolean getTaskData(Supplier<Boolean> data) {
+        if (data.get() == null) {
             return false;
         } else {
-            return dependencyData.getStartupTasksRun();
+            return data.get();
         }
     }
 
@@ -135,8 +179,8 @@ public class PersistentInfo {
         this.projectProbeData = projectProbeData;
     }
 
-    void setValidModel() {
-        validModel = true;
+    void setValidDataVersion() {
+        validDataVersion = true;
     }
 
     void setDependencyTypeChanged() {

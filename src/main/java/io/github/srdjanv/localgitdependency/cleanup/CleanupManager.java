@@ -4,7 +4,7 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.property.impl.GlobalProperty;
+import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.BiPredicate;
 
-class CleanupManager extends ManagerBase implements ICleanupManager {
+final class CleanupManager extends ManagerBase implements ICleanupManager {
 
     CleanupManager(Managers managers) {
         super(managers);
@@ -25,7 +25,7 @@ class CleanupManager extends ManagerBase implements ICleanupManager {
 
     @Override
     public void init() {
-        GlobalProperty props = getPropertyManager().getGlobalProperty();
+        PluginConfig props = getConfigManager().getPluginConfig();
 
         if (!props.getAutomaticCleanup()) {
             ManagerLogger.info("Skipping cleanup");
@@ -38,10 +38,12 @@ class CleanupManager extends ManagerBase implements ICleanupManager {
     }
 
     private void cleanLibsDir(File libsDir) {
+        if (!libsDir.exists()) return;
         iterateDirs(libsDir, (dir, dep) -> dir.equals(dep.getGitInfo().getDir()));
     }
 
     private void cleanMavenDir(File mavenDir) {
+        if (!mavenDir.exists()) return;
         iterateDirs(mavenDir, (dir, dep) -> {
             switch (dep.getDependencyType()) {
                 case MavenProjectDependencyLocal:
@@ -57,6 +59,7 @@ class CleanupManager extends ManagerBase implements ICleanupManager {
     }
 
     private void cleanDataDir(File dataDir) {
+        if (!dataDir.exists()) return;
         iterateDirs(dataDir, (dir, dep) -> dir.equals(new File(dataDir, dep.getName())));
     }
 
@@ -78,7 +81,7 @@ class CleanupManager extends ManagerBase implements ICleanupManager {
     }
 
     private void deleteDir(Path path) throws IOException {
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

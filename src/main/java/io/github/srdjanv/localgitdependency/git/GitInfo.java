@@ -1,8 +1,10 @@
 package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -10,46 +12,64 @@ import java.util.Objects;
 
 import static org.eclipse.jgit.lib.Constants.*;
 
-public class GitInfo {
+public final class GitInfo {
     private final Dependency dependency;
     private final String url;
     private final String target;
+    private final String targetLocal;
+    private final String targetRemote;
     private final TargetType targetType;
     private final File dir;
     private final boolean keepGitUpdated;
     private boolean refreshed;
 
-    public GitInfo(DependencyProperty dependencyConfig, Dependency dependency) {
+    public GitInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
         this.url = dependencyConfig.getUrl();
+        if (url == null) errorBuilder.append("DependencyConfig: 'url' is null");
 
         if (dependencyConfig.getTargetType() == null) {
             targetType = TargetType.BRANCH;
-            target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + MASTER;
+            target = MASTER;
+            targetLocal = R_HEADS + target;
+            targetRemote = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + target;
         } else {
+            target = dependencyConfig.getTarget();
             switch (dependencyConfig.getTargetType()) {
-                case COMMIT:
+                case COMMIT -> {
                     targetType = TargetType.COMMIT;
-                    target = dependencyConfig.getTarget();
-                    break;
-
-                case TAG:
+                    targetLocal = target;
+                    targetRemote = target;
+                }
+                case TAG -> {
                     targetType = TargetType.TAG;
-                    target = R_TAGS + dependencyConfig.getTarget();
-                    break;
-
-                case BRANCH:
+                    targetLocal = R_TAGS + target;
+                    targetRemote = R_TAGS + target;
+                }
+                case BRANCH -> {
                     targetType = TargetType.BRANCH;
-                    target = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + dependencyConfig.getTarget();
-                    break;
-
-                default:
-                    throw new IllegalStateException();
+                    targetLocal = R_HEADS + target;
+                    targetRemote = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + target;
+                }
+                default -> throw new IllegalStateException();
             }
         }
 
-        this.dir = Constants.concatFile.apply(dependencyConfig.getGitDir(), dependency.getName());
-        this.keepGitUpdated = dependencyConfig.getKeepGitUpdated();
+        if (dependency.getName() != null) {
+            File dir;
+            if (dependencyConfig.getGitDir() != null) {
+                dir = dependencyConfig.getGitDir();
+            } else {
+                dir = managers.getConfigManager().getPluginConfig().getGitDir();
+            }
+            this.dir = Constants.concatFile.apply(dir,
+                    dependency.getName());
+        } else this.dir = null;
+
+        if (dependencyConfig.getKeepGitUpdated() == null) {
+            errorBuilder.append("DependencyConfig: 'keepGitUpdated' is null");
+            this.keepGitUpdated = false;
+        } else this.keepGitUpdated = dependencyConfig.getKeepGitUpdated();
     }
 
     @NotNull
@@ -67,6 +87,17 @@ public class GitInfo {
         return target;
     }
 
+    @NotNull
+    public String getTargetLocal() {
+        return targetLocal;
+    }
+
+    @NotNull
+    public String getTargetRemote() {
+        return targetRemote;
+    }
+
+    @NotNull
     public TargetType getTargetType() {
         return targetType;
     }

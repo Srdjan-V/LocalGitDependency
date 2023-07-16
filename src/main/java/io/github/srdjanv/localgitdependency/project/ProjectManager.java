@@ -7,26 +7,34 @@ import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
-import io.github.srdjanv.localgitdependency.property.IPropertyManager;
+import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class ProjectManager extends ManagerBase implements IProjectManager {
+final class ProjectManager extends ManagerBase implements IProjectManager {
     private static final List<ManagerRunner<?>> PROJECT_RUNNERS;
 
-    public static final ManagerRunner<IPersistenceManager> savePersistentDataTask =
+    private static final ManagerRunner<IPersistenceManager> savePersistentDataTask =
             ManagerRunner.create(managerRunner -> {
                 managerRunner.setManagerSupplier(Managers::getPersistenceManager);
                 managerRunner.setTask(clazz -> clazz.getDeclaredMethod("savePersistentData"));
             });
 
     static {
-        PROJECT_RUNNERS = new ArrayList<>();
-        PROJECT_RUNNERS.add(ManagerRunner.<IPropertyManager>create(managerRunner -> {
-            managerRunner.setManagerSupplier(Managers::getPropertyManager);
+        PROJECT_RUNNERS = new ArrayList<>(10);
+        PROJECT_RUNNERS.add(ManagerRunner.<IConfigManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getConfigManager);
+            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("configureConfigs"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<IConfigManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getConfigManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("createEssentialDirectories"));
+        }));
+        PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getDependencyManager);
+            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("resolveRegisteredDependencies"));
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<ICleanupManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getCleanupManager);
@@ -46,7 +54,7 @@ class ProjectManager extends ManagerBase implements IProjectManager {
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<IGradleManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getGradleManager);
-            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("buildDependencies"));
+            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("startBuildTasks"));
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getDependencyManager);
@@ -73,7 +81,7 @@ class ProjectManager extends ManagerBase implements IProjectManager {
         String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
 
         final long start = System.currentTimeMillis();
-        PluginLogger.startInfo("{} starting {} tasks", formattedName, Constants.EXTENSION_NAME);
+        PluginLogger.title("{} starting {} tasks", formattedName, Constants.EXTENSION_NAME);
         try {
             for (ManagerRunner<?> projectRunner : PROJECT_RUNNERS) {
                 projectRunner.runAndLog(getProjectManagers());
@@ -91,7 +99,7 @@ class ProjectManager extends ManagerBase implements IProjectManager {
                 }
             }
             final long spent = System.currentTimeMillis() - start;
-            PluginLogger.startInfo("{} finished {} tasks in {} ms", formattedName, Constants.EXTENSION_NAME, spent);
+            PluginLogger.title("{} finished {} tasks in {} ms", formattedName, Constants.EXTENSION_NAME, spent);
         }
         if (throwable != null) {
             throw new RuntimeException(throwable);

@@ -1,18 +1,19 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata;
 
-import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
-import io.github.srdjanv.localgitdependency.util.BuilderUtil;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 
 import java.util.List;
 import java.util.Set;
 
-public class SourceSetData extends SourceSetDataFields implements NonNullData {
+@NonNullData
+public class SourceSetData extends SourceSetDataFields {
 
     public SourceSetData() {
     }
 
     public SourceSetData(Builder builder) {
-        BuilderUtil.instantiateObjectWithBuilder(this, builder, SourceSetDataFields.class);
+        ClassUtil.instantiateObjectWithBuilder(this, builder, SourceSetDataFields.class);
     }
 
     public static Builder builder() {
@@ -66,12 +67,15 @@ public class SourceSetData extends SourceSetDataFields implements NonNullData {
     public String getName() {
         return name;
     }
+
     public String getBuildClassesDir() {
         return buildClassesDir;
     }
+
     public String getBuildResourcesDir() {
         return buildResourcesDir;
     }
+
     public Set<String> getDependentSourceSets() {
         return dependentSourceSets;
     }

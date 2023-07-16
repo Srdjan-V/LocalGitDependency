@@ -6,7 +6,7 @@ import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyExtensi
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
-import io.github.srdjanv.localgitdependency.property.IPropertyManager;
+import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import org.gradle.api.Project;
 
@@ -55,8 +55,8 @@ public abstract class ManagerBase implements Manager {
     }
 
     @Override
-    public IPropertyManager getPropertyManager() {
-        return managers.getPropertyManager();
+    public IConfigManager getConfigManager() {
+        return managers.getConfigManager();
     }
 
     @Override

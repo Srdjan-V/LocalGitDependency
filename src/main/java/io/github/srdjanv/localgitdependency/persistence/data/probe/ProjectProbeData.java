@@ -1,23 +1,25 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe;
 
-import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
-import io.github.srdjanv.localgitdependency.util.BuilderUtil;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 import org.gradle.api.JavaVersion;
 
 import java.util.List;
 
-public class ProjectProbeData extends ProjectProbeDataFields implements NonNullData {
+@NonNullData
+public class ProjectProbeData extends ProjectProbeDataFields {
     public ProjectProbeData() {
     }
 
     private ProjectProbeData(Builder builder) {
-        BuilderUtil.instantiateObjectWithBuilder(this, builder, ProjectProbeDataFields.class);
+        ClassUtil.instantiateObjectWithBuilder(this, builder, ProjectProbeDataFields.class);
     }
 
-    public static class Builder extends ProjectProbeDataFields{
+    public static class Builder extends ProjectProbeDataFields {
         public Builder() {
         }
 
@@ -71,6 +73,12 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
             this.publicationData = publicationData;
             return this;
         }
+
+        public Builder setSubDependencyData(List<SubDependencyData> subDependencyData) {
+            this.subDependencyData = subDependencyData;
+            return this;
+        }
+
         public ProjectProbeData create() {
             return new ProjectProbeData(this);
         }
@@ -80,9 +88,10 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
         return version;
     }
 
-    public String getProjectId() {
+    public String getProjectID() {
         return projectId;
     }
+
     public String getArchivesBaseName() {
         return archivesBaseName;
     }
@@ -113,5 +122,9 @@ public class ProjectProbeData extends ProjectProbeDataFields implements NonNullD
 
     public PublicationData getPublicationData() {
         return publicationData;
+    }
+
+    public List<SubDependencyData> getSubDependencyData() {
+        return subDependencyData;
     }
 }

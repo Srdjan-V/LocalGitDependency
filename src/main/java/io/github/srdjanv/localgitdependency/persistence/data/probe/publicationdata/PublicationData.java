@@ -1,17 +1,18 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata;
 
-import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
-import io.github.srdjanv.localgitdependency.util.BuilderUtil;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 
 import java.util.List;
 
-public class PublicationData extends PublicationDataFields implements NonNullData {
+@NonNullData
+public class PublicationData extends PublicationDataFields {
 
     public PublicationData() {
     }
 
     public PublicationData(Builder builder) {
-        BuilderUtil.instantiateObjectWithBuilder(this, builder, PublicationDataFields.class);
+        ClassUtil.instantiateObjectWithBuilder(this, builder, PublicationDataFields.class);
     }
 
     public static Builder builder() {

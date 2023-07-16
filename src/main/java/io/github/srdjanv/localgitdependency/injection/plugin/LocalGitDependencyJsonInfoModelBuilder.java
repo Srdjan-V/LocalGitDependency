@@ -1,16 +1,20 @@
 package io.github.srdjanv.localgitdependency.injection.plugin;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
 import io.github.srdjanv.localgitdependency.injection.model.DefaultLocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.UnknownDomainObjectException;
+import org.gradle.api.UnknownTaskException;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.plugins.BasePluginConvention;
 import org.gradle.api.plugins.BasePluginExtension;
@@ -30,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuilder {
+public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuilder {
     private static final String MODEL_NAME = LocalGitDependencyJsonInfoModel.class.getName();
     private Project project;
     private ProjectProbeData.Builder builder;
@@ -55,6 +59,7 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
         List<String> artifactTasksNames = buildArtifactTasks();
         buildMavenPublicationData(artifactTasksNames);
         buildSources();
+        buildSubDependencies();
 
         var projectProbeData = builder.create();
         var json = DataParser.projectProbeDataJson(projectProbeData);
@@ -72,14 +77,16 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
         var gradleVersion = GradleVersion.version(project.getGradle().getGradleVersion());
         if (gradleVersion.compareTo(GradleVersion.version("7.1")) >= 0) {
             SourceSet main = javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-            for (Task task : project.getTasks()) {
-                if (task.getName().equals(main.getSourcesJarTaskName())) {
-                    canProjectUseWithSourcesJar = false;
-                }
-
-                if (task.getName().equals(main.getJavadocJarTaskName())) {
-                    canProjectUseWithJavadocJar = false;
-                }
+            var tasks = project.getTasks();
+            try {
+                tasks.getByName(main.getSourcesJarTaskName());
+            } catch (UnknownTaskException ignore) {
+                canProjectUseWithSourcesJar = false;
+            }
+            try {
+                tasks.getByName(main.getJavadocJarTaskName());
+            } catch (UnknownTaskException ignore) {
+                canProjectUseWithJavadocJar = false;
             }
 
             var base = project.getExtensions().getByType(BasePluginExtension.class);
@@ -125,7 +132,6 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
                     javaDocTaskName = javaDocTaskName + Math.random();
                 }
             }
-
 
             artifactTasks.add(TaskData.builder().
                     setName(javaDocTaskName).
@@ -195,26 +201,32 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
                 buildResourcesDir = sourceSet.getOutput().getResourcesDir().getAbsolutePath();
             }
 
-            final List<String> sourcePaths = new ArrayList<>();
-            final List<String> resourcePaths = new ArrayList<>();
+            final List<String> sourcePaths = sourceSet.getJava().getSourceDirectories().getFiles().
+                    stream().map(File::getAbsolutePath).collect(ArrayList::new, List::add, List::addAll);
+
+            final List<String> resourcePaths = sourceSet.getResources().getSourceDirectories().getFiles().
+                    stream().map(File::getAbsolutePath).collect(ArrayList::new, List::add, List::addAll);
+
             final List<String> compileClasspath = new ArrayList<>();
             final Set<String> dependentSourceSets = new HashSet<>();
-
-            sourceSet.getJava().getSourceDirectories().getFiles().
-                    stream().map(File::getAbsolutePath).collect(() -> sourcePaths, List::add, List::addAll);
-
-            sourceSet.getJava().getSourceDirectories().getFiles().
-                    stream().map(File::getAbsolutePath).collect(() -> resourcePaths, List::add, List::addAll);
 
             topFor:
             for (File file : sourceSet.getCompileClasspath()) {
                 var absolutePath = file.getAbsolutePath();
 
-                for (SourceSet source : sourceContainer) {
-                    if (absolutePath.contains(source.getName()) && absolutePath.contains("build") && (absolutePath.contains("classes") || absolutePath.contains("resources"))) {
-                        dependentSourceSets.add(source.getName());
-                        continue topFor;
-                    }
+                for (SourceSet innerSourceSet : sourceContainer) {
+                    for (File classesDir : innerSourceSet.getOutput().getClassesDirs())
+                        if (absolutePath.equals(classesDir.getAbsolutePath())) {
+                            dependentSourceSets.add(innerSourceSet.getName());
+                            continue topFor;
+                        }
+
+                    var resourcesDir = innerSourceSet.getOutput().getResourcesDir();
+                    if (resourcesDir != null)
+                        if (absolutePath.equals(resourcesDir.getAbsolutePath())) {
+                            dependentSourceSets.add(innerSourceSet.getName());
+                            continue topFor;
+                        }
                 }
 
                 compileClasspath.add(absolutePath);
@@ -232,6 +244,45 @@ public class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuild
         }
 
         builder.setSourceSetsData(sourceSets);
+    }
+
+    private void buildSubDependencies() {
+        List<SubDependencyData> subDependencyDataList = new ArrayList<>();
+        LocalGitDependencyManagerInstance lgdInstance;
+        try {
+            lgdInstance = project.getExtensions().getByType(LocalGitDependencyManagerInstance.class);
+        } catch (UnknownDomainObjectException ignore) {
+            builder.setSubDependencyData(subDependencyDataList);
+            return;
+        }
+
+        for (Dependency dependency : lgdInstance.getDependencyManager().getDependencies()) {
+            var builder = SubDependencyData.builder();
+            builder.setName(dependency.getName()).
+                    setProjectID(dependency.getPersistentInfo().getProbeData().getProjectID()).
+                    setDependencyType(dependency.getDependencyType()).
+                    setGitDir(dependency.getGitInfo().getDir().getAbsolutePath()).
+                    setArchivesBaseName(dependency.getPersistentInfo().getProbeData().getArchivesBaseName());
+
+            if (dependency.getMavenFolder() != null) {
+                builder.setMavenFolder(dependency.getMavenFolder().getAbsolutePath());
+            }
+
+            subDependencyDataList.add(builder.create());
+
+            for (SubDependencyData subDependencyData : dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
+                subDependencyDataList.add(
+                        SubDependencyData.builder().
+                                setName(dependency.getName() + ":" + subDependencyData.getName()).
+                                setProjectID(subDependencyData.getProjectID()).
+                                setDependencyType(subDependencyData.getDependencyType()).
+                                setGitDir(subDependencyData.getGitDir()).
+                                setArchivesBaseName(subDependencyData.getArchivesBaseName()).
+                                setMavenFolder(subDependencyData.getMavenFolder()).create());
+            }
+        }
+
+        builder.setSubDependencyData(subDependencyDataList);
     }
 
 }

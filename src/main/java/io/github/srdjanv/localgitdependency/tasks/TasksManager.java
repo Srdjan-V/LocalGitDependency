@@ -5,11 +5,13 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.tasks.buildtasks.BuildAllGitDependencies;
-import io.github.srdjanv.localgitdependency.tasks.buildtasks.BuildGitDependency;
+import io.github.srdjanv.localgitdependency.tasks.buildtasks.RunBuildTasks;
 import io.github.srdjanv.localgitdependency.tasks.printtasks.PrintAllDependenciesInfo;
 import io.github.srdjanv.localgitdependency.tasks.printtasks.PrintDependencyInfo;
 import io.github.srdjanv.localgitdependency.tasks.probetasks.ProbeAllDependenciesTask;
-import io.github.srdjanv.localgitdependency.tasks.probetasks.ProbeDependencyTask;
+import io.github.srdjanv.localgitdependency.tasks.probetasks.RunProbeTasks;
+import io.github.srdjanv.localgitdependency.tasks.startuptasks.RunAllStartupTasks;
+import io.github.srdjanv.localgitdependency.tasks.startuptasks.RunStartupTasks;
 import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoAllLocalGitChanges;
 import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoLocalGitChanges;
 import org.gradle.api.Task;
@@ -36,7 +38,8 @@ class TasksManager extends ManagerBase implements ITasksManager {
             taskCreator = this::createTask;
         }
 
-        if (getPropertyManager().getGlobalProperty().getGenerateDefaultGradleTasks()) {
+        if (Boolean.TRUE.equals(getConfigManager().getPluginConfig().getGenerateGradleTasks())) {
+            taskCreator.create(Constants.STARTUP_ALL_DEPENDENCIES, RunAllStartupTasks.class, getProjectManagers());
             taskCreator.create(Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class, getProjectManagers());
             taskCreator.create(Constants.PROBE_ALL_DEPENDENCIES, ProbeAllDependenciesTask.class, getProjectManagers());
             taskCreator.create(Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class, getProjectManagers());
@@ -47,9 +50,10 @@ class TasksManager extends ManagerBase implements ITasksManager {
             if (!dependency.isGenerateGradleTasks()) continue;
 
             taskCreator.create(Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency), UndoLocalGitChanges.class, getProjectManagers(), dependency);
-            taskCreator.create(Constants.PROBE_DEPENDENCY.apply(dependency), ProbeDependencyTask.class, getProjectManagers(), dependency);
-            taskCreator.create(Constants.BUILD_GIT_DEPENDENCY.apply(dependency), BuildGitDependency.class, getProjectManagers(), dependency);
             taskCreator.create(Constants.PRINT_DEPENDENCY_INFO.apply(dependency), PrintDependencyInfo.class, getProjectManagers(), dependency);
+            taskCreator.create(Constants.STARTUP_DEPENDENCY.apply(dependency), RunStartupTasks.class, getProjectManagers(), dependency);
+            taskCreator.create(Constants.PROBE_DEPENDENCY.apply(dependency), RunProbeTasks.class, getProjectManagers(), dependency);
+            taskCreator.create(Constants.BUILD_GIT_DEPENDENCY.apply(dependency), RunBuildTasks.class, getProjectManagers(), dependency);
         }
     }
 
@@ -60,12 +64,12 @@ class TasksManager extends ManagerBase implements ITasksManager {
 
     private <T extends Task> void register(String name, Class<T> taskClass, Object... constructorArgs) {
         TaskProvider<T> taskProvider = getProject().getTasks().register(name, taskClass, constructorArgs);
-        taskProvider.configure(configurationAction -> configurationAction.setGroup(Constants.EXTENSION_NAME));
+        taskProvider.configure(configurationAction -> configurationAction.setGroup(Constants.TASKS_GROUP));
     }
 
     private <T extends Task> void createTask(String name, Class<T> taskClass, Object... constructorArgs) {
         T task = getProject().getTasks().create(name, taskClass, constructorArgs);
-        task.setGroup(Constants.EXTENSION_NAME);
+        task.setGroup(Constants.TASKS_GROUP);
     }
 
 }

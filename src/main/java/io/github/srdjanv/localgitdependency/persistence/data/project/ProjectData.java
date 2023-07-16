@@ -1,8 +1,9 @@
 package io.github.srdjanv.localgitdependency.persistence.data.project;
 
-import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 
-public class ProjectData implements ProjectDataGetters, ProjectDataSetter, NonNullData {
+@NonNullData
+public class ProjectData implements ProjectDataGetters, ProjectDataSetter {
     private String mainInitSHA1;
 
     public ProjectData() {

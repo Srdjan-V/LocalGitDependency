@@ -5,6 +5,6 @@ import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 
 interface BaseBuildGitTask {
     default void buildGitDependency(IGradleManager gradleManager, Dependency dependency) {
-        gradleManager.buildDependency(dependency);
+        gradleManager.startBuildTasks(dependency);
     }
 }

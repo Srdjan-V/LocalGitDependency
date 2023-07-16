@@ -2,20 +2,20 @@ package io.github.srdjanv.localgitdependency.depenency;
 
 import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.property.impl.Artifact;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
-import io.github.srdjanv.localgitdependency.property.impl.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.UnknownTaskException;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
-import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.util.GradleVersion;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
@@ -28,8 +28,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class DependencyManager extends ManagerBase implements IDependencyManager {
+import static io.github.srdjanv.localgitdependency.Constants.TASKS_GROUP_INTERNAL;
+
+final class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
+    private final List<DependencyConfig.Builder> unResolvedDependencies = new ArrayList<>();
     private SourceSetContainer rootSourceSetContainer;
     private Function<SourceSet, String[]> taskSupplier;
 
@@ -57,43 +60,20 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     @Override
-    public void registerDependency(String configurationName, String dependencyURL, @SuppressWarnings("rawtypes") Closure configureClosure) {
-        DependencyProperty dependencyProperty;
-        {
-            DependencyProperty.Builder dependencyPropertyBuilder = new DependencyProperty.Builder(dependencyURL);
-            dependencyPropertyBuilder.configuration(configurationName);
-            if (configureClosure != null) {
-                ClosureUtil.delegate(configureClosure, dependencyPropertyBuilder);
-            }
-            dependencyProperty = new DependencyProperty(dependencyPropertyBuilder);
-            getPropertyManager().applyDefaultProperty(dependencyProperty);
-        }
+    public void registerDependency(@Nullable String configurationName, @NotNull String dependencyURL, @Nullable @SuppressWarnings("rawtypes") Closure configureClosure) {
+        DependencyConfig.Builder dependencyConfigBuilder = new DependencyConfig.Builder(dependencyURL);
+        dependencyConfigBuilder.configuration(configurationName);
+        ClosureUtil.delegateNullSafe(configureClosure, dependencyConfigBuilder);
+        unResolvedDependencies.add(dependencyConfigBuilder);
+    }
 
-        var configurations = new ArrayList<Artifact>();
-        if (dependencyProperty.getConfigurations() == null) {
-            if (dependencyProperty.getConfiguration() != null) {
-                var artifactBuilder = new Artifact.Builder();
-                artifactBuilder.configuration(dependencyProperty.getConfiguration());
-                configurations.add(new Artifact(artifactBuilder));
-            }
-        } else {
-            for (var artifactClosure : dependencyProperty.getConfigurations()) {
-                var builder = new Artifact.Builder();
-                ClosureUtil.delegate(artifactClosure, builder);
-                configurations.add(new Artifact(builder));
-            }
+    @Override
+    public void resolveRegisteredDependencies() {
+        for (DependencyConfig.Builder unResolvedDependency : unResolvedDependencies) {
+            DependencyConfig dependencyConfig = new DependencyConfig(unResolvedDependency, getConfigManager().getDefaultableConfig());
+            dependencies.add(new Dependency(this, dependencyConfig));
         }
-
-        var mappings = new ArrayList<SourceSetMapper>();
-        if (dependencyProperty.getMappings() != null) {
-            for (var mappingClosure : dependencyProperty.getMappings()) {
-                var builder = new SourceSetMapper.Builder();
-                ClosureUtil.delegate(mappingClosure, builder);
-                mappings.add(new SourceSetMapper(builder));
-            }
-        }
-
-        dependencies.add(new Dependency(configurations, mappings, dependencyProperty));
+        unResolvedDependencies.clear();
     }
 
     @Override
@@ -102,17 +82,15 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
         boolean addRepositoryMavenLocal = false;
 
         for (Dependency dependency : dependencies) {
-            if (dependency.isEnableIdeSupport()) {
-                enableIdeSupport(dependency);
-            }
-            if (!dependency.getConfigurations().isEmpty())
+            handleIdeSupport(dependency);
+            if (!dependency.getConfigurations().isEmpty()) {
                 switch (dependency.getDependencyType()) {
                     case MavenLocal -> {
-                        addRepositoryMavenLocal = true;
+                        addRepositoryMavenLocal |= dependency.shouldRegisterRepository();
                         addRepositoryDependency(dependency);
                     }
                     case MavenProjectLocal -> {
-                        addRepositoryMavenProjectLocal = true;
+                        addRepositoryMavenProjectLocal |= dependency.shouldRegisterRepository();
                         addRepositoryDependency(dependency, dependency.getName());
                     }
                     case MavenProjectDependencyLocal -> {
@@ -126,6 +104,32 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                     case Jar -> addJarsAsDependencies(dependency);
                     default -> throw new IllegalStateException();
                 }
+                // TODO: 16/06/2023
+                if (true)
+                    for (Configurations.SubConfiguration subConfiguration : dependency.getSubConfigurations())
+                        for (SubDependencyData subDepData : dependency.getPersistentInfo().getProbeData().getSubDependencyData())
+                            if (subConfiguration.getName().equals(subDepData.getName()))
+                                switch (subDepData.getDependencyType()) {
+                                    case MavenLocal -> {
+                                        addRepositoryMavenLocal |= dependency.shouldRegisterRepository();
+                                        addRepositoryDependency(subConfiguration, subDepData);
+                                    }
+                                    case MavenProjectLocal -> {
+                                        addRepositoryMavenProjectLocal |= dependency.shouldRegisterRepository();
+                                        addRepositoryDependency(subConfiguration, subDepData, subDepData.getName());
+                                    }
+                                    case MavenProjectDependencyLocal -> {
+                                        addMavenProjectDependencyLocal(dependency, subDepData);
+                                        addRepositoryDependency(subConfiguration, subDepData, subDepData.getName());
+                                    }
+                                    case JarFlatDir -> {
+                                        addJarsAsFlatDirDependencies(dependency, subDepData);
+                                        addRepositoryDependency(subConfiguration, subDepData);
+                                    }
+                                    case Jar -> addJarsAsDependencies(subConfiguration, subDepData);
+                                    default -> throw new IllegalStateException();
+                                }
+            }
         }
 
         if (addRepositoryMavenLocal) addRepositoryMavenLocal();
@@ -138,11 +142,25 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     private void addRepositoryMavenProjectLocal() {
-        final File mavenRepo = Constants.MavenProjectLocal.apply(getPropertyManager().getGlobalProperty().getMavenDir());
+        final File mavenRepo = Constants.MavenProjectLocal.apply(getConfigManager().getPluginConfig().getMavenDir());
         ManagerLogger.info("Adding MavenProjectLocal repository at {}", mavenRepo.getAbsolutePath());
         getProject().getRepositories().maven(mavenArtifactRepository -> {
             mavenArtifactRepository.setName(Constants.RepositoryMavenProjectLocal);
             mavenArtifactRepository.setUrl(mavenRepo);
+        });
+    }
+
+    private void addMavenProjectDependencyLocal(Dependency dependency, SubDependencyData data) {
+        if (data.getMavenFolder() == null) {
+            throw new RuntimeException(String.format("Dependency: %s maven folder is null this ideally would not be possible", data.getName()));
+        }
+
+        final String mavenRepo = data.getMavenFolder();
+        addRepository(dependency, data, mavenRepo, artifactRepositories -> {
+            artifactRepositories.maven(mavenArtifactRepository -> {
+                mavenArtifactRepository.setName(Constants.RepositoryMavenProjectSubDependencyLocal.apply(data));
+                mavenArtifactRepository.setUrl(mavenRepo);
+            });
         });
     }
 
@@ -156,6 +174,22 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
             artifactRepositories.maven(mavenArtifactRepository -> {
                 mavenArtifactRepository.setName(Constants.RepositoryMavenProjectDependencyLocal.apply(dependency));
                 mavenArtifactRepository.setUrl(mavenRepo);
+            });
+        });
+    }
+
+    private void addJarsAsFlatDirDependencies(Dependency dependency, SubDependencyData subDepData) {
+        final File libs = Constants.buildDir.apply(new File(subDepData.getGitDir()));
+
+        if (!libs.exists()) {
+            ManagerLogger.error("Dependency: {}, no libs folder was found", dependency.getName());
+            return;
+        }
+
+        addRepository(dependency, subDepData, libs.getAbsolutePath(), artifactRepositories -> {
+            artifactRepositories.flatDir(flatDir -> {
+                flatDir.setName(Constants.RepositorySubFlatDir.apply(subDepData));
+                flatDir.dir(libs);
             });
         });
     }
@@ -177,51 +211,74 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     private void addJarsAsDependencies(Dependency dependency) {
-        final Path libs = Constants.buildDir.apply(dependency.getGitInfo().getDir()).toPath();
+        addJarsAsDependencies(dependency.getName(),
+                dependency.getConfigurations(),
+                dependency.getGitInfo().getDir());
+    }
+
+    private void addJarsAsDependencies(Configurations.SubConfiguration configuration, SubDependencyData data) {
+        addJarsAsDependencies(configuration.getName(),
+                configuration.getConfigurations(),
+                new File(data.getGitDir()));
+    }
+
+    private void addJarsAsDependencies(String depName,
+                                       List<Configurations.Configuration> configurations,
+                                       File gitDir) {
+        final Path libs = Constants.buildDir.apply(gitDir).toPath();
 
         if (!Files.exists(libs)) {
-            ManagerLogger.error("Dependency {}, no libs folder was found", dependency.getName());
+            ManagerLogger.error("Dependency {}, no libs folder was found", depName);
             return;
         }
 
         final Map<String, Object[]> dependencies = new HashMap<>();
         try (Stream<Path> jars = Files.list(libs)) {
             List<Path> paths = jars.collect(Collectors.toList());
-            for (var artifact : dependency.getConfigurations()) {
-                if (!artifact.getArtifactProperty().isEmpty()) {
+            for (var configuration : configurations) {
+                if (!configuration.getArtifactProperty().isEmpty()) {
                     List<Path> validJars = new ArrayList<>();
                     for (Path path : paths) {
-                        for (Artifact.Property property : artifact.getArtifactProperty()) {
+                        for (Configurations.Property property : configuration.getArtifactProperty()) {
                             if (property.include() && path.getFileName().toString().contains(property.notation())) {
                                 validJars.add(path);
                             }
                         }
                     }
-                    dependencies.put(artifact.getConfiguration(), validJars.toArray());
+                    dependencies.put(configuration.getConfiguration(), validJars.toArray());
                 } else {
-                    dependencies.put(artifact.getConfiguration(), paths.toArray());
+                    dependencies.put(configuration.getConfiguration(), paths.toArray());
                 }
             }
         } catch (IOException exception) {
-            ManagerLogger.error("Exception thrown while adding jar Dependency: {}", dependency.getName());
+            ManagerLogger.error("Exception thrown while adding jar Dependency: {}", depName);
             ManagerLogger.error(exception.toString());
             return;
         }
 
-        if (dependencies.size() == 0 && !dependency.getConfigurations().isEmpty()) {
-            ManagerLogger.error("Dependency: {}, no libs where found", dependency.getName());
+        if (dependencies.size() == 0 && !configurations.isEmpty()) {
+            ManagerLogger.error("Dependency: {}, no libs where found", depName);
             return;
         }
 
-        ManagerLogger.info("Adding Jar Dependency: {}", dependency.getName());
+        ManagerLogger.info("Adding Jar Dependency: {}", depName);
         for (Map.Entry<String, Object[]> stringEntry : dependencies.entrySet()) {
             ManagerLogger.info("Configuration {}, jars {}", stringEntry.getKey(), Arrays.toString(stringEntry.getValue()));
             getProject().getDependencies().add(stringEntry.getKey(), getProject().getLayout().files(stringEntry.getValue()));
         }
     }
 
+    private void addRepository(Dependency dependency, SubDependencyData subDep, String repositoryPath, Consumer<RepositoryHandler> repositoryConfiguration) {
+        if (dependency.shouldRegisterRepository()) {
+            ManagerLogger.info("Adding {} repository at {} for dependency: {}", subDep.getDependencyType(), repositoryPath, subDep.getName());
+            repositoryConfiguration.accept(getProject().getRepositories());
+        } else {
+            ManagerLogger.info("Skipping registration of {} repository for dependency: {}", subDep.getDependencyType(), subDep.getName());
+        }
+    }
+
     private void addRepository(Dependency dependency, String repositoryPath, Consumer<RepositoryHandler> repositoryConfiguration) {
-        if (dependency.isRegisterDependencyRepositoryToProject()) {
+        if (dependency.shouldRegisterRepository()) {
             ManagerLogger.info("Adding {} repository at {} for dependency: {}", dependency.getDependencyType(), repositoryPath, dependency.getName());
             repositoryConfiguration.accept(getProject().getRepositories());
         } else {
@@ -234,47 +291,84 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
     }
 
     private void addRepositoryDependency(Dependency dependency, String archivesBaseName) {
-        final String[] projectID = dependency.getPersistentInfo().getProbeData().getProjectId().split(":");
+        addRepositoryDependency(dependency.getPersistentInfo().getProbeData().getProjectID(),
+                archivesBaseName,
+                dependency.getConfigurations(),
+                dependency.getName(),
+                dependency.getDependencyType());
+    }
+
+    private void addRepositoryDependency(Configurations.SubConfiguration configuration, SubDependencyData data) {
+        addRepositoryDependency(configuration, data, data.getArchivesBaseName());
+    }
+
+    private void addRepositoryDependency(Configurations.SubConfiguration configuration, SubDependencyData data, String archivesBaseName) {
+        String[] baseName = archivesBaseName.split(":");
+        archivesBaseName = baseName[baseName.length - 1];
+        addRepositoryDependency(data.getProjectID(),
+                archivesBaseName,
+                configuration.getConfigurations(),
+                data.getName(),
+                data.getDependencyType());
+    }
+
+
+    private void addRepositoryDependency(String prID,
+                                         String archivesBaseName,
+                                         List<Configurations.Configuration> configurations,
+                                         String depName,
+                                         Dependency.Type type) {
+        final String[] projectID = prID.split(":");
         final String dependencyNotation = projectID[0] + ":" + archivesBaseName + ":" + projectID[2];
 
-        for (var artifact : dependency.getConfigurations()) {
+        for (var artifact : configurations) {
             if (artifact.getArtifactProperty().isEmpty()) {
+                ManagerLogger.info("Adding Dependency {}, from {}", dependencyNotation, type);
                 getProject().getDependencies().add(artifact.getConfiguration(), dependencyNotation, artifact.closure());
                 continue;
             }
 
-            for (Artifact.Property property : artifact.getArtifactProperty()) {
+            for (Configurations.Property property : artifact.getArtifactProperty()) {
                 if (!property.include()) {
-                    ManagerLogger.info("Dependency: {} Skipping artifact registration {}", dependency.getName(), property.notation());
+                    ManagerLogger.info("Dependency: {} Skipping artifact registration {}", depName, property.notation());
                     continue;
                 }
                 if (property.notation().contains(":")) {
-                    ManagerLogger.info("Adding Dependency {}, from {}", property.notation(), dependency.getDependencyType());
+                    ManagerLogger.info("Adding Dependency {}, from {}", property.notation(), type);
                     getProject().getDependencies().add(artifact.getConfiguration(), property.notation(), property.closure());
                 } else {
                     var notation = projectID[0] + ":" + property.notation() + ":" + projectID[2];
 
-                    ManagerLogger.info("Adding Dependency {}, from {}", notation, dependency.getDependencyType());
+                    ManagerLogger.info("Adding Dependency {}, from {}", notation, type);
                     getProject().getDependencies().add(artifact.getConfiguration(), notation, property.closure());
                 }
             }
         }
     }
 
-    private void enableIdeSupport(Dependency dependency) {
+    private void handleIdeSupport(Dependency dependency) {
+        if (!dependency.isIdeSupportEnabled()) return;
         ManagerLogger.info("Dependency: {} enabling ide support", dependency.getName());
 
         var rootProject = getProject().getRootProject();
         //create source sets of the dependency
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
-            var sourceSet = rootSourceSetContainer.register(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
-                sourceSetConf.java(dependencySet -> dependencySet.srcDir(sourceSetData.getSources()));
-                sourceSetConf.resources(dependencySet -> dependencySet.srcDir(sourceSetData.getResources()));
-            }).get();
+            var sourceSet = rootSourceSetContainer.create(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
+                sourceSetConf.java(conf -> {
+                    conf.setSrcDirs(sourceSetData.getSources());
+                    conf.getDestinationDirectory().set(rootProject.file(sourceSetData.getBuildClassesDir()));
+                });
+                sourceSetConf.resources(conf -> {
+                    conf.setSrcDirs(sourceSetData.getResources());
+                    conf.getDestinationDirectory().set(rootProject.file(sourceSetData.getBuildResourcesDir()));
+                });
+            });
 
             for (String task : taskSupplier.apply(sourceSet)) {
                 try {
-                    rootProject.getTasks().getByName(task).setEnabled(false);
+                    var sourceTask = rootProject.getTasks().getByName(task);
+                    sourceTask.setEnabled(false);
+                    sourceTask.setGroup(TASKS_GROUP_INTERNAL);
                 } catch (UnknownTaskException ignore) {
                 }
             }
@@ -288,25 +382,16 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
             }
 
             // link source sets to each other
-            if (!sourceSetData.getDependentSourceSets().isEmpty()) {
-                for (String dependentSourceSetName : sourceSetData.getDependentSourceSets()) {
-                    final Optional<SourceSetData> data = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
-                            stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst();
+            for (String dependentSourceSetName : sourceSetData.getDependentSourceSets()) {
+                final Optional<SourceSetData> data = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
+                        stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst();
 
-                    if (data.isPresent()) {
-                        final SourceSetData sourceData = data.get();
-                        final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
+                if (data.isPresent()) {
+                    final SourceSetData sourceData = data.get();
+                    final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
 
-                        if (!sourceData.getBuildResourcesDir().equals("")) {
-                            set.getOutput().setResourcesDir(sourceData.getBuildResourcesDir());
-                        }
-                        if (set.getOutput().getClassesDirs() instanceof ConfigurableFileCollection configurableFileCollection) {
-                            configurableFileCollection.setFrom(sourceData.getBuildClassesDir());
-
-                            depSourceSet.setCompileClasspath(depSourceSet.getCompileClasspath().
-                                    plus(set.getOutput()));
-                        }
-                    }
+                    depSourceSet.setCompileClasspath(depSourceSet.getCompileClasspath().
+                            plus(set.getOutput()));
                 }
             }
 
@@ -334,18 +419,11 @@ class DependencyManager extends ManagerBase implements IDependencyManager {
                     final var sourceData = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
                             stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst().
                             orElseThrow(() -> new IllegalArgumentException(
-                                    String.format("Source set %s not for for dependency %s", dependentSourceSetName, dependency.getName())));
+                                    String.format("Source set %s not found for dependency %s", dependentSourceSetName, dependency.getName())));
 
                     final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
-                    if (!sourceData.getBuildResourcesDir().equals("")) {
-                        set.getOutput().setResourcesDir(sourceData.getBuildResourcesDir());
-                    }
-                    if (set.getOutput().getClassesDirs() instanceof ConfigurableFileCollection configurableFileCollection) {
-                        configurableFileCollection.setFrom(sourceData.getBuildClassesDir());
-
-                        projectSet.setCompileClasspath(projectSet.getCompileClasspath().
-                                plus(set.getOutput()));
-                    }
+                    projectSet.setCompileClasspath(projectSet.getCompileClasspath().
+                            plus(set.getOutput()));
                 }
             }
         }

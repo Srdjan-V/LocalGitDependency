@@ -14,5 +14,5 @@ public interface IGitManager extends Manager {
     @TaskDescription("setting up repos")
     void initRepos();
     GitReport initRepo(Dependency dependency);
-    GitReport runRepoCommand(Dependency dependency, Consumer<GitTasks> task);
+    GitReport runRepoCommand(Dependency dependency, Consumer<IGitTasks> task);
 }

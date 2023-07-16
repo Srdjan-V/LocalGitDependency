@@ -41,42 +41,41 @@ apply plugin: "io.github.srdjanv.local-git-dependency"
 
 ### Technical Explanation  ###
 
-The configuration part of this plugin is decided into 2 parts, the global configuration, and the dependency
-configuration.
+The [PluginBuilder](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/config/plugin/PluginBuilder.java)
+is used to configure basic plugin behaviour
 
-The global configuration constants properties that will configure some aspects of the plugin, thous aspect can be found
-in [GlobalBuilder class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/GlobalBuilder.java)
-.
-With the global configuration you can also configure default dependency properties(They will get overwritten by the
-dependency configuration),
-thous properties can be found
-in [CommonBuilder class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/GlobalBuilder.java)
-,
-they get shared with the dependency.
+The [DefaultableBuilder](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/config/dependency/defaultable/DefaultableBuilder.java)
+is used to configure the defaults of all registered dependencies
 
-The dependency properties can be found in the
-[DependencyBuilder class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/DependencyBuilder.java)
-, and in the
-[CommonBuilder class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/GlobalBuilder.java)
-
-Javadoc is included that will explain every property
-
-You can also specify how the build dependency will be added to the
-project, [available dependency types](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/depenency/Dependency.java#L137)
+It is possible to specify how the build dependency will be added to the
+project,
+see [Dependency.Types](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/depenency/Dependency.java#L137)
 
 The default properties are located in
-the [PropertyManager class](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/io/github/srdjanv/localgitdependency/property/PropertyManager.java)
+the [ConfigManager](https://github.com/Srdjan-V/LocalGitDependency/blob/master/src/main/java/iogithub/srdjanv/localgitdependency/config/ConfigManager.java)
 
-### Limitations  ###
+### Plugin Configuration ###
 
-Projects that are using a different java version may or may not build,
-you can supply the correct java version by using the `javaHomeDir` property for the dependency
+You can change the directories that the plugin uses, the paths can be absolute or relative.
+Changing global paths requires you to manually enable or disable the cleanup-manager,
+the manager will delete anything under thous directories that doesn't mach the registered dependencies
 
-### Examples  ###
+```
+localGitDependency {
+    configurePlugin {
+        automaticCleanup false
+        gitDir "./yourGitDir"
+        persistentDir new File("./yourPersistentDir")
+        mavenDir "/rootMaven"
+    }
+}
+```
 
-In the projects `build.gradle` file add the following:
+### Dependency Configuration ###
 
-You can use the add method to registrar dependencies, with this way the ide can tell to what object the closure will
+### Basic ###
+
+With this way the ide can tell to what object the closure will
 delegate
 
 ```
@@ -113,27 +112,11 @@ localGitDependency {
 }
 ```
 
-Ideally the generated jars should be added to a runtimeOnly, if you want to depend oon some code of the dependency
-enable ide support
-
-```
-localGitDependency {
-    add("https://example.com/repository.git",{
-        configuration "runtimeOnly"
-        name 'DependencyName'
-        //only use one, the last one will be used if you specifly multiple 
-        commit '1234fg'
-        tag 'v1.0.0'
-        branch 'dev'
-    })
-}
-```
-
 The plugin can try to generate source or javadoc jars for the dependency
 
 ```
 localGitDependency {
-    configureGlobal {
+    configureDefaultable {
         tryGeneratingSourceJar = true
         tryGeneratingJavaDocJar = true
     }
@@ -145,20 +128,9 @@ localGitDependency {
 }
 ```
 
-You can change the directories that the plugin uses, the paths can be absolute or relative.
-Changing global paths requires you to manually enable or disable the cleanup-manager,
-the manager will delete anything under thous directories that doesn't mach the registered dependencies
+### Complex ###
 
-```
-localGitDependency {
-    configureGlobal {
-        automaticCleanup false
-        gitDir "./yourGitDir"
-        persistentDir new File("./yourPersistentDir")
-        mavenDir "/rootMaven"
-    }
-}
-```
+#### Artifact Handling ####
 
 You are able to fine tune what generated artifacts are going to be used, and how they are going to get configured
 
@@ -167,13 +139,13 @@ localGitDependency {
     add("https://example.com/repository.git", {
         configuration({
             configuration "runtimeOnly"
-            include "notation", "someOtherNotation"
             closure ({
                 transitive false
             })
-            closure (["someOtherNotation", {
+            include "notation", "someOtherNotation"
+            include ["mapNotation": {
                 transitive true
-            }])
+            }]
         }, {
             configuration "someOtherConfiguration"
             exclude "notation", "someOtherNotation"
@@ -182,7 +154,54 @@ localGitDependency {
 }
 ```
 
-By enabling this the plugin will register the sourceSets to your project
+#### Gradle Interaction ####
+
+The build process in decided into several stages, startup, probe and build. Each one has its one pre, main and post
+tasks and arguments
+
+```
+localGitDependency {
+    add('https://example.com/repository.git', {
+        buildLauncher {
+            startup {
+                preTaksWithArguments "CustomArgs"
+                preTaks "SomeTask"
+            }
+            probe {
+                mainTaksWithArguments "CustomArgs"
+                mainTaks "SomeTask"
+            }
+            probe {
+                postTasksWithArguments "CustomArgs"
+                postTasks "SomeTask"
+            }
+        }
+    })
+}
+```
+
+Each stages run condition can be configured individually
+```
+localGitDependency {
+    add('https://example.com/repository.git', {
+        buildLauncher {
+            startup {
+                setTaskTriggers ".gitignore"
+                addTaskTriggers "gradle.properties"
+            }
+            build {
+                explicit true// this stage will now always run. its used to add custom condition with your build file
+            }
+        }
+    })
+}
+```
+
+
+### MultiProject IDE integration ###
+
+To enable this you need to set `enableIdeSupport` to true.
+Ideally the generated jars should be added to a runtimeOnly configuration, and source sets should be mapped
 
 ```
 localGitDependency {
@@ -190,20 +209,10 @@ localGitDependency {
         configuration "runtimeOnly"
         enableIdeSupport = true
         mapSourceSets({
-            map "main", "main", "someOtherSourceSet"
+            map "main//The main source set of the cuurent project", "main//The main source set of the dep", "someOtherSourceSet//Some other source set of the dep"
         }, {
-            map "test", "someOtherSourceSet"
+            map "test//The test source set of the cuurent project", "someOtherSourceSet"
         })
-    })
-}
-```
-
-You can change for how long gradle daemons will idle by using `gradleDaemonMaxIdleTime`, this is in seconds
-
-```
-localGitDependency {
-    add('https://example.com/repository.git', {
-        gradleDaemonMaxIdleTime = 60
     })
 }
 ```

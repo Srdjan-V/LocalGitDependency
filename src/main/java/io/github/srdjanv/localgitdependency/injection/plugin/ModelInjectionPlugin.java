@@ -7,7 +7,7 @@ import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry;
 import javax.inject.Inject;
 
 @SuppressWarnings("unused")
-public class ModelInjectionPlugin implements Plugin<Project> {
+public final class ModelInjectionPlugin implements Plugin<Project> {
     private final ToolingModelBuilderRegistry registry;
 
     @Inject

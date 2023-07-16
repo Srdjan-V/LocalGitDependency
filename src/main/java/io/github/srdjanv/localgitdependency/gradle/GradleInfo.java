@@ -1,33 +1,51 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.property.impl.DependencyProperty;
+import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Objects;
 
-public class GradleInfo {
+public final class GradleInfo {
     private final Dependency dependency;
+    private final GradleLaunchers launchers;
     private final File initScript;
-    private final File javaHome;
-    private final boolean keepDependencyInitScriptUpdated;
+    private final boolean keepInitScriptUpdated;
     private final boolean tryGeneratingSourceJar;
     private final boolean tryGeneratingJavaDocJar;
-    private final int gradleDaemonMaxIdleTime;
-    private final String[] startupTasks;
 
-    public GradleInfo(DependencyProperty dependencyConfig, Dependency dependency) {
+    public GradleInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
         this.dependency = dependency;
-        this.keepDependencyInitScriptUpdated = dependencyConfig.getKeepDependencyInitScriptUpdated();
-        this.initScript = Constants.persistentInitScript.apply(dependencyConfig.getPersistentDir(), dependency.getName());
-        this.javaHome = dependencyConfig.getJavaHomeDir();
-        this.tryGeneratingSourceJar = dependencyConfig.getTryGeneratingSourceJar();
-        this.tryGeneratingJavaDocJar = dependencyConfig.getTryGeneratingJavaDocJar();
-        this.gradleDaemonMaxIdleTime = dependencyConfig.getGradleDaemonMaxIdleTime();
-        this.startupTasks = dependencyConfig.getStartupTasks();
+        this.launchers = GradleLaunchers.build(dependencyConfig, errorBuilder);
+        if (dependencyConfig.getKeepInitScriptUpdated() == null) {
+            errorBuilder.append("DependencyConfig: 'keepInitScriptUpdated' is null");
+            this.keepInitScriptUpdated = false;
+        } else this.keepInitScriptUpdated = dependencyConfig.getKeepInitScriptUpdated();
+
+        if (dependency.getName() != null) {
+            File dir;
+            if (dependencyConfig.getPersistentDir() != null) {
+                dir = dependencyConfig.getPersistentDir();
+            } else {
+                dir = managers.getConfigManager().getPluginConfig().getPersistentDir();
+            }
+            this.initScript = Constants.persistentInitScript.apply(dir,
+                    dependency.getName());
+        } else this.initScript = null;
+
+        if (dependencyConfig.getTryGeneratingSourceJar() == null) {
+            errorBuilder.append("DependencyConfig: 'tryGeneratingSourceJar' is null");
+            this.tryGeneratingSourceJar = false;
+        } else this.tryGeneratingSourceJar = dependencyConfig.getTryGeneratingSourceJar();
+
+        if (dependencyConfig.getTryGeneratingJavaDocJar() == null) {
+            errorBuilder.append("DependencyConfig: 'tryGeneratingJavaDocJar' is null");
+            this.tryGeneratingJavaDocJar = false;
+        } else this.tryGeneratingJavaDocJar = dependencyConfig.getTryGeneratingJavaDocJar();
     }
 
     @NotNull
@@ -40,13 +58,8 @@ public class GradleInfo {
         return initScript;
     }
 
-    @Nullable
-    public File getJavaHome() {
-        return javaHome;
-    }
-
-    public boolean isKeepDependencyInitScriptUpdated() {
-        return keepDependencyInitScriptUpdated;
+    public boolean isKeepInitScriptUpdated() {
+        return keepInitScriptUpdated;
     }
 
     public boolean isTryGeneratingSourceJar() {
@@ -57,13 +70,9 @@ public class GradleInfo {
         return tryGeneratingJavaDocJar;
     }
 
-    public int getGradleDaemonMaxIdleTime() {
-        return gradleDaemonMaxIdleTime;
-    }
-
-    @Nullable
-    public String[] getStartupTasks() {
-        return startupTasks;
+    @NotNull
+    public GradleLaunchers getLaunchers() {
+        return launchers;
     }
 
     @Override

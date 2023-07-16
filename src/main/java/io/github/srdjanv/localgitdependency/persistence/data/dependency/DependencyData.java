@@ -1,62 +1,80 @@
 package io.github.srdjanv.localgitdependency.persistence.data.dependency;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.persistence.data.NonNullData;
+import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 
-public class DependencyData implements DependencyDataGetter, DependencyDataSetter, NonNullData {
-    private String workingDirSHA1;
+@NonNullData
+public class DependencyData {
     private String initFileSHA1;
+    private Boolean startupTasksSuccessful;
+    private String startupTasksTriggersSHA1;
+    private Boolean probeTasksSuccessful;
+    private String probeTasksTriggersSHA1;
+    private Boolean buildTasksSuccessful;
+    private String buildTasksTriggersSHA1;
     private Dependency.Type dependencyType;
-    private Boolean startupTasksRun;
-    private Boolean buildSuccessful;
 
-    @Override
-    public String getWorkingDirSHA1() {
-        return workingDirSHA1;
-    }
-
-    @Override
-    public void setWorkingDirSHA1(String workingDirSHA1) {
-        this.workingDirSHA1 = workingDirSHA1;
-    }
-
-    @Override
     public String getInitFileSHA1() {
         return initFileSHA1;
     }
 
-    @Override
     public void setInitFileSHA1(String initFileSHA1) {
         this.initFileSHA1 = initFileSHA1;
     }
 
-    @Override
+    public Boolean getStartupTasksSuccessful() {
+        return startupTasksSuccessful;
+    }
+
+    public void setStartupTasksSuccessful(Boolean startupTasksSuccessful) {
+        this.startupTasksSuccessful = startupTasksSuccessful;
+    }
+
+    public String getStartupTasksTriggersSHA1() {
+        return startupTasksTriggersSHA1;
+    }
+
+    public void setStartupTasksTriggersSHA1(String startupTasksTriggersSHA1) {
+        this.startupTasksTriggersSHA1 = startupTasksTriggersSHA1;
+    }
+
+    public Boolean getProbeTasksSuccessful() {
+        return probeTasksSuccessful;
+    }
+
+    public void setProbeTasksSuccessful(Boolean probeTasksSuccessful) {
+        this.probeTasksSuccessful = probeTasksSuccessful;
+    }
+
+    public String getProbeTasksTriggersSHA1() {
+        return probeTasksTriggersSHA1;
+    }
+
+    public void setProbeTasksTriggersSHA1(String probeTasksTriggersSHA1) {
+        this.probeTasksTriggersSHA1 = probeTasksTriggersSHA1;
+    }
+
+    public Boolean getBuildTasksSuccessful() {
+        return buildTasksSuccessful;
+    }
+
+    public void setBuildTasksSuccessful(Boolean buildTasksSuccessful) {
+        this.buildTasksSuccessful = buildTasksSuccessful;
+    }
+
+    public String getBuildTasksTriggersSHA1() {
+        return buildTasksTriggersSHA1;
+    }
+
+    public void setBuildTasksTriggersSHA1(String buildTasksTriggersSHA1) {
+        this.buildTasksTriggersSHA1 = buildTasksTriggersSHA1;
+    }
+
     public Dependency.Type getDependencyType() {
         return dependencyType;
     }
 
-    @Override
     public void setDependencyType(Dependency.Type dependencyType) {
         this.dependencyType = dependencyType;
-    }
-
-    @Override
-    public Boolean getStartupTasksRun() {
-        return startupTasksRun;
-    }
-
-    @Override
-    public void setStartupTasksRun(boolean startupTasksRun) {
-        this.startupTasksRun = startupTasksRun;
-    }
-
-    @Override
-    public Boolean getBuildSuccessful() {
-        return buildSuccessful;
-    }
-
-    @Override
-    public void setBuildSuccessful(boolean buildSuccessful) {
-        this.buildSuccessful = buildSuccessful;
     }
 }

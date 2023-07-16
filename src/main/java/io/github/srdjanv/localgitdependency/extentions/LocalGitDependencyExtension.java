@@ -2,11 +2,12 @@ package io.github.srdjanv.localgitdependency.extentions;
 
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyBuilder;
+import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableBuilder;
+import io.github.srdjanv.localgitdependency.config.plugin.PluginBuilder;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.property.DependencyBuilder;
-import io.github.srdjanv.localgitdependency.property.GlobalBuilder;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.MethodAccess;
 import org.gradle.internal.metaobject.MethodMixIn;
@@ -44,10 +45,15 @@ public class LocalGitDependencyExtension extends ManagerBase implements MethodMi
         return Dependency.Type.Jar;
     }
 
-    public void configureGlobal(
-            @DelegatesTo(value = GlobalBuilder.class, strategy = Closure.DELEGATE_FIRST)
+    public void configurePlugin(
+            @DelegatesTo(value = PluginBuilder.class, strategy = Closure.DELEGATE_FIRST)
             Closure configureClosure) {
-        getPropertyManager().globalProperty(configureClosure);
+        getConfigManager().configurePlugin(configureClosure);
+    }
+    public void configureDefaultable(
+            @DelegatesTo(value = DefaultableBuilder.class, strategy = Closure.DELEGATE_FIRST)
+            Closure configureClosure) {
+        getConfigManager().configureDefaultable(configureClosure);
     }
 
     public void add(String dependencyURL) {

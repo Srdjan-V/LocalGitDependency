@@ -4,12 +4,11 @@ import com.google.gson.*;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+
+import static io.github.srdjanv.localgitdependency.util.ClassUtil.validDataForClass;
 
 public class DataParser {
     private DataParser() {
@@ -40,70 +39,6 @@ public class DataParser {
 
         throw new IllegalStateException("Incomplete data");
     }
-
-    public static boolean validDataForClass(Class<?> clazz, Object data) {
-        if (data == null) {
-            return false;
-        }
-
-        if (!isClassImplementingNonNullData(clazz)) {
-            return true;
-        }
-
-        try {
-            Class<?> clazzIterator = clazz;
-            do {
-                for (Field declaredField : clazzIterator.getDeclaredFields()) {
-                    declaredField.setAccessible(true);
-
-                    //simple data for class like string
-                    if (declaredField.get(data) == null) {
-                        return false;
-                    }
-
-                    //inner objects that implement NonNullData
-                    if (!validDataForClass(declaredField.getType(), declaredField.get(data))) {
-                        return false;
-                    }
-
-                    //inner List objects with a generic type that implement NonNullData
-                    if (declaredField.getType() == List.class) {
-                        Type genericType = declaredField.getGenericType();
-                        if (genericType instanceof ParameterizedType) {
-                            ParameterizedType parameterizedType = (ParameterizedType) genericType;
-                            Type type = parameterizedType.getActualTypeArguments()[0];
-                            if (type instanceof Class) {
-                                Class<?> listClazz = (Class<?>) type;
-                                List<?> list = (List<?>) declaredField.get(data);
-
-                                for (Object o : list) {
-                                    if (!validDataForClass(listClazz, o)) {
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                }
-                clazzIterator = clazzIterator.getSuperclass();
-            } while (clazzIterator != Object.class);
-
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return true;
-    }
-
-    private static boolean isClassImplementingNonNullData(Class<?> clazz) {
-        for (Class<?> clazzInterface : clazz.getInterfaces()) {
-            if (clazzInterface == NonNullData.class) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static List<DataWrapper> complexLoadDataFromFileJson(File file, DataLayout layout) {
         boolean fileExits = file.exists();
         ArrayList<DataWrapper> arrayList = new ArrayList<>();

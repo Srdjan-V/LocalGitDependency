@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-class PersistenceManager extends ManagerBase implements IPersistenceManager {
+final class PersistenceManager extends ManagerBase implements IPersistenceManager {
     private ProjectData projectData;
     private File projectDataJson;
     private boolean dirty;
@@ -59,7 +59,7 @@ class PersistenceManager extends ManagerBase implements IPersistenceManager {
 
     @Override
     public void loadProjectPersistentData() {
-        File initScriptFolder = getPropertyManager().getGlobalProperty().getPersistentDir();
+        File initScriptFolder = getConfigManager().getPluginConfig().getPersistentDir();
         projectDataJson = Constants.concatFile.apply(initScriptFolder, Constants.PROJECT_DATA_JSON);
 
         if (projectDataJson.exists()) {
@@ -112,7 +112,7 @@ class PersistenceManager extends ManagerBase implements IPersistenceManager {
                     ProjectProbeData probeData = (ProjectProbeData) dataWrapper.getData();
                     persistentInfo.setProjectProbeData(probeData);
                     if (dataWrapper.isValid() && Objects.equals(probeData.getVersion(), Constants.PROJECT_VERSION)) {
-                        persistentInfo.setValidModel();
+                        persistentInfo.setValidDataVersion();
                     }
                     break;
                 }
