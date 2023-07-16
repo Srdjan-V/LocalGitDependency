@@ -8,11 +8,11 @@ public class DependencyRegistry {
     private static final List<DependencyRegistry> registry = new ArrayList<>();
 
     static {
-        //gradle 7.5
+        //gradle 8.1.1
         registry.add(new DependencyRegistry(
                 "TweakedLib",
                 "https://github.com/Srdjan-V/TweakedLib.git",
-                "47396e09d9469edbdf8666d68781f830f81a7641",
+                "3b17cffd8ee005a13179bf5ad865a93134ca807f",
                 "setupDecompWorkspace"));
         //gradle 4.10
         registry.add(new DependencyRegistry(
