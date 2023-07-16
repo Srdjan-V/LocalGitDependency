@@ -26,13 +26,13 @@ public final class PluginConfig extends PluginConfigFields {
         }
 
         if (builder.gitDir != null)
-            this.gitDir = FileUtil.configureFilePath(defaultDir, FileUtil.toFile(builder.gitDir, "gitDir"));
+            this.gitDir = FileUtil.configureFilePath(this.defaultDir, FileUtil.toFile(builder.gitDir, "gitDir"));
 
         if (builder.persistentDir != null)
-            this.persistentDir = FileUtil.configureFilePath(defaultDir, FileUtil.toFile(builder.persistentDir, "persistentDir"));
+            this.persistentDir = FileUtil.configureFilePath(this.defaultDir, FileUtil.toFile(builder.persistentDir, "persistentDir"));
 
         if (builder.mavenDir != null)
-            this.mavenDir = FileUtil.configureFilePath(defaultDir, FileUtil.toFile(builder.mavenDir, "mavenDir"));
+            this.mavenDir = FileUtil.configureFilePath(this.defaultDir, FileUtil.toFile(builder.mavenDir, "mavenDir"));
     }
 
     @NotNull

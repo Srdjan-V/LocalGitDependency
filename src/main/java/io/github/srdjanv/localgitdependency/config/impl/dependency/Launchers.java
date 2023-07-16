@@ -239,7 +239,7 @@ public final class Launchers {
 
         @Override
         public void mainTasks(String... tasks) {
-            preTasks = tasks;
+            mainTasks = tasks;
         }
 
         @Override
@@ -249,7 +249,7 @@ public final class Launchers {
 
         @Override
         public void postTasks(String... tasks) {
-            preTasks = tasks;
+            postTasks = tasks;
         }
 
         @Override
