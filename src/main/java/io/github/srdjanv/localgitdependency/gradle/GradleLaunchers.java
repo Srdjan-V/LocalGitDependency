@@ -96,7 +96,7 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultMainArguments(@Nullable String[] args) {
+        protected BiFunction<Managers, Dependency, List<String>> getArgumentFunction(@Nullable String[] args, boolean mainTask) {
             if (args != null) {
                 final List<String> argsList = Arrays.asList(args);
                 return (managers, dep) -> argsList;
@@ -106,18 +106,13 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+        protected BiFunction<Managers, Dependency, List<String>> getTaskFunction(@Nullable String[] args, boolean mainTask) {
             if (args != null) {
                 final List<String> argsList = Arrays.asList(args);
                 return (managers, dep) -> argsList;
             } else {
                 return (managers, dep) -> Collections.emptyList();
             }
-        }
-
-        @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultMainTasks(BaseLauncherConfig config) {
-            return (managers, dep) -> Collections.emptyList();
         }
 
         @Override
@@ -133,9 +128,10 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultMainArguments(@Nullable String[] args) {
+        protected BiFunction<Managers, Dependency, List<String>> getArgumentFunction(@Nullable String[] args, boolean mainTask) {
             if (args != null) {
-                PluginLogger.warn("Custom main tasks arguments detected for Probe launcher, this is not recommended");
+                if (mainTask)
+                    PluginLogger.warn("Custom main tasks arguments detected for Probe launcher, this is not recommended");
                 final List<String> argsList = Arrays.asList(args);
                 return (managers, dep) -> argsList;
             } else {
@@ -148,22 +144,13 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+        protected BiFunction<Managers, Dependency, List<String>> getTaskFunction(@Nullable String[] args, boolean mainTask) {
             if (args != null) {
                 final List<String> argsList = Arrays.asList(args);
                 return (managers, dep) -> argsList;
             } else {
-                return (managers, dep) -> {
-                    File initScriptFolder = managers.getConfigManager().getPluginConfig().getPersistentDir();
-                    File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
-                    return Arrays.asList("--init-script", mainInit.getAbsolutePath());
-                };
+                return (managers, dep) -> Collections.emptyList();
             }
-        }
-
-        @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultMainTasks(BaseLauncherConfig config) {
-            return (manager, dep) -> Collections.emptyList();
         }
 
         @Override
@@ -182,9 +169,10 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultMainArguments(@Nullable String[] args) {
+        protected BiFunction<Managers, Dependency, List<String>> getArgumentFunction(@Nullable String[] args, boolean mainTask) {
             if (args != null) {
-                PluginLogger.warn("Custom main tasks arguments detected for Build launcher, this is not recommended");
+                if (mainTask)
+                    PluginLogger.warn("Custom main tasks arguments detected for Build launcher, this is not recommended");
                 final List<String> argsList = Arrays.asList(args);
                 return (managers, dep) -> argsList;
             } else {
@@ -195,24 +183,11 @@ public final class GradleLaunchers {
         }
 
         @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args) {
+        protected BiFunction<Managers, Dependency, List<String>> getTaskFunction(@Nullable String[] args, boolean mainTask) {
             if (args != null) {
-                final List<String> argsList = Arrays.asList(args);
-                return (managers, dep) -> argsList;
-            } else {
-                return (managers, dep) -> {
-                    File initScriptFolder = managers.getConfigManager().getPluginConfig().getPersistentDir();
-                    File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
-                    return Arrays.asList("--init-script", mainInit.getAbsolutePath());
-                };
-            }
-        }
-
-        @Override
-        protected BiFunction<Managers, Dependency, List<String>> defaultMainTasks(BaseLauncherConfig config) {
-            if (config.getMainTasks() != null) {
-                PluginLogger.warn("Custom main tasks detected, this is not recommended");
-                final List<String> main = Arrays.asList(config.getMainTasks());
+                if (mainTask)
+                    PluginLogger.warn("Custom main tasks detected for Build launcher, this is not recommended");
+                final List<String> main = Arrays.asList(args);
                 return (manager, dep) -> main;
             } else {
                 return (manager, dep) -> {
@@ -257,13 +232,13 @@ public final class GradleLaunchers {
         public Base(BaseLauncherConfig config, ErrorUtil errorBuilder) {
             this.explicit = config.getExplicit() != null && config.getExplicit();
 
-            this.preTasksArguments = defaultArguments(config.getPreTasksArguments());
+            this.preTasksArguments = getArgumentFunction(config.getPreTasksArguments(), false);
             this.preTasks = getTasks(config.getPreTasks());
 
-            this.mainTasksArguments = defaultMainArguments(config.getMainTasksArguments());
-            this.mainTasks = defaultMainTasks(config);
+            this.mainTasksArguments = getArgumentFunction(config.getMainTasksArguments(), true);
+            this.mainTasks = getTaskFunction(config.getMainTasks(), true);
 
-            this.postTasksArguments = defaultArguments(config.getPostTasksArguments());
+            this.postTasksArguments = getArgumentFunction(config.getPostTasksArguments(), false);
             this.postTasks = getTasks(config.getPostTasks());
 
             if (config.getSetTaskTriggers() != null && config.getSetTaskTriggers().length > 0) {
@@ -286,11 +261,9 @@ public final class GradleLaunchers {
             return tasks == null ? Collections.emptyList() : Arrays.asList(tasks);
         }
 
-        protected abstract BiFunction<Managers, Dependency, List<String>> defaultMainArguments(@Nullable String[] args);
+        protected abstract BiFunction<Managers, Dependency, List<String>> getArgumentFunction(@Nullable String[] args, boolean mainTask);
 
-        protected abstract BiFunction<Managers, Dependency, List<String>> defaultArguments(@Nullable String[] args);
-
-        protected abstract BiFunction<Managers, Dependency, List<String>> defaultMainTasks(BaseLauncherConfig config);
+        protected abstract BiFunction<Managers, Dependency, List<String>> getTaskFunction(@Nullable String[] args, boolean mainTask);
 
         protected abstract List<String> defaultTriggers();
 

@@ -12,8 +12,7 @@ public class DependencyRegistry {
         registry.add(new DependencyRegistry(
                 "TweakedLib",
                 "https://github.com/Srdjan-V/TweakedLib.git",
-                "47396e09d9469edbdf8666d68781f830f81a7641",
-                "setupDecompWorkspace"));
+                "47396e09d9469edbdf8666d68781f830f81a7641"));
         //gradle 4.10
         registry.add(new DependencyRegistry(
                 "GroovyScriptFG2",
