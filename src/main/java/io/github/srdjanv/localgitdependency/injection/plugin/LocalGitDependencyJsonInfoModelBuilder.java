@@ -1,10 +1,9 @@
 package io.github.srdjanv.localgitdependency.injection.plugin;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
 import io.github.srdjanv.localgitdependency.injection.model.DefaultLocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
+import io.github.srdjanv.localgitdependency.injection.plugin.invokers.*;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
@@ -28,10 +27,8 @@ import org.gradle.util.GradleVersion;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuilder {
@@ -51,6 +48,21 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
             throw new IllegalStateException("This project is not using java");
         }
 
+/*
+        String pluginVersion;
+        try {
+            var manager = project.getExtensions().getByName(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION);
+            Class<Constants> constantsClass = (Class<Constants>) manager.getClass().getClassLoader().loadClass(Constants.class.getCanonicalName());
+            var field$PROJECT_VERSION = constantsClass.getField("PROJECT_VERSION");
+            pluginVersion = (String) field$PROJECT_VERSION.get(null);
+
+        } catch (UnknownDomainObjectException | ClassNotFoundException |
+                 NoSuchFieldException | IllegalAccessException e) {
+            PluginLogger.error("Unexpected error while probing project", e);
+            pluginVersion = Constants.PROJECT_VERSION;
+        }
+*/
+
         this.project = project;
         builder = new ProjectProbeData.Builder();
         builder.setVersion(Constants.PROJECT_VERSION);
@@ -59,7 +71,16 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         List<String> artifactTasksNames = buildArtifactTasks();
         buildMavenPublicationData(artifactTasksNames);
         buildSources();
-        buildSubDependencies();
+
+        try {
+            buildSubDependencies();
+        } catch (Throwable e) {
+            builder.setSubDependencyData(new ArrayList<>(0));
+            // TODO: 25/07/2023
+/*            if (!Objects.equals(pluginVersion, Constants.PROJECT_VERSION)) {
+                PluginLogger.error("The plugin versions might be incompatible for subDependency configuration", e);
+            } else PluginLogger.error("Unexpected error while building sub dependencies", e);*/
+        }
 
         var projectProbeData = builder.create();
         var json = DataParser.projectProbeDataJson(projectProbeData);
@@ -246,39 +267,67 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         builder.setSourceSetsData(sourceSets);
     }
 
-    private void buildSubDependencies() {
+    private void buildSubDependencies() throws Throwable {
         List<SubDependencyData> subDependencyDataList = new ArrayList<>();
-        LocalGitDependencyManagerInstance lgdInstance;
+        Collection<Object> dependencies;
+
         try {
-            lgdInstance = project.getExtensions().getByType(LocalGitDependencyManagerInstance.class);
-        } catch (UnknownDomainObjectException ignore) {
+            // The lgd object is loaded by a different class loader
+            Object lgd = project.getExtensions().getByName(Constants.LOCAL_GIT_DEPENDENCY_MANAGER_INSTANCE_EXTENSION);
+            var method$getDependencyManager = lgd.getClass().getDeclaredMethod("getDependencyManager");
+            method$getDependencyManager.setAccessible(true);
+
+            Object dependencyManager = method$getDependencyManager.invoke(lgd);
+            var method$getDependencies = dependencyManager.getClass().getDeclaredMethod("getDependencies");
+            method$getDependencies.setAccessible(true);
+
+            dependencies = (Collection<Object>) method$getDependencies.invoke(dependencyManager);
+        } catch (UnknownDomainObjectException e) {
             builder.setSubDependencyData(subDependencyDataList);
             return;
         }
 
-        for (Dependency dependency : lgdInstance.getDependencyManager().getDependencies()) {
-            var builder = SubDependencyData.builder();
-            builder.setName(dependency.getName()).
-                    setProjectID(dependency.getPersistentInfo().getProbeData().getProjectID()).
-                    setDependencyType(dependency.getDependencyType()).
-                    setGitDir(dependency.getGitInfo().getDir().getAbsolutePath()).
-                    setArchivesBaseName(dependency.getPersistentInfo().getProbeData().getArchivesBaseName());
+        var lookup = MethodHandles.lookup();
+        //Used to dynamically generate method handles based on the loaded class
+        DependencyClassInvoker depInvoker = null;
+        ProjectProbeDataClassInvoker probeInvoker = null;
+        PersistentInfoClassInvoker persistentInfoInvoker = null;
+        GitInfoCLassInvoker gitInfoInvoker = null;
+        SubDependencyClassInvoker subInvoker = null;
 
-            if (dependency.getMavenFolder() != null) {
-                builder.setMavenFolder(dependency.getMavenFolder().getAbsolutePath());
+        for (Object dependency : dependencies) {
+            var builder = SubDependencyData.builder();
+
+            //Refresh the invokers if a class changes, this should not be possible
+            depInvoker = DependencyClassInvoker.createInvoker(lookup, depInvoker, dependency);
+            persistentInfoInvoker = PersistentInfoClassInvoker.createInvoker(lookup, persistentInfoInvoker, depInvoker);
+            probeInvoker = ProjectProbeDataClassInvoker.createInvoker(lookup, probeInvoker, persistentInfoInvoker);
+            gitInfoInvoker = GitInfoCLassInvoker.createInvoker(lookup, gitInfoInvoker, depInvoker);
+
+            var depName = depInvoker.getName();
+            builder.setName(depName).
+                    setProjectID(probeInvoker.getProjectID()).
+                    setDependencyType(depInvoker.getDependencyType()).
+                    setGitDir(gitInfoInvoker.getDir().getAbsolutePath()).
+                    setArchivesBaseName(probeInvoker.getArchivesBaseName());
+
+            var mavenFolder = depInvoker.getMavenFolder();
+            if (mavenFolder != null) {
+                builder.setMavenFolder(mavenFolder.getAbsolutePath());
             }
 
             subDependencyDataList.add(builder.create());
 
-            for (SubDependencyData subDependencyData : dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
+            for (Object subDependencyData : probeInvoker.getSubDependencyData()) {
+                subInvoker = SubDependencyClassInvoker.createInvoker(lookup, subInvoker, subDependencyData);
                 subDependencyDataList.add(
                         SubDependencyData.builder().
-                                setName(dependency.getName() + ":" + subDependencyData.getName()).
-                                setProjectID(subDependencyData.getProjectID()).
-                                setDependencyType(subDependencyData.getDependencyType()).
-                                setGitDir(subDependencyData.getGitDir()).
-                                setArchivesBaseName(subDependencyData.getArchivesBaseName()).
-                                setMavenFolder(subDependencyData.getMavenFolder()).create());
+                                setName(depName + ":" + subInvoker.getName()).
+                                setProjectID(subInvoker.getProjectID()).
+                                setDependencyType(subInvoker.getDependencyType()).
+                                setGitDir(subInvoker.getGitDir()).
+                                setArchivesBaseName(subInvoker.getArchivesBaseName()).
+                                setMavenFolder(subInvoker.getMavenFolder()).create());
             }
         }
 

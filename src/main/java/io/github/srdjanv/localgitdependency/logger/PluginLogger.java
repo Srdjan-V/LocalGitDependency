@@ -31,4 +31,12 @@ public class PluginLogger {
     public static void warn(String log, Throwable t) {
         logger.warn(ANSI_YELLOW + log + ANSI_RESET, t);
     }
+
+    public static void error(String log, Object... args) {
+        logger.error(ANSI_RED + log + ANSI_RESET, args);
+    }
+
+    public static void error(String log, Throwable e) {
+        logger.error(ANSI_RED + log + ANSI_RESET, e);
+    }
 }
