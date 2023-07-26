@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class ClassUtil {
@@ -38,6 +39,25 @@ public final class ClassUtil {
         });
     }
 
+    private static void iterateFields(Class<?> clazz, FieldConsumer action) {
+        try {
+            do {
+                for (Field field : clazz.getDeclaredFields()) {
+                    field.setAccessible(true);
+                    action.accept(field);
+                }
+                clazz = clazz.getSuperclass();
+            } while (clazz != Object.class);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Unexpected error while reflecting %s class", clazz.getSimpleName()), e);
+        }
+    }
+
+    @FunctionalInterface
+    private interface FieldConsumer {
+        void accept(Field field) throws Exception;
+    }
+
     @NotNull
     public static List<String> validData(Object data) {
         List<String> nulls = new ArrayList<>(0);
@@ -54,17 +74,16 @@ public final class ClassUtil {
         return nulls;
     }
 
-
     private static void validDataInternal(List<String> nulls, Class<?> dataClazz, Object data) {
         try {
             do {
                 boolean clazzNullable = dataClazz.isAnnotationPresent(NullableData.class);
-                var fields = dataClazz.getDeclaredFields();
-                for (Field declaredField : fields)
-                    validRawData(nulls, clazzNullable, declaredField, data);
+                var resolvedFields = resolveFields(dataClazz, data);
+                for (var resolvedData : resolvedFields)
+                    validRawData(nulls, clazzNullable, resolvedData);
 
-                for (Field declaredField : fields)
-                    validIterableData(nulls, declaredField, data);
+                for (var resolvedData : resolvedFields)
+                    validIterableData(nulls, resolvedData);
 
                 dataClazz = dataClazz.getSuperclass();
             } while (dataClazz != Object.class);
@@ -73,38 +92,41 @@ public final class ClassUtil {
         }
     }
 
-    private static void validRawData(List<String> nulls, boolean clazzNullable, Field field, Object data) throws IllegalAccessException {
-        if (field.isAnnotationPresent(NullableData.class)) return;
-        field.setAccessible(true);
-        var fData = field.get(data);
-        if (fData == null && !clazzNullable) nulls.add(field.getName() + " is null");
+    private static void validRawData(List<String> nulls, boolean clazzNullable, FieldDataPair fieldDataPair) {
+        if (fieldDataPair.field.isAnnotationPresent(NullableData.class)) return;
+        if (fieldDataPair.data == null && !clazzNullable) nulls.add(fieldDataPair.field.getName() + " is null");
     }
 
-    private static void validIterableData(List<String> nulls, Field field, Object data) throws IllegalAccessException {
-        if (field.getDeclaringClass() != Iterable.class) return;
-        field.setAccessible(true);
-        var fData = field.get(data);
-        if (fData == null) return;
+    private static void validIterableData(List<String> nulls, FieldDataPair fieldDataPair) {
+        if (fieldDataPair.field.getDeclaringClass() != Iterable.class) return;
+        if (fieldDataPair.data == null) return;
 
-        for (Object iData : (Iterable<?>) fData) validDataInternal(nulls, iData.getClass(), iData);
+        for (Object iData : (Iterable<?>) fieldDataPair.data) validDataInternal(nulls, iData.getClass(), iData);
     }
 
-    private static void iterateFields(Class<?> clazz, FieldConsumer action) {
-        try {
-            do {
-                for (Field field : clazz.getDeclaredFields()) {
-                    field.setAccessible(true);
-                    action.accept(field);
-                }
-                clazz = clazz.getSuperclass();
-            } while (clazz != Object.class);
-        } catch (Exception e) {
-            throw new RuntimeException(String.format("Unexpected error while reflecting %s class", clazz.getSimpleName()), e);
+    private static List<FieldDataPair> resolveFields(Class<?> dataClazz, Object data) throws IllegalAccessException {
+        var fields = dataClazz.getDeclaredFields();
+        if (fields.length == 0) return Collections.emptyList();
+
+        var resolvedFields = new ArrayList<FieldDataPair>(fields.length);
+        for (Field field : fields) {
+            field.setAccessible(true);
+            resolvedFields.add(FieldDataPair.create(field, field.get(data)));
+        }
+        return resolvedFields;
+    }
+
+    private static class FieldDataPair {
+        private final Field field;
+        private final Object data;
+
+        public static FieldDataPair create(Field field, Object data) {
+            return new FieldDataPair(field, data);
+        }
+
+        private FieldDataPair(Field field, Object data) {
+            this.field = field;
+            this.data = data;
         }
     }
-
-    private interface FieldConsumer {
-        void accept(Field field) throws Exception;
-    }
-
 }
