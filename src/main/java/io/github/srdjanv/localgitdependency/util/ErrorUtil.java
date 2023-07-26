@@ -1,6 +1,9 @@
 package io.github.srdjanv.localgitdependency.util;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import org.gradle.api.GradleException;
+
+import java.util.List;
 
 public final class ErrorUtil {
     private final String message;
@@ -21,8 +24,18 @@ public final class ErrorUtil {
         return errors;
     }
 
-    public ErrorUtil append(String s) {
-        getBuilder().append(Constants.TAB_INDENT).append(s).append(System.lineSeparator());
+    public ErrorUtil append(String error) {
+        getBuilder().append(Constants.TAB_INDENT).append(error).append(System.lineSeparator());
+        return this;
+    }
+
+    public ErrorUtil append(List<String> errors) {
+        StringBuilder builder = null;
+        if (!errors.isEmpty()) builder = getBuilder();
+
+        for (String error : errors) {
+            builder.append(Constants.TAB_INDENT).append(error).append(System.lineSeparator());
+        }
         return this;
     }
 
@@ -35,4 +48,16 @@ public final class ErrorUtil {
             return errors.toString();
         return null;
     }
+
+    public void throwRuntimeException() throws RuntimeException {
+        if (hasErrors())
+            throw new RuntimeException(errors.toString());
+    }
+
+    public void throwGradleException() throws GradleException {
+        if (hasErrors())
+            throw new GradleException(errors.toString());
+    }
+
+
 }

@@ -7,6 +7,7 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.Task
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 import org.gradle.api.JavaVersion;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -23,8 +24,8 @@ public class ProjectProbeData extends ProjectProbeDataFields {
         public Builder() {
         }
 
-        public Builder setVersion(String version) {
-            this.version = version;
+        public Builder setPluginVersion(String version) {
+            this.pluginVersion = version;
             return this;
         }
 
@@ -84,8 +85,9 @@ public class ProjectProbeData extends ProjectProbeDataFields {
         }
     }
 
-    public String getVersion() {
-        return version;
+    @Nullable
+    public String getPluginVersion() {
+        return pluginVersion;
     }
 
     public String getProjectID() {

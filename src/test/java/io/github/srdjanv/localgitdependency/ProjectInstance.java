@@ -49,7 +49,7 @@ public class ProjectInstance {
         }
 
         project.setVersion(version);
-        Constants.PROJECT_VERSION = version;
+        Constants.PLUGIN_VERSION = version;
         project.setGroup(properties.getProperty("group"));
         project.getPluginManager().apply("io.github.srdjan-v.local-git-dependency");
 

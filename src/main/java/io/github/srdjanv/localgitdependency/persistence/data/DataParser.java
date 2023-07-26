@@ -2,13 +2,14 @@ package io.github.srdjanv.localgitdependency.persistence.data;
 
 import com.google.gson.*;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static io.github.srdjanv.localgitdependency.util.ClassUtil.validDataForClass;
+import static io.github.srdjanv.localgitdependency.util.ClassUtil.validData;
 
 public class DataParser {
     private DataParser() {
@@ -23,22 +24,24 @@ public class DataParser {
 
     public static ProjectProbeData parseJson(String json) {
         ProjectProbeData data = gson.fromJson(json, ProjectProbeData.class);
-        if (validDataForClass(ProjectProbeData.class, data)) {
-            return data;
-        }
-        throw new RuntimeException("Invalid gradle probe data");
+        var nulls = validData(ProjectProbeData.class, data);
+        if (nulls.isEmpty()) return data;
+        ErrorUtil.create("Invalid gradle probe data:").throwRuntimeException();
+        return null;
     }
 
     public static String projectProbeDataJson(ProjectProbeData projectProbeData) {
-        if (validDataForClass(ProjectProbeData.class, projectProbeData)) {
+        var nulls = validData(ProjectProbeData.class, projectProbeData);
+        if (nulls.isEmpty()) {
             Gson gson;
             GsonBuilder gsonBuilder = new GsonBuilder();
             gson = gsonBuilder.create();
             return gson.toJson(projectProbeData);
         }
-
-        throw new IllegalStateException("Incomplete data");
+        ErrorUtil.create("Incomplete data:").throwRuntimeException();
+        return null;
     }
+
     public static List<DataWrapper> complexLoadDataFromFileJson(File file, DataLayout layout) {
         boolean fileExits = file.exists();
         ArrayList<DataWrapper> arrayList = new ArrayList<>();
@@ -70,7 +73,7 @@ public class DataParser {
 
             try {
                 Object data = gson.fromJson(jsonArray.get(dataMapper.getInstanceIndex()), dataMapper.getClazz());
-                if (validDataForClass(dataMapper.getClazz(), data)) {
+                if (validData(dataMapper.getClazz(), data).isEmpty()) {
                     arrayList.add(DataWrapper.create(dataMapper, data));
                 } else {
                     arrayList.add(DataWrapper.create(dataMapper));
@@ -92,7 +95,7 @@ public class DataParser {
         if (file.exists()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 T data = gson.fromJson(reader, clazz);
-                if (validDataForClass(clazz, data)) {
+                if (validData(clazz, data).isEmpty()) {
                     return data;
                 } else {
                     return instanceSupplier.get();

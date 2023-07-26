@@ -12,6 +12,7 @@ import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
+import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.gradle.api.GradleException;
 
 import java.io.File;
@@ -23,7 +24,6 @@ import java.util.stream.Stream;
 
 import static io.github.srdjanv.localgitdependency.util.FileUtil.checkExistsAndMkdirs;
 
-// TODO: 10/05/2023 Refactor
 final class ConfigManager extends ManagerBase implements IConfigManager {
     private PluginConfig pluginConfig;
     private PluginConfig.Builder pluginConfigBuilder;
@@ -76,11 +76,10 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
             pluginConfigBuilder = null;
             customPathsCheck(pluginConfig);
             ClassUtil.mergeObjectsDefaultReference(pluginConfig, defaultPluginConfig, PluginConfigFields.class);
-            var list = ClassUtil.validateDataDefault(pluginConfig, PluginConfigFields.class);
-            if (list.size() != 0) {
-                list.add(0, "Unable to configurePlugin some fields are null:");
-                throw new GradleException(list.stream().collect(Collectors.joining(Constants.TAB_INDENT, System.lineSeparator(), "")));
-            }
+            var nulls = ClassUtil.validData(PluginConfigFields.class, pluginConfig);
+            if (!nulls.isEmpty())
+                ErrorUtil.create("Unable to configurePlugin some fields are null:").append(nulls).throwGradleException();
+
         }
 
         var defaultDefaultableConfig = defaultDefaultableConfig();
@@ -89,11 +88,9 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
         } else {
             defaultableConfig = new DefaultableConfig(defaultableConfigBuilder, defaultDefaultableConfig);
             defaultableConfigBuilder = null;
-            var list = ClassUtil.validateDataDefault(defaultableConfig);
-            if (list.size() != 0) {
-                list.add(0, "Unable to configureDefaultable some fields are null:");
-                throw new GradleException(list.stream().collect(Collectors.joining(Constants.TAB_INDENT, System.lineSeparator(), "")));
-            }
+            var nulls = ClassUtil.validData(defaultableConfig);
+            if (!nulls.isEmpty())
+                ErrorUtil.create("Unable to configureDefaultable some fields are null:").append(nulls).throwGradleException();
         }
     }
 

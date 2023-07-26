@@ -4,6 +4,7 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.injection.model.DefaultLocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.injection.plugin.invokers.*;
+import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
@@ -48,24 +49,21 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
             throw new IllegalStateException("This project is not using java");
         }
 
-/*
-        String pluginVersion;
+        String lgdPluginVersion;
         try {
             var manager = project.getExtensions().getByName(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION);
             Class<Constants> constantsClass = (Class<Constants>) manager.getClass().getClassLoader().loadClass(Constants.class.getCanonicalName());
-            var field$PROJECT_VERSION = constantsClass.getField("PROJECT_VERSION");
-            pluginVersion = (String) field$PROJECT_VERSION.get(null);
+            var field$PLUGIN_VERSION = constantsClass.getField("PLUGIN_VERSION");
+            lgdPluginVersion = (String) field$PLUGIN_VERSION.get(null);
 
         } catch (UnknownDomainObjectException | ClassNotFoundException |
                  NoSuchFieldException | IllegalAccessException e) {
-            PluginLogger.error("Unexpected error while probing project", e);
-            pluginVersion = Constants.PROJECT_VERSION;
+            lgdPluginVersion = null;
         }
-*/
 
         this.project = project;
         builder = new ProjectProbeData.Builder();
-        builder.setVersion(Constants.PROJECT_VERSION);
+        builder.setPluginVersion(lgdPluginVersion);
 
         buildBasicProjectData();
         List<String> artifactTasksNames = buildArtifactTasks();
@@ -76,10 +74,9 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
             buildSubDependencies();
         } catch (Throwable e) {
             builder.setSubDependencyData(new ArrayList<>(0));
-            // TODO: 25/07/2023
-/*            if (!Objects.equals(pluginVersion, Constants.PROJECT_VERSION)) {
+            if (!Objects.equals(lgdPluginVersion, Constants.PLUGIN_VERSION)) {
                 PluginLogger.error("The plugin versions might be incompatible for subDependency configuration", e);
-            } else PluginLogger.error("Unexpected error while building sub dependencies", e);*/
+            } else PluginLogger.error("Unexpected error while building sub dependencies", e);
         }
 
         var projectProbeData = builder.create();

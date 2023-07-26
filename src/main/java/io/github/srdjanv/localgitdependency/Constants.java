@@ -17,7 +17,7 @@ public final class Constants {
     }
 
     //Never change the name
-    public static String PROJECT_VERSION = "@PROJECTVERSION@";
+    public static String PLUGIN_VERSION = "@PLUGIN_VERSION@";
     public final static String EXTENSION_NAME = "LocalGitDependency";
     public final static String TASKS_GROUP = "LocalGitDependency";
     public final static String TASKS_GROUP_INTERNAL = "LocalGitDependency Internal";

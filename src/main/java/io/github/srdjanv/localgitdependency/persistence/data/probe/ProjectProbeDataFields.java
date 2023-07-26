@@ -4,12 +4,14 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationda
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
+import io.github.srdjanv.localgitdependency.util.annotations.NullableData;
 import org.gradle.api.JavaVersion;
 
 import java.util.List;
 
 class ProjectProbeDataFields {
-    String version;
+    @NullableData
+    String pluginVersion;
     String projectId;
     String archivesBaseName;
     String projectGradleVersion;

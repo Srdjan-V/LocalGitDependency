@@ -20,6 +20,7 @@ import java.util.Objects;
 final class PersistenceManager extends ManagerBase implements IPersistenceManager {
     private ProjectData projectData;
     private File projectDataJson;
+    private boolean probeDataUpdateNeeded;
     private boolean dirty;
 
     PersistenceManager(Managers managers) {
@@ -67,8 +68,12 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
                 throw new GradleException(Constants.PROJECT_DATA_JSON + " at " + projectDataJson.getAbsolutePath() + " can not be a directory");
             }
             projectData = DataParser.simpleLoadDataFromFileJson(projectDataJson, ProjectData.class, ProjectData::new);
+            if (!Objects.equals(projectData.getPluginVersion(), Constants.PLUGIN_VERSION)) {
+                probeDataUpdateNeeded = true;
+            }
         } else {
             projectData = new ProjectData();
+            probeDataUpdateNeeded = true;
         }
     }
 
@@ -98,7 +103,7 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
         List<DataWrapper> dataList = DataParser.complexLoadDataFromFileJson(persistentInfo.getPersistentFile(), DataLayout.getDependencyLayout());
         for (DataWrapper dataWrapper : dataList) {
             switch (dataWrapper.getDataType()) {
-                case DependencyData: {
+                case DependencyData -> {
                     DependencyData data = (DependencyData) dataWrapper.getData();
                     persistentInfo.setDependencyData(data);
                     if (data.getDependencyType() != dependency.getDependencyType()) {
@@ -106,19 +111,15 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
                         persistentInfo.setDependencyTypeChanged();
                         persistentInfo.setDirty();
                     }
-                    break;
                 }
-                case ProjectProbeData: {
+                case ProjectProbeData -> {
                     ProjectProbeData probeData = (ProjectProbeData) dataWrapper.getData();
                     persistentInfo.setProjectProbeData(probeData);
-                    if (dataWrapper.isValid() && Objects.equals(probeData.getVersion(), Constants.PROJECT_VERSION)) {
+                    if (dataWrapper.isValid() && !probeDataUpdateNeeded) {
                         persistentInfo.setValidDataVersion();
                     }
-                    break;
                 }
-
-                default:
-                    throw new IllegalStateException();
+                default -> throw new IllegalStateException();
             }
         }
 
