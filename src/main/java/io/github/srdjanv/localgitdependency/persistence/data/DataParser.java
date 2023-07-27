@@ -26,8 +26,7 @@ public class DataParser {
         ProjectProbeData data = gson.fromJson(json, ProjectProbeData.class);
         var nulls = validData(ProjectProbeData.class, data);
         if (nulls.isEmpty()) return data;
-        ErrorUtil.create("Invalid gradle probe data:").throwRuntimeException();
-        return null;
+        throw ErrorUtil.create("Invalid gradle probe data:").append(nulls).toRuntimeException();
     }
 
     public static String projectProbeDataJson(ProjectProbeData projectProbeData) {
@@ -38,8 +37,7 @@ public class DataParser {
             gson = gsonBuilder.create();
             return gson.toJson(projectProbeData);
         }
-        ErrorUtil.create("Incomplete data:").throwRuntimeException();
-        return null;
+        throw ErrorUtil.create("Incomplete data:").append(nulls).toRuntimeException();
     }
 
     public static List<DataWrapper> complexLoadDataFromFileJson(File file, DataLayout layout) {

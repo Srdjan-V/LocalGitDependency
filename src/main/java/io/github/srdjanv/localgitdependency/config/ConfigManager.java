@@ -78,8 +78,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
             ClassUtil.mergeObjectsDefaultReference(pluginConfig, defaultPluginConfig, PluginConfigFields.class);
             var nulls = ClassUtil.validData(PluginConfigFields.class, pluginConfig);
             if (!nulls.isEmpty())
-                ErrorUtil.create("Unable to configurePlugin some fields are null:").append(nulls).throwGradleException();
-
+                throw ErrorUtil.create("Unable to configurePlugin some fields are null:").append(nulls).toGradleException();
         }
 
         var defaultDefaultableConfig = defaultDefaultableConfig();
@@ -90,7 +89,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
             defaultableConfigBuilder = null;
             var nulls = ClassUtil.validData(defaultableConfig);
             if (!nulls.isEmpty())
-                ErrorUtil.create("Unable to configureDefaultable some fields are null:").append(nulls).throwGradleException();
+                throw ErrorUtil.create("Unable to configureDefaultable some fields are null:").append(nulls).toGradleException();
         }
     }
 

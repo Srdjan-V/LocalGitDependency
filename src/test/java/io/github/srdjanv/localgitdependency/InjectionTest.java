@@ -58,7 +58,7 @@ public class InjectionTest {
         var builder = new ProjectProbeData.Builder();
         builder.setPluginVersion(Constants.PLUGIN_VERSION);
 
-        Assertions.assertThrows(IllegalStateException.class, () -> DataParser.projectProbeDataJson(builder.create()), "Invalid Json parsing");
+        Assertions.assertThrows(RuntimeException.class, () -> DataParser.projectProbeDataJson(builder.create()), "Invalid Json parsing");
     }
 
 }

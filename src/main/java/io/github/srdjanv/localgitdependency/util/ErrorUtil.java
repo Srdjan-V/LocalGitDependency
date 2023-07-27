@@ -49,15 +49,14 @@ public final class ErrorUtil {
         return null;
     }
 
-    public void throwRuntimeException() throws RuntimeException {
-        if (hasErrors())
-            throw new RuntimeException(errors.toString());
+    public RuntimeException toRuntimeException() {
+        if (hasErrors()) return new RuntimeException(errors.toString());
+        throw new IllegalStateException("This should not be possible");
     }
 
-    public void throwGradleException() throws GradleException {
-        if (hasErrors())
-            throw new GradleException(errors.toString());
+    public GradleException toGradleException() {
+        if (hasErrors()) return new GradleException(errors.toString());
+        throw new IllegalStateException("This should not be possible");
     }
-
 
 }
