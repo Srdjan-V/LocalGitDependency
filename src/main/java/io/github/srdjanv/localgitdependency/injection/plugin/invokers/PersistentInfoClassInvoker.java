@@ -17,11 +17,11 @@ public class PersistentInfoClassInvoker {
         var persistentInfo = depInvoker.getPersistentInfo();
         if (invoker == null) {
             invoker = new PersistentInfoClassInvoker(lookup, persistentInfo.getClass());
-            invoker.info = persistentInfo;
         } else if (!invoker.clazz.equals(persistentInfo.getClass())) {
             invoker = new PersistentInfoClassInvoker(lookup, persistentInfo.getClass());
-            invoker.info = persistentInfo;
         }
+
+        invoker.info = persistentInfo;
         return invoker;
     }
 

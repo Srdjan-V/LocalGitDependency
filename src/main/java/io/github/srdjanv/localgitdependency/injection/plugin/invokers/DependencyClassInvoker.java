@@ -19,12 +19,11 @@ public class DependencyClassInvoker {
         var depClazz = depObj.getClass();
         if (invoker == null) {
             invoker = new DependencyClassInvoker(lookup, depClazz);
-            invoker.depObj = depObj;
         } else if (!invoker.depClazz.equals(depClazz)) {
             invoker = new DependencyClassInvoker(lookup, depClazz);
-            invoker.depObj = depObj;
         }
 
+        invoker.depObj = depObj;
         return invoker;
     }
 

@@ -21,12 +21,11 @@ public class SubDependencyClassInvoker {
         var clazz = subDep.getClass();
         if (invoker == null) {
             invoker = new SubDependencyClassInvoker(lookup, clazz);
-            invoker.subDep = subDep;
         } else if (!invoker.clazz.equals(clazz)) {
             invoker = new SubDependencyClassInvoker(lookup, clazz);
-            invoker.subDep = subDep;
         }
 
+        invoker.subDep = subDep;
         return invoker;
     }
 

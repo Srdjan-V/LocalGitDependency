@@ -17,14 +17,15 @@ public class ProjectProbeDataClassInvoker {
                                                              @Nullable ProjectProbeDataClassInvoker invoker,
                                                              PersistentInfoClassInvoker persistentInvoker) throws Throwable {
 
-        var probeData =  persistentInvoker.getProbeData();
+        var probeData = persistentInvoker.getProbeData();
         if (invoker == null) {
             invoker = new ProjectProbeDataClassInvoker(lookup, probeData.getClass());
-            invoker.probeData = probeData;
+
         } else if (!invoker.clazz.equals(probeData.getClass())) {
             invoker = new ProjectProbeDataClassInvoker(lookup, probeData.getClass());
-            invoker.probeData = probeData;
         }
+
+        invoker.probeData = probeData;
         return invoker;
     }
 
