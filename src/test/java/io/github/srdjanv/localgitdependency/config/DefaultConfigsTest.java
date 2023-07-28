@@ -19,7 +19,7 @@ public class DefaultConfigsTest {
         builder.defaultDir(defaultDir);
 
         var plugin = new PluginConfig(builder, defaultDir);
-        var errorList = ClassUtil.validateDataDefault(plugin);
+        var errorList = ClassUtil.validData(plugin);
 
         Assertions.assertNotEquals(0, errorList.size(), errorList.toString());
     }
@@ -30,7 +30,7 @@ public class DefaultConfigsTest {
         var lgdInstance = ProjectInstance.getLGDManager(project);
 
         var plugin = ((ConfigManager) lgdInstance.getConfigManager()).defaultPluginConfig();
-        var errorList = ClassUtil.validateDataDefault(plugin);
+        var errorList = ClassUtil.validData(plugin);
 
         Assertions.assertEquals(0, errorList.size(), errorList.toString());
     }
@@ -40,7 +40,7 @@ public class DefaultConfigsTest {
         DefaultableConfig.Builder builder = new DefaultableConfig.Builder();
 
         var plugin = new DefaultableConfig(builder);
-        var errorList = ClassUtil.validateDataDefault(plugin);
+        var errorList = ClassUtil.validData(plugin);
 
         Assertions.assertNotEquals(0, errorList.size(), errorList.toString());
     }
@@ -51,7 +51,7 @@ public class DefaultConfigsTest {
         var lgdInstance = ProjectInstance.getLGDManager(project);
 
         var plugin = ((ConfigManager) lgdInstance.getConfigManager()).defaultDefaultableConfig();
-        var errorList = ClassUtil.validateDataDefault(plugin);
+        var errorList = ClassUtil.validData(plugin);
 
         Assertions.assertEquals(0, errorList.size(), errorList.toString());
     }

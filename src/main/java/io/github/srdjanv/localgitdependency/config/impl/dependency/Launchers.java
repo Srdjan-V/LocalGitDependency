@@ -31,10 +31,17 @@ public final class Launchers {
         public Launcher(DefaultableLauncherConfig defaultable) {
             ClassUtil.instantiateObjectWithBuilder(this, defaultable, DefaultableLauncherConfigFields.class);
 
-            // TODO: 07/07/2023 remove unnecessary builder
-            startupConfig = new StartupConfig(new StartupConfig.Builder());
-            probeConfig = new ProbeConfig(new ProbeConfig.Builder());
-            buildConfig = new BuildConfig(new BuildConfig.Builder());
+            var startupConfigBuilder = new StartupConfig.Builder();
+            startupConfigBuilder.forwardOutput(forwardOutput);
+            startupConfig = new StartupConfig(startupConfigBuilder);
+
+            var probeConfigBuilder = new ProbeConfig.Builder();
+            probeConfigBuilder.forwardOutput(forwardOutput);
+            probeConfig = new ProbeConfig(probeConfigBuilder);
+
+            var buildConfigBuilder = new BuildConfig.Builder();
+            buildConfigBuilder.forwardOutput(forwardOutput);
+            buildConfig = new BuildConfig(buildConfigBuilder);
         }
 
         public Launcher(Builder builder, DefaultableLauncherConfig defaultable) {

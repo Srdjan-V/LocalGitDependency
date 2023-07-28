@@ -56,9 +56,9 @@ public class InjectionTest {
     @Test
     void testFailOnIncompleteData() {
         var builder = new ProjectProbeData.Builder();
-        builder.setVersion(Constants.PROJECT_VERSION);
+        builder.setPluginVersion(Constants.PLUGIN_VERSION);
 
-        Assertions.assertThrows(IllegalStateException.class, () -> DataParser.projectProbeDataJson(builder.create()), "Invalid Json Data");
+        Assertions.assertThrows(RuntimeException.class, () -> DataParser.projectProbeDataJson(builder.create()), "Invalid Json parsing");
     }
 
 }

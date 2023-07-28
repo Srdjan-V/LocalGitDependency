@@ -11,14 +11,17 @@ import java.util.function.Function;
 
 import static io.github.srdjanv.localgitdependency.util.FileUtil.checkExistsAndMkdirs;
 
+//Never change the name or package id
 public final class Constants {
     private Constants() {
     }
 
-    public static String PROJECT_VERSION = "@PROJECTVERSION@";
+    //Never change the name
+    public static String PLUGIN_VERSION = "@PLUGIN_VERSION@";
     public final static String EXTENSION_NAME = "LocalGitDependency";
     public final static String TASKS_GROUP = "LocalGitDependency";
     public final static String TASKS_GROUP_INTERNAL = "LocalGitDependency Internal";
+    //Never change these 2 variables
     public final static String LOCAL_GIT_DEPENDENCY_EXTENSION = "localGitDependency";
     public final static String LOCAL_GIT_DEPENDENCY_MANAGER_INSTANCE_EXTENSION = "LocalGitDependencyManagerInstance";
     public final static String JAVA_IMPLEMENTATION = "implementation";

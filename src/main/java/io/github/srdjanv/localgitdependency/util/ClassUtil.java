@@ -1,13 +1,11 @@
 package io.github.srdjanv.localgitdependency.util;
 
-import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 import io.github.srdjanv.localgitdependency.util.annotations.NullableData;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class ClassUtil {
@@ -41,112 +39,6 @@ public final class ClassUtil {
         });
     }
 
-    //Used for probeData praising
-    public static boolean validDataForClass(Class<?> clazz, Object data) {
-        if (data == null) {
-            return false;
-        }
-
-        if (!isClassAnnotatedWithNonNullData(clazz)) {
-            return true;
-        }
-
-        try {
-            Class<?> clazzIterator = clazz;
-            do {
-                for (Field declaredField : clazzIterator.getDeclaredFields()) {
-                    declaredField.setAccessible(true);
-
-                    //simple data for class like string
-                    if (declaredField.get(data) == null) {
-                        return false;
-                    }
-
-                    //inner objects that are annotated NonNullData
-                    if (!validDataForClass(declaredField.getType(), declaredField.get(data))) {
-                        return false;
-                    }
-
-                    //inner List objects with a generic type that is annotated with NonNullData
-                    if (declaredField.getType() == List.class) {
-                        Type genericType = declaredField.getGenericType();
-                        if (genericType instanceof ParameterizedType parameterizedType) {
-                            Type type = parameterizedType.getActualTypeArguments()[0];
-                            if (type instanceof Class<?> listClazz) {
-                                List<?> list = (List<?>) declaredField.get(data);
-
-                                for (Object o : list) {
-                                    if (!validDataForClass(listClazz, o)) {
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                }
-                clazzIterator = clazzIterator.getSuperclass();
-            } while (clazzIterator != Object.class);
-
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return true;
-    }
-
-    //Used for validating pluginConfig and defaultableConfig, but targeting a specific class
-    @NotNull
-    public static <T> List<String> validateDataDefault(T object, Class<T> clazz) {
-        List<String> nulls = new ArrayList<>();
-        validateDataDefaultInternal(clazz, object, defaultDataNullable(clazz), nulls);
-
-        return nulls;
-    }
-
-    //Used for validating pluginConfig and defaultableConfig
-    @NotNull
-    public static List<String> validateDataDefault(Object object) {
-        List<String> nulls = new ArrayList<>();
-        validateDataDefaultInternal(object, defaultDataNullable(object.getClass()), nulls);
-
-        return nulls;
-    }
-
-    private static void validateDataDefaultInternal(Object object, Boolean defaultDataNullable, List<String> nulls) {
-        validateDataDefaultInternal(object.getClass(), object, defaultDataNullable, nulls);
-    }
-
-    private static void validateDataDefaultInternal(Class<?> clazz, Object object, Boolean defaultDataNullable, List<String> nulls) {
-        iterateFields(clazz, field -> {
-            var obj = field.get(object);
-            if (defaultDataNullable == null) {
-                var fieldType = field.getType();
-                if (isClassAnnotatedWithNullableData(fieldType)
-                        || isClassAnnotatedWithNonNullData(fieldType)) {
-                    validateDataDefaultInternal(obj, defaultDataNullable(fieldType), nulls);
-                }
-            } else if (defaultDataNullable) {
-                if (field.isAnnotationPresent(NonNullData.class)) {
-                    if (obj == null) {
-                        nulls.add(String.format("Field %s is null", field.getName()));
-                    } else {
-                        validateDataDefaultInternalListOrArr(field, obj, defaultDataNullable, nulls);
-                    }
-                }
-
-            } else {
-                if (obj == null) {
-                    if (field.isAnnotationPresent(NullableData.class)) {
-                        return;
-                    }
-                    nulls.add(String.format("Field %s is null", field.getName()));
-                } else {
-                    validateDataDefaultInternalListOrArr(field, obj, defaultDataNullable, nulls);
-                }
-            }
-        });
-    }
-
     private static void iterateFields(Class<?> clazz, FieldConsumer action) {
         try {
             do {
@@ -161,41 +53,80 @@ public final class ClassUtil {
         }
     }
 
+    @FunctionalInterface
     private interface FieldConsumer {
         void accept(Field field) throws Exception;
     }
 
-    //this may or may not work, no config is currently using a list or string arr to store data
-    private static void validateDataDefaultInternalListOrArr(Field field, Object data, Boolean defaultDataNullable, List<String> nulls) throws IllegalAccessException {
-        //inner List objects with a generic type that implement NonNullData
-        if (field.getType() == List.class) {
-            List<?> list = (List<?>) field.get(data);
-            for (Object o : list) {
-                validateDataDefaultInternal(o, defaultDataNullable, nulls);
-            }
-        } else if (field.getType() == String[].class) {
-            String[] arr = (String[]) field.get(data);
-            for (Object o : arr) {
-                validateDataDefaultInternal(o, defaultDataNullable, nulls);
-            }
+    @NotNull
+    public static List<String> validData(Object data) {
+        List<String> nulls = new ArrayList<>(0);
+        validDataInternal(nulls, data.getClass(), data);
+
+        return nulls;
+    }
+
+    @NotNull
+    public static List<String> validData(Class<?> dataClazz, Object data) {
+        List<String> nulls = new ArrayList<>(0);
+        validDataInternal(nulls, dataClazz, data);
+
+        return nulls;
+    }
+
+    private static void validDataInternal(List<String> nulls, Class<?> dataClazz, Object data) {
+        try {
+            do {
+                boolean clazzNullable = dataClazz.isAnnotationPresent(NullableData.class);
+                var resolvedFields = resolveFields(dataClazz, data);
+                for (var resolvedData : resolvedFields)
+                    validRawData(nulls, clazzNullable, resolvedData);
+
+                for (var resolvedData : resolvedFields)
+                    validIterableData(nulls, resolvedData);
+
+                dataClazz = dataClazz.getSuperclass();
+            } while (dataClazz != Object.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public static boolean isClassAnnotatedWithNonNullData(Class<?> clazz) {
-        return clazz.isAnnotationPresent(NonNullData.class);
+    private static void validRawData(List<String> nulls, boolean clazzNullable, FieldDataPair fieldDataPair) {
+        if (fieldDataPair.field.isAnnotationPresent(NullableData.class)) return;
+        if (fieldDataPair.data == null && !clazzNullable) nulls.add(fieldDataPair.field.getName() + " is null");
     }
 
-    public static boolean isClassAnnotatedWithNullableData(Class<?> clazz) {
-        return clazz.isAnnotationPresent(NullableData.class);
+    private static void validIterableData(List<String> nulls, FieldDataPair fieldDataPair) {
+        if (fieldDataPair.field.getDeclaringClass() != Iterable.class) return;
+        if (fieldDataPair.data == null) return;
+
+        for (Object iData : (Iterable<?>) fieldDataPair.data) validDataInternal(nulls, iData.getClass(), iData);
     }
 
-    public static Boolean defaultDataNullable(Class<?> clazz) {
-        if (isClassAnnotatedWithNonNullData(clazz)) {
-            return false;
-        } else if (isClassAnnotatedWithNullableData(clazz)) {
-            return true;
-        } else {
-            return null;
+    private static List<FieldDataPair> resolveFields(Class<?> dataClazz, Object data) throws IllegalAccessException {
+        var fields = dataClazz.getDeclaredFields();
+        if (fields.length == 0) return Collections.emptyList();
+
+        var resolvedFields = new ArrayList<FieldDataPair>(fields.length);
+        for (Field field : fields) {
+            field.setAccessible(true);
+            resolvedFields.add(FieldDataPair.create(field, field.get(data)));
+        }
+        return resolvedFields;
+    }
+
+    private static class FieldDataPair {
+        private final Field field;
+        private final Object data;
+
+        public static FieldDataPair create(Field field, Object data) {
+            return new FieldDataPair(field, data);
+        }
+
+        private FieldDataPair(Field field, Object data) {
+            this.field = field;
+            this.data = data;
         }
     }
 }

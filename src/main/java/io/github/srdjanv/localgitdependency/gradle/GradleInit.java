@@ -17,7 +17,7 @@ public final class GradleInit {
         gradleInit.appendLine(1, "}");
 
         gradleInit.appendLine(1, "dependencies {");
-        gradleInit.appendLine(2, String.format("classpath \"io.github.srdjan-v:local-git-dependency:%s\"", Constants.PROJECT_VERSION));
+        gradleInit.appendLine(2, String.format("classpath \"io.github.srdjan-v:local-git-dependency:%s\"", Constants.PLUGIN_VERSION));
         gradleInit.appendLine(1, "}");
         gradleInit.appendLine(0, "}");
 

@@ -88,7 +88,7 @@ task filterTokens(type: Sync) {
     inputs.property 'version', version
 
     from sourceSets.main.java
-    filter(ReplaceTokens, tokens: [PROJECTVERSION: version.toString()])
+    filter(ReplaceTokens, tokens: [PLUGIN_VERSION: version.toString()])
     into "$buildDir/src/$sourceSets.main.name/$sourceSets.main.java.name"
 }
 
