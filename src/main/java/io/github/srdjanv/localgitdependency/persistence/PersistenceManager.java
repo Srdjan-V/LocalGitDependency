@@ -69,10 +69,12 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
             }
             projectData = DataParser.simpleLoadDataFromFileJson(projectDataJson, ProjectData.class, ProjectData::new);
             if (!Objects.equals(projectData.getPluginVersion(), Constants.PLUGIN_VERSION)) {
+                projectData.setPluginVersion(Constants.PLUGIN_VERSION);
                 probeDataUpdateNeeded = true;
             }
         } else {
             projectData = new ProjectData();
+            projectData.setPluginVersion(Constants.PLUGIN_VERSION);
             probeDataUpdateNeeded = true;
         }
     }

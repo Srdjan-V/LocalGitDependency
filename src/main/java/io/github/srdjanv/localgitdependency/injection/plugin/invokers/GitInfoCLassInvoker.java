@@ -17,12 +17,11 @@ public class GitInfoCLassInvoker {
 
         if (invoker == null) {
             invoker = new GitInfoCLassInvoker(lookup, clazz);
-            invoker.gitInfo = info;
         } else if (!invoker.clazz.equals(clazz)) {
             invoker = new GitInfoCLassInvoker(lookup, clazz);
-            invoker.gitInfo = info;
         }
 
+        invoker.gitInfo = info;
         return invoker;
     }
 
