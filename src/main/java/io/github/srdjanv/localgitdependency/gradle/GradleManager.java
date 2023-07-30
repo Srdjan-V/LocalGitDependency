@@ -59,6 +59,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
     @Override
     public void initGradleAPI() {
+        // TODO: 30/07/2023 run one grade stage if the dep is using sub deps to allow the deps to rebuild if needed
         validateMainInitScript();
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (checkForNeedlesTaskRunning(dependency,

@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import static io.github.srdjanv.localgitdependency.Constants.TASKS_GROUP_INTERNAL;
 
+// TODO: 29/07/2023 rewrite
 final class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
     private final List<DependencyConfig.Builder> unResolvedDependencies = new ArrayList<>();

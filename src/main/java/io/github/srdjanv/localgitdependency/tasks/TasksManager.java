@@ -28,7 +28,7 @@ class TasksManager extends ManagerBase implements ITasksManager {
     }
 
     @Override
-    public void initTasks() {
+    public void initTasks() { // TODO: 30/07/2023 recursive task registration of subdeps
         TaskCreator taskCreator;
 
         var gradleVersion = GradleVersion.version(getProject().getGradle().getGradleVersion());

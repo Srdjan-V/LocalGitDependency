@@ -7,7 +7,6 @@ import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
-import org.gradle.api.GradleException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -87,9 +86,7 @@ public class Dependency {
         this.gradleInfo = new GradleInfo(managers, dependencyConfig, this, errorBuilder);
         this.persistentInfo = new PersistentInfo(managers, dependencyConfig, this, errorBuilder);
 
-        if (errorBuilder.hasErrors()) {
-            throw new GradleException(errorBuilder.getMessage());
-        }
+        if (errorBuilder.hasErrors()) throw errorBuilder.toGradleException();
     }
 
     @NotNull
@@ -173,7 +170,7 @@ public class Dependency {
     }
 
 
-    // TODO: 12/05/2023 depend on classes
+    // TODO: 29/07/2023 implement copy task dep to allow for hot-swapping. the task would be responsible for notifying class changes
     //Type of the crated dependency
     public enum Type {
         MavenLocal, //default maven local publishing
@@ -181,7 +178,6 @@ public class Dependency {
         MavenProjectDependencyLocal, //same as MavenFileLocal except that every project has its own maven local folder
         JarFlatDir, //crates a flat dir repository at the build libs of the project
         Jar //directly add jar dependencies to the project
-        // TODO: 18/02/2023 clean the build folder for the jar dependency, make it a task?
     }
 
 }
