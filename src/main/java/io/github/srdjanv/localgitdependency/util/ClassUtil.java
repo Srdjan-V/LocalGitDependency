@@ -90,7 +90,12 @@ public final class ClassUtil {
 
     private static void validRawData(List<String> nulls, boolean clazzNullable, FieldDataPair fieldDataPair) {
         if (fieldDataPair.field.isAnnotationPresent(NullableData.class)) return;
-        if (fieldDataPair.data == null && !clazzNullable) nulls.add(fieldDataPair.field.getName() + " is null");
+        var doCheck = false;
+        if (clazzNullable) {
+            if (fieldDataPair.field.isAnnotationPresent(NotNull.class)) doCheck = true;
+        } else doCheck = true;
+
+        if (doCheck && fieldDataPair.data == null) nulls.add(fieldDataPair.field.getName() + " is null");
     }
 
     private static void validIterableData(List<String> nulls, FieldDataPair fieldDataPair) {
