@@ -12,34 +12,30 @@ public final class ClassUtil {
     private ClassUtil() {
     }
 
-    public static <D> void instantiateObjectWithBuilder(D object, D builder, final Class<D> fieldsClazz) {
+    public static <D> void instantiateObjectWithBuilder(final D object, final D builder, final Class<D> fieldsClazz) {
         iterateFields(fieldsClazz, field -> {
             field.set(object, field.get(builder));
         });
     }
 
-    public static <D> void mergeObjectsDefaultReference(D newObject, D referenceObject, Class<D> clazz) {
+    //if both objects have non-null data, the default is the reference
+    public static <D> void mergeObjectsDefaultReference(final D newObject, final D referenceObject, final Class<D> clazz) {
         iterateFields(clazz, field -> {
-            Object newObjectField = field.get(newObject);
-            Object referenceObjectField = field.get(referenceObject);
-
-            if (newObjectField == null) {
-                field.set(newObject, referenceObjectField);
-            }
+            Object referenceObjectData = field.get(referenceObject);
+            if (referenceObjectData != null)
+                field.set(newObject, referenceObjectData);
         });
     }
 
-    public static <D> void mergeObjectsDefaultNewObject(D newObject, D referenceObject, Class<D> clazz) {
+    //if both objects have non-null data, the default is the newObject
+    public static <D> void mergeObjectsDefaultNewObject(final D newObject, final D referenceObject, final Class<D> clazz) {
         iterateFields(clazz, field -> {
-            Object referenceObjectField = field.get(referenceObject);
-
-            if (referenceObjectField != null) {
-                field.set(newObject, referenceObjectField);
-            }
+            if (field.get(newObject) == null)
+                field.set(newObject, field.get(referenceObject));
         });
     }
 
-    private static void iterateFields(Class<?> clazz, FieldConsumer action) {
+    public static void iterateFields(Class<?> clazz, final FieldConsumer action) {
         try {
             do {
                 for (Field field : clazz.getDeclaredFields()) {
@@ -54,7 +50,7 @@ public final class ClassUtil {
     }
 
     @FunctionalInterface
-    private interface FieldConsumer {
+    public interface FieldConsumer {
         void accept(Field field) throws Exception;
     }
 
@@ -88,7 +84,7 @@ public final class ClassUtil {
                 dataClazz = dataClazz.getSuperclass();
             } while (dataClazz != Object.class);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(String.format("Unexpected error while reflecting %s class", dataClazz.getSimpleName()), e);
         }
     }
 

@@ -14,7 +14,7 @@ public class DefaultableLauncherConfig extends DefaultableLauncherConfigFields {
 
     public DefaultableLauncherConfig(Builder builder, DefaultableLauncherConfig defaultConfig) {
         ClassUtil.instantiateObjectWithBuilder(this, defaultConfig, DefaultableLauncherConfigFields.class);
-        ClassUtil.mergeObjectsDefaultNewObject(this, builder, DefaultableLauncherConfigFields.class);
+        ClassUtil.mergeObjectsDefaultReference(this, builder, DefaultableLauncherConfigFields.class);
     }
 
     public static class Builder extends DefaultableLauncherConfigFields implements DefaultableLauncherBuilder {

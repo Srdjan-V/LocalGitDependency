@@ -25,8 +25,8 @@ public final class DependencyConfig extends DependencyConfigFields {
     private final Launchers.Launcher launcher;
 
     public DependencyConfig(Builder builder, DefaultableConfig defaultableConfig) {
-        ClassUtil.mergeObjectsDefaultReference(this, defaultableConfig, DefaultableConfigFields.class);
-        ClassUtil.mergeObjectsDefaultNewObject(this, builder, DependencyConfigFields.class);
+        ClassUtil.mergeObjectsDefaultNewObject(this, defaultableConfig, DefaultableConfigFields.class);
+        ClassUtil.mergeObjectsDefaultReference(this, builder, DependencyConfigFields.class);
 
         if (builder.launcher != null) {
             var launcherBuilder = new Launchers.Launcher.Builder();

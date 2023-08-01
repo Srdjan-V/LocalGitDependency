@@ -75,7 +75,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
             pluginConfig = new PluginConfig(pluginConfigBuilder, getDefaultDir());
             pluginConfigBuilder = null;
             customPathsCheck(pluginConfig);
-            ClassUtil.mergeObjectsDefaultReference(pluginConfig, defaultPluginConfig, PluginConfigFields.class);
+            ClassUtil.mergeObjectsDefaultNewObject(pluginConfig, defaultPluginConfig, PluginConfigFields.class);
             var nulls = ClassUtil.validData(PluginConfigFields.class, pluginConfig);
             if (!nulls.isEmpty())
                 throw ErrorUtil.create("Unable to configurePlugin some fields are null:").append(nulls).toGradleException();

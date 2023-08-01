@@ -45,8 +45,8 @@ public final class Launchers {
         }
 
         public Launcher(Builder builder, DefaultableLauncherConfig defaultable) {
-            ClassUtil.mergeObjectsDefaultReference(this, defaultable, DefaultableLauncherConfigFields.class);
-            ClassUtil.mergeObjectsDefaultNewObject(this, builder, LauncherFields.class);
+            ClassUtil.mergeObjectsDefaultNewObject(this, defaultable, DefaultableLauncherConfigFields.class);
+            ClassUtil.mergeObjectsDefaultReference(this, builder, LauncherFields.class);
 
             startupConfig = buildLauncher(
                     new StartupConfig.Builder(),

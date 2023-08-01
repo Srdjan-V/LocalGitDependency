@@ -24,7 +24,7 @@ public final class DefaultableConfig extends DefaultableConfigFields {
     //merging constructor
     public DefaultableConfig(Builder builder, DefaultableConfig defaultConfig) {
         ClassUtil.instantiateObjectWithBuilder(this, defaultConfig, DefaultableConfigFields.class);
-        ClassUtil.mergeObjectsDefaultNewObject(this, builder, DefaultableConfigFields.class);
+        ClassUtil.mergeObjectsDefaultReference(this, builder, DefaultableConfigFields.class);
         if (builder.launcher != null) {
             var launcherBuilder = new DefaultableLauncherConfig.Builder();
             ClosureUtil.delegate(builder.launcher, launcherBuilder);
