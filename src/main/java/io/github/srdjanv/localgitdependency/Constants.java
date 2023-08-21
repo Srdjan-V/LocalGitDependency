@@ -29,7 +29,7 @@ public final class Constants {
     public final static String TAB_INDENTX2 = TAB_INDENT + TAB_INDENT;
 
     //Custom Tasks generated for each dependency
-    public final static String STARTUP_ALL_DEPENDENCIES = "!StartupAllDependencies";
+    public final static String STARTUP_ALL_DEPENDENCIES = "!StartupAll";
     public final static Function<Dependency, String> STARTUP_DEPENDENCY = s -> s.getName() + "-Startup";
     public final static String PROBE_ALL_DEPENDENCIES = "!ProbeAll";
     public final static Function<Dependency, String> PROBE_DEPENDENCY = s -> s.getName() + "-Probe";

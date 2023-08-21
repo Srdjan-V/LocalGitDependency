@@ -1,23 +1,27 @@
 package io.github.srdjanv.localgitdependency.git;
 
+import io.github.srdjanv.localgitdependency.Constants;
+
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class GitException extends RuntimeException {
-    private final List<List<Exception>> exceptions;
+    private final Map<String, List<Exception>> exceptions;
 
-    public GitException(List<List<Exception>> exceptions) {
+    public GitException(Map<String, List<Exception>> exceptions) {
         this.exceptions = exceptions;
     }
 
     @Override
     public String getMessage() {
-        return exceptions.stream().
-                flatMap(List::stream).
-                map(Throwable::getMessage).
-                collect(Collectors.joining(
-                        System.lineSeparator(),
-                        System.lineSeparator(),
-                        ""));
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, List<Exception>> exceptionEntry : exceptions.entrySet()) {
+            builder.append(exceptionEntry.getKey()).append(":");
+            for (Exception exception : exceptionEntry.getValue()) {
+                builder.append(Constants.TAB_INDENT).append(exception);
+            }
+        }
+
+        return builder.toString();
     }
 }

@@ -25,7 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,8 +63,10 @@ final class GradleManager extends ManagerBase implements IGradleManager {
     @Override
     public void initGradleAPI() {
         // TODO: 30/07/2023 run one grade stage if the dep is using sub deps to allow the deps to rebuild if needed
+        final var deps = getDependencyManager().getDependencies();
+        if (deps.isEmpty()) return;
         validateMainInitScript();
-        for (Dependency dependency : getDependencyManager().getDependencies()) {
+        for (Dependency dependency : deps) {
             if (checkForNeedlesTaskRunning(dependency,
                     GradleLaunchers::getStartup,
                     dep -> dep.getPersistentInfo().isSuccessfulStartup(),

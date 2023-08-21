@@ -4,8 +4,9 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 final class GitManager extends ManagerBase implements IGitManager {
@@ -19,15 +20,14 @@ final class GitManager extends ManagerBase implements IGitManager {
 
     @Override
     public void initRepos() {
-        List<List<Exception>> gitExceptions = null;
+        Map<String, List<Exception>> gitExceptions = null;
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             GitReport gitReport = initRepo(dependency);
 
             if (gitReport.hasGitExceptions()) {
-                if (gitExceptions == null) {
-                    gitExceptions = new ArrayList<>();
-                }
-                gitExceptions.add(gitReport.getGitExceptions());
+                if (gitExceptions == null) gitExceptions = new HashMap<>();
+
+                gitExceptions.put(dependency.getName(), gitReport.getGitExceptions());
             }
         }
         if (gitExceptions != null) {
