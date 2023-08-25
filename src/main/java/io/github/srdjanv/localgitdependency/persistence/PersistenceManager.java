@@ -12,7 +12,7 @@ import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import org.gradle.api.GradleException;
 
-import java.io.*;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -108,8 +108,8 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
                 case DependencyData -> {
                     DependencyData data = (DependencyData) dataWrapper.getData();
                     persistentInfo.setDependencyData(data);
-                    if (data.getDependencyType() != dependency.getDependencyType()) {
-                        data.setDependencyType(dependency.getDependencyType());
+                    if (data.getDependencyType() != dependency.getBuildTargets()) {
+                        data.setDependencyType(dependency.getBuildTargets());
                         persistentInfo.setDependencyTypeChanged();
                         persistentInfo.setDirty();
                     }

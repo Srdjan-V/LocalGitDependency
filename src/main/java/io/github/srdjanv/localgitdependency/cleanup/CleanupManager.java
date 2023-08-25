@@ -27,12 +27,12 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
     public void init() {
         PluginConfig props = getConfigManager().getPluginConfig();
 
-        if (!props.automaticCleanup().get()) {
+        if (!props.getAutomaticCleanup().get()) {
             ManagerLogger.info("Skipping cleanup");
             return;
         }
 
-        cleanLibsDir(props.libsDir().getAsFile().get());
+        cleanLibsDir(props.getLibsDir().getAsFile().get());
 /*        cleanMavenDir(props.getMavenDir());
         cleanDataDir(props.getPersistentDir());*/
     }

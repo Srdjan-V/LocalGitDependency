@@ -1,7 +1,7 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
+import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
@@ -341,7 +341,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             configuration = gradleInit -> gradleInit.setTasks(t -> t.addAll(tasks));
         }
 
-        switch (dependency.getDependencyType()) {
+        switch (dependency.getBuildTargets()) {
             case MavenProjectDependencyLocal:
             case MavenProjectLocal:
             case MavenLocal:

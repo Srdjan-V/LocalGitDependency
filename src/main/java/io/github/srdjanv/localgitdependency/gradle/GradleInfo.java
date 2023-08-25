@@ -1,10 +1,9 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -18,34 +17,16 @@ public final class GradleInfo {
     private final boolean tryGeneratingSourceJar;
     private final boolean tryGeneratingJavaDocJar;
 
-    public GradleInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
+    public GradleInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
-        this.launchers = GradleLaunchers.build(dependencyConfig, errorBuilder);
-        if (dependencyConfig.getKeepInitScriptUpdated() == null) {
-            errorBuilder.append("DependencyConfig: 'keepInitScriptUpdated' is null");
-            this.keepInitScriptUpdated = false;
-        } else this.keepInitScriptUpdated = dependencyConfig.getKeepInitScriptUpdated();
-
-        if (dependency.getName() != null) {
-            File dir;
-            if (dependencyConfig.getPersistentDir() != null) {
-                dir = dependencyConfig.getPersistentDir();
-            } else {
-                dir = managers.getConfigManager().getPluginConfig().getPersistentDir();
-            }
-            this.initScript = Constants.persistentInitScript.apply(dir,
-                    dependency.getName());
-        } else this.initScript = null;
-
-        if (dependencyConfig.getTryGeneratingSourceJar() == null) {
-            errorBuilder.append("DependencyConfig: 'tryGeneratingSourceJar' is null");
-            this.tryGeneratingSourceJar = false;
-        } else this.tryGeneratingSourceJar = dependencyConfig.getTryGeneratingSourceJar();
-
-        if (dependencyConfig.getTryGeneratingJavaDocJar() == null) {
-            errorBuilder.append("DependencyConfig: 'tryGeneratingJavaDocJar' is null");
-            this.tryGeneratingJavaDocJar = false;
-        } else this.tryGeneratingJavaDocJar = dependencyConfig.getTryGeneratingJavaDocJar();
+        this.launchers = GradleLaunchers.build(dependency, dependencyConfig);
+        this.keepInitScriptUpdated = dependencyConfig.getKeepInitScriptUpdated().get();
+        // TODO: 25/08/2023 test 
+        this.initScript = Constants.persistentInitScript.apply(
+                Constants.lgdDir.apply(managers.getProject()).getAsFile(),
+                dependency.getName());
+        this.tryGeneratingSourceJar = dependencyConfig.getTryGeneratingSourceJar().get();
+        this.tryGeneratingJavaDocJar = dependencyConfig.getTryGeneratingJavaDocJar().get();
     }
 
     @NotNull

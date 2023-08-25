@@ -75,10 +75,10 @@ public class DependencyWrapper {
             public DependencyConfig doCall() {
                 DependencyConfig builder = (DependencyConfig) getDelegate();
                 dependencyClosure.accept(builder);
-                builder.name(getTestName());
-                builder.commit(gitRev);
-                builder.buildLauncher(ClosureUtil.configure((LauncherConfig launcher) -> {
-                    launcher.startup(ClosureUtil.configure((Launchers.Startup startup) -> {
+                builder.getName(getTestName());
+                builder.getCommit(gitRev);
+                builder.getBuildLauncher(ClosureUtil.configure((LauncherConfig launcher) -> {
+                    launcher.getStartup(ClosureUtil.configure((Launchers.Startup startup) -> {
                         startup.mainTasks(startupTasks);
                     }));
                 }));
@@ -156,9 +156,9 @@ public class DependencyWrapper {
             dependencyClosure = new Closure<DependencyConfig>(null) {
                 public DependencyConfig doCall() {
                     DependencyConfig builder = (DependencyConfig) getDelegate();
-                    builder.name(getTestName());
-                    builder.buildLauncher(ClosureUtil.configure((LauncherConfig launcher) -> {
-                        launcher.startup(ClosureUtil.configure((Launchers.Startup startup) -> {
+                    builder.getName(getTestName());
+                    builder.getBuildLauncher(ClosureUtil.configure((LauncherConfig launcher) -> {
+                        launcher.getStartup(ClosureUtil.configure((Launchers.Startup startup) -> {
                             startup.mainTasks(startupTasks);
                         }));
                     }));

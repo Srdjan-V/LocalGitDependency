@@ -22,30 +22,25 @@ public final class Launchers {
          */
         Property<Boolean> explicit();
 
+        Property<String> forwardOutput(Boolean forwardOutput);
+
         /**
          * This will set what files should trigger a launcher rerun
          * <p>
          * Currently, this checked by String::Contains
          */
-        ListProperty<String> setTaskTriggers();
+        ListProperty<String> getTaskTriggers();
 
-        /**
-         * Same as above, but it adds to the default existing ones
-         */
-        ListProperty<String> addTaskTriggers();
+        ListProperty<String> getPreTasksArguments();
 
-        ListProperty<String> preTasksWithArguments();
+        ListProperty<String> getPreTasks();
 
-        ListProperty<String> preTasks();
+        ListProperty<String> getMainTasksArguments();
 
-        ListProperty<String> mainTasksWithArguments();
+        ListProperty<String> getMainTasks();
 
-        ListProperty<String> mainTasks();
+        ListProperty<String> getPostTasksArguments();
 
-        ListProperty<String> postTasksWithArguments();
-
-        ListProperty<String> postTasks();
-
-        Property<String> forwardOutput(Boolean forwardOutput);
+        ListProperty<String> getPostTasks();
     }
 }

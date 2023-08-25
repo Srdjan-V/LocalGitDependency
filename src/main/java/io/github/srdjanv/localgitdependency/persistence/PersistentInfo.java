@@ -1,13 +1,12 @@
 package io.github.srdjanv.localgitdependency.persistence;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.util.ErrorUtil;
 import org.gradle.internal.impldep.org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,19 +24,13 @@ public final class PersistentInfo {
     private boolean dependencyTypeChanged;
     private boolean dirty;
 
-    public PersistentInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
+    public PersistentInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
 
-        if (dependency.getName() != null) {
-            File dir;
-            if (dependencyConfig.getPersistentDir() != null) {
-                dir = dependencyConfig.getPersistentDir();
-            } else {
-                dir = managers.getConfigManager().getPluginConfig().getPersistentDir();
-            }
-            this.persistentFile = Constants.persistentJsonFile.apply(dir,
-                    dependency.getName());
-        } else this.persistentFile = null;
+        // TODO: 25/08/2023 test
+        this.persistentFile = Constants.persistentJsonFile.apply(
+                Constants.lgdDir.apply(managers.getProject()).getAsFile(),
+                dependency.getName());
     }
 
     public boolean hasDependencyTypeChanged() {

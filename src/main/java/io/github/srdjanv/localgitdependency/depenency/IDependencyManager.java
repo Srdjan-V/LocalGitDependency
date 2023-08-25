@@ -15,9 +15,11 @@ public interface IDependencyManager extends Manager {
     }
     DependencyConfig registerDependency(@NotNull String dependencyURL);
     @TaskDescription("resolving registered dependencies")
-    void resolveRegisteredDependencies();
+    boolean resolveRegisteredDependencies();
     @TaskDescription("adding built dependencies")
-    void addBuiltDependencies();
+    boolean registerRepos();
+    @TaskDescription("handling SourceSets")
+    boolean handelSourceSets();
     @Unmodifiable
     Set<Dependency> getDependencies();
     void markBuild(String dep, Dependency.Type type);

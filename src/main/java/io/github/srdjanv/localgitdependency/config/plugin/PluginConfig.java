@@ -1,25 +1,26 @@
 package io.github.srdjanv.localgitdependency.config.plugin;
 
+import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
 
-public interface PluginConfig {
+public interface PluginConfig extends ConfigFinalizer {
 
-    DirectoryProperty libsDir();
+    DirectoryProperty getLibsDir();
 
     /**
      * If set to false the generated mainInitScript will never be updated of fixed if changes are detected
      *
      * @param keepInitScriptUpdated If it should stay updated
      */
-    Property<Boolean> keepInitScriptUpdated();
+    Property<Boolean> getKeepInitScriptUpdated();
 
     /**
      * This will generate default tasks
      *
      * @param generateGradleTasks if it should create custom tasks
      */
-    Property<Boolean> generateGradleTasks();
+    Property<Boolean> getGenerateGradleTasks();
 
     /**
      * Cleanup removed dependencies. It's enabled by default, but if you specify a custom global path you must explicitly enable it.
@@ -27,5 +28,5 @@ public interface PluginConfig {
      *
      * @param automaticCleanup if it should cleanup removed dependencies
      */
-    Property<Boolean> automaticCleanup();
+    Property<Boolean> getAutomaticCleanup();
 }

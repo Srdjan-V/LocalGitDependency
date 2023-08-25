@@ -1,94 +1,43 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
-import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultSourceSetMapper;
+import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.util.ErrorUtil;
-import org.gradle.api.Project;
-import org.gradle.api.provider.Provider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.io.File;
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Set;
 
 public class Dependency {
     private final String name;
-    private final List<Configurations.Configuration> configurations;
-    private final List<Configurations.SubConfiguration> subConfigurations;
-    private final List<SourceSetMapper> mappers;
+    private final DefaultSourceSetMapper mappers;
     private final boolean ideSupport;
     private final boolean shouldRegisterRepository;
     private final boolean generateGradleTasks;
-    private final Type dependencyType;
-    private final File mavenFolder;
+    private final Set<Type> buildTargets;
     private final GitInfo gitInfo;
     private final GradleInfo gradleInfo;
     private final PersistentInfo persistentInfo;
 
     public Dependency(Managers managers, DependencyConfig dependencyConfig) {
-        ErrorUtil errorBuilder = ErrorUtil.create("Git dependency errors:");
-        this.name = dependencyConfig.getName() == null ? getNameFromUrl(dependencyConfig.getUrl()) : dependencyConfig.getName();
-        if (this.name == null) {
-            errorBuilder.append("DependencyConfig: 'name' is null");
-        }
+        this.name = dependencyConfig.getName().get();
+        var lgdeIde = managers.getExtensionByType(LGDIDE.class);
+        this.mappers = lgdeIde.getMappers().findByName(name);
+        this.ideSupport = mappers != null || lgdeIde.getEnableIdeSupport().get(); // TODO: 25/08/2023
+        this.shouldRegisterRepository = dependencyConfig.getRegisterDependencyRepositoryToProject().get();
+        this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks().get();
+        this.buildTargets = Collections.unmodifiableSet(dependencyConfig.getBuildTargets().get());
 
-        this.configurations = Configurations.build(dependencyConfig);
-        this.subConfigurations = Configurations.buildSub(dependencyConfig, errorBuilder);
-        this.mappers = SourceSetMapper.build(dependencyConfig, errorBuilder);
-
-        if (dependencyConfig.getEnableIdeSupport() == null) {
-            errorBuilder.append("DependencyConfig: 'enableIdeSupport' is null");
-            this.ideSupport = false;
-        } else this.ideSupport = dependencyConfig.getEnableIdeSupport();
-
-        if (dependencyConfig.getRegisterDependencyRepositoryToProject() == null) {
-            errorBuilder.append("DependencyConfig: 'registerDependencyRepositoryToProject' is null");
-            this.shouldRegisterRepository = false;
-        } else this.shouldRegisterRepository = dependencyConfig.getRegisterDependencyRepositoryToProject();
-
-        if (dependencyConfig.getGenerateGradleTasks() == null) {
-            errorBuilder.append("DependencyConfig: 'GenerateGradleTasks' is null");
-            this.generateGradleTasks = false;
-        } else this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks();
-
-        this.dependencyType = dependencyConfig.getDependencyType();
-        if (dependencyType == null) {// TODO: 07/07/2023 rework
-            errorBuilder.append("DependencyConfig: 'dependencyType' is null");
-            this.mavenFolder = null;
-        } else {
-            File dir;
-            if (dependencyConfig.getMavenDir() == null) {
-                dir = managers.getConfigManager().getPluginConfig().getMavenDir();
-            } else dir = dependencyConfig.getMavenDir();
-
-            switch (dependencyType) {
-                case MavenProjectLocal:
-                    this.mavenFolder = Constants.MavenProjectLocal.apply(dir);
-                    break;
-
-                case MavenProjectDependencyLocal:
-                    this.mavenFolder = Constants.MavenProjectDependencyLocal.apply(dir, name);
-                    break;
-
-                default:
-                    this.mavenFolder = null;
-            }
-        }
-
-
-        this.gitInfo = new GitInfo(managers, dependencyConfig, this, errorBuilder);
-        this.gradleInfo = new GradleInfo(managers, dependencyConfig, this, errorBuilder);
-        this.persistentInfo = new PersistentInfo(managers, dependencyConfig, this, errorBuilder);
-
-        if (errorBuilder.hasErrors()) throw errorBuilder.toGradleException();
+        this.gitInfo = new GitInfo(managers, dependencyConfig, this);
+        this.gradleInfo = new GradleInfo(managers, dependencyConfig, this);
+        this.persistentInfo = new PersistentInfo(managers, dependencyConfig, this);
     }
 
     @NotNull
@@ -96,21 +45,8 @@ public class Dependency {
         return name;
     }
 
-    @NotNull
-    @Unmodifiable
-    public List<Configurations.Configuration> getConfigurations() {
-        return configurations;
-    }
-
-    @NotNull
-    @Unmodifiable
-    public List<Configurations.SubConfiguration> getSubConfigurations() {
-        return subConfigurations;
-    }
-
-    @NotNull
-    @Unmodifiable
-    public List<SourceSetMapper> getSourceSetMappers() {
+    @Nullable
+    public DefaultSourceSetMapper getSourceSetMapper() {
         return mappers;
     }
 
@@ -127,13 +63,9 @@ public class Dependency {
     }
 
     @NotNull
-    public Type getDependencyType() {
-        return dependencyType;
-    }
-
-    @Nullable
-    public File getMavenFolder() {
-        return mavenFolder;
+    @Unmodifiable
+    public Set<Type> getBuildTargets() {
+        return buildTargets;
     }
 
     @NotNull
@@ -151,13 +83,6 @@ public class Dependency {
         return persistentInfo;
     }
 
-    private static String getNameFromUrl(String url) {
-        if (url == null) return null;
-        // Splitting last url's part before ".git" suffix
-        Matcher matcher = Pattern.compile("([^/]+)\\.git$").matcher(url);
-        return matcher.find() ? matcher.group(1) : null;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -172,18 +97,10 @@ public class Dependency {
     }
 
 
-    // TODO: 29/07/2023 implement copy task dep to allow for hot-swapping. the task would be responsible for notifying class changes
-    //Type of the crated dependency
     public enum Type {
-        MavenLocal, //default maven local publishing
-        MavenProjectLocal, //publishing to a maven inside the project file structure
-        MavenProjectDependencyLocal, //same as MavenProjectLocal except that every project has its own maven local folder
-        JarFlatDir, //crates a flat dir repository at the build libs of the project
-        Jar ;//directly add jar dependencies to the project
-
-        public Provider<Type> toProvider(Project project) {
-            return project.getProviders().provider(() -> this);
-        }
+        JarFlatDir,
+        Jar,
+        Task
     }
 
 }

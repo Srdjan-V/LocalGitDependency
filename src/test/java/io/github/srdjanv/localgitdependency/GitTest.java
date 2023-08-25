@@ -16,11 +16,11 @@ public class GitTest {
 
         dependencyWrapper.setTestName("GitTest");
         dependencyWrapper.setPluginClosure(clause -> {
-            clause.automaticCleanup(false);
+            clause.getAutomaticCleanup(false);
         });
         dependencyWrapper.setDependencyClosure(builder -> {
-            builder.name(dependencyWrapper.getTestName());
-            builder.buildLauncher(ClosureUtil.<LauncherConfig>configure(launcher -> {
+            builder.getName(dependencyWrapper.getTestName());
+            builder.getBuildLauncher(ClosureUtil.<LauncherConfig>configure(launcher -> {
                 launcher.gradleDaemonMaxIdleTime(0);
             }));
             builder.configuration(Constants.JAVA_IMPLEMENTATION);

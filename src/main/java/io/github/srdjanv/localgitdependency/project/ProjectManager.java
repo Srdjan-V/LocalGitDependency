@@ -58,7 +58,7 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getDependencyManager);
-            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("addBuiltDependencies"));
+            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("registerRepos"));
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<ITasksManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getTasksManager);

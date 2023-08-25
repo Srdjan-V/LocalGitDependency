@@ -48,12 +48,12 @@ public class PluginDependencyTests {
         dependencyWrappers.forEach(dependencyWrapper -> {
             dependencyWrapper.setTestName(dependencyType.name());
             dependencyWrapper.setPluginClosure(clause -> {
-                clause.automaticCleanup(false);
+                clause.getAutomaticCleanup(false);
             });
             dependencyWrapper.setDependencyClosure(builder -> {
-                builder.name(dependencyWrapper.getTestName());
+                builder.getName(dependencyWrapper.getTestName());
                 builder.dependencyType(dependencyType);
-                builder.buildLauncher(ClosureUtil.<LauncherConfig>configure(launcher -> {
+                builder.getBuildLauncher(ClosureUtil.<LauncherConfig>configure(launcher -> {
                     launcher.gradleDaemonMaxIdleTime(0);
                 }));
                 builder.configuration(Constants.JAVA_IMPLEMENTATION);
@@ -102,7 +102,7 @@ public class PluginDependencyTests {
 
     public static void assertTest(DependencyWrapper dependencyWrapper) {
         final String repo;
-        repo = switch (dependencyWrapper.getDependency().getDependencyType()) {
+        repo = switch (dependencyWrapper.getDependency().getBuildTargets()) {
             case JarFlatDir -> Constants.RepositoryFlatDir.apply(dependencyWrapper.getDependency());
             case MavenLocal -> "MavenLocal";
             case MavenProjectDependencyLocal ->
@@ -119,7 +119,7 @@ public class PluginDependencyTests {
         }
 
         final long dependencyCount;
-        switch (dependencyWrapper.getDependency().getDependencyType()) {
+        switch (dependencyWrapper.getDependency().getBuildTargets()) {
             case Jar -> {
                 dependencyCount = dependencyWrapper.getProjectManager().getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
                         .getDependencies().size();

@@ -1,10 +1,10 @@
 package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.util.ErrorUtil;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -23,53 +23,44 @@ public final class GitInfo {
     private final boolean keepGitUpdated;
     private boolean refreshed;
 
-    public GitInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency, ErrorUtil errorBuilder) {
+    public GitInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
-        this.url = dependencyConfig.getUrl();
-        if (url == null) errorBuilder.append("DependencyConfig: 'url' is null");
+        this.url = dependencyConfig.getUrl().get();
 
-        if (dependencyConfig.getTargetType() == null) {
+        if (dependencyConfig.getCommit().isPresent()) {
+            targetType = TargetType.COMMIT;
+            target = dependencyConfig.getCommit().get();
+            targetLocal = target;
+            targetRemote = target;
+        } else if (dependencyConfig.getTag().isPresent()) {
+            targetType = TargetType.TAG;
+            target = dependencyConfig.getTag().get();
+            targetLocal = R_TAGS + target;
+            targetRemote = R_TAGS + target;
+        } else if (dependencyConfig.getBranch().isPresent()) {
+            targetType = TargetType.BRANCH;
+            target = dependencyConfig.getBranch().get();
+            targetLocal = R_HEADS + target;
+            targetRemote = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + target;
+        } else {
             targetType = TargetType.BRANCH;
             target = MASTER;
             targetLocal = R_HEADS + target;
             targetRemote = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + target;
-        } else {
-            target = dependencyConfig.getTarget();
-            switch (dependencyConfig.getTargetType()) {
-                case COMMIT -> {
-                    targetType = TargetType.COMMIT;
-                    targetLocal = target;
-                    targetRemote = target;
-                }
-                case TAG -> {
-                    targetType = TargetType.TAG;
-                    targetLocal = R_TAGS + target;
-                    targetRemote = R_TAGS + target;
-                }
-                case BRANCH -> {
-                    targetType = TargetType.BRANCH;
-                    targetLocal = R_HEADS + target;
-                    targetRemote = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + target;
-                }
-                default -> throw new IllegalStateException();
-            }
         }
 
         if (dependency.getName() != null) {
             File dir;
-            if (dependencyConfig.getGitDir() != null) {
-                dir = dependencyConfig.getGitDir();
+            if (dependencyConfig.getLibsDir().isPresent()) {
+                dir = FileUtil.toFile(dependencyConfig.getLibsDir().get(), "getLibsDir");
             } else {
-                dir = managers.getConfigManager().getPluginConfig().getGitDir();
+                dir = managers.getConfigManager().getPluginConfig().getLibsDir().get().getAsFile();
             }
-            this.dir = Constants.concatFile.apply(dir,
-                    dependency.getName());
+            this.dir = Constants.concatFile.apply(dir, dependency.getName());
         } else this.dir = null;
 
-        if (dependencyConfig.getKeepGitUpdated() == null) {
-            errorBuilder.append("DependencyConfig: 'keepGitUpdated' is null");
-            this.keepGitUpdated = false;
-        } else this.keepGitUpdated = dependencyConfig.getKeepGitUpdated();
+        // TODO:25/08/2023 force disable if ideSup is used
+        this.keepGitUpdated = dependencyConfig.getKeepGitUpdated().get();
     }
 
     @NotNull

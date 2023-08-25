@@ -33,29 +33,8 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
 
     @Override
     public void finalizeConfigs() {
-/*        var defaultPluginConfig = defaultPluginConfig();
-        if (!pluginConfigBuilderConfigured) {
-            pluginConfig = defaultPluginConfig;
-        } else {
-            pluginConfig = new PluginConfig(pluginConfigBuilder, getDefaultDir());
-            pluginConfigBuilder = null;
-            customPathsCheck(pluginConfig);
-            ClassUtil.mergeObjectsDefaultNewObject(pluginConfig, defaultPluginConfig, PluginConfigFields.class);
-            var nulls = ClassUtil.validData(PluginConfigFields.class, pluginConfig);
-            if (!nulls.isEmpty())
-                throw ErrorUtil.create("Unable to configurePlugin some fields are null:").append(nulls).toGradleException();
-        }
-
-        var defaultDefaultableConfig = defaultDefaultableConfig();
-        if (!defaultableConfigBuilderConfigured) {
-            defaultableConfig = defaultDefaultableConfig;
-        } else {
-            defaultableConfig = new DefaultableConfig(defaultableConfigBuilder, defaultDefaultableConfig);
-            defaultableConfigBuilder = null;
-            var nulls = ClassUtil.validData(defaultableConfig);
-            if (!nulls.isEmpty())
-                throw ErrorUtil.create("Unable to configureDefaultable some fields are null:").append(nulls).toGradleException();
-        }*/
+         pluginConfig.finalizeProps();
+         defaultableConfig.finalizeProps();
     }
 
 /*    private void customPathsCheck(PluginConfig pluginConfig) {
