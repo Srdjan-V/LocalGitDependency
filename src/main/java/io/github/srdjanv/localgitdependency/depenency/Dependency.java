@@ -7,6 +7,8 @@ import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
+import org.gradle.api.Project;
+import org.gradle.api.provider.Provider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -175,9 +177,13 @@ public class Dependency {
     public enum Type {
         MavenLocal, //default maven local publishing
         MavenProjectLocal, //publishing to a maven inside the project file structure
-        MavenProjectDependencyLocal, //same as MavenFileLocal except that every project has its own maven local folder
+        MavenProjectDependencyLocal, //same as MavenProjectLocal except that every project has its own maven local folder
         JarFlatDir, //crates a flat dir repository at the build libs of the project
-        Jar //directly add jar dependencies to the project
+        Jar ;//directly add jar dependencies to the project
+
+        public Provider<Type> toProvider(Project project) {
+            return project.getProviders().provider(() -> this);
+        }
     }
 
 }

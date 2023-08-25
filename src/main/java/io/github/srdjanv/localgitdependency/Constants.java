@@ -4,6 +4,7 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import org.gradle.api.Project;
+import org.gradle.api.file.Directory;
 
 import java.io.File;
 import java.util.function.BiFunction;
@@ -18,6 +19,7 @@ public final class Constants {
 
     //Never change the name
     public static String PLUGIN_VERSION = "@PLUGIN_VERSION@";
+    public final static String DEPENDENCY_BLOCK_EXTENSION_NAME = "lgd";
     public final static String EXTENSION_NAME = "LocalGitDependency";
     public final static String TASKS_GROUP = "LocalGitDependency";
     public final static String TASKS_GROUP_INTERNAL = "LocalGitDependency Internal";
@@ -69,6 +71,11 @@ public final class Constants {
     public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!data");
     public static final Function<File, File> defaultLibsDir = file -> new File(file, "/libs");
     public static final Function<File, File> defaultMavenFolder = file -> new File(file, "/!maven");
+
+
+    public static final Function<Project, Directory> libsDir = project -> project.getLayout().getProjectDirectory().dir("/libs");
+    public static final Function<Project, Directory> lgdDir = project -> project.getLayout().getBuildDirectory().dir( "/lgd").get();
+
 
     //Maven directory generators
     public static final Function<File, File> MavenProjectLocal = file -> {

@@ -1,6 +1,6 @@
 package io.github.srdjanv.localgitdependency;
 
-import io.github.srdjanv.localgitdependency.config.dependency.LauncherBuilder;
+import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
 import io.github.srdjanv.localgitdependency.dependency.DependencyRegistry;
 import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
@@ -20,7 +20,7 @@ public class GitTest {
         });
         dependencyWrapper.setDependencyClosure(builder -> {
             builder.name(dependencyWrapper.getTestName());
-            builder.buildLauncher(ClosureUtil.<LauncherBuilder>configure(launcher -> {
+            builder.buildLauncher(ClosureUtil.<LauncherConfig>configure(launcher -> {
                 launcher.gradleDaemonMaxIdleTime(0);
             }));
             builder.configuration(Constants.JAVA_IMPLEMENTATION);

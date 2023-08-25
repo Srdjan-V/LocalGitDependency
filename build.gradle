@@ -22,6 +22,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 dependencies {
     implementation gradleApi()
+    implementation localGroovy()
     implementation 'org.jetbrains:annotations:24.0.1'
     implementation 'org.eclipse.jgit:org.eclipse.jgit:5.13.1.202206130422-r'
     implementation 'com.google.code.gson:gson:2.10.1'

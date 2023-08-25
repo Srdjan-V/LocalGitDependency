@@ -4,7 +4,7 @@ import io.github.srdjanv.localgitdependency.ProjectInstance;
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfig;
 import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfigFields;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
+import io.github.srdjanv.localgitdependency.extentions.LGDManagers;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.Project;
 import org.junit.jupiter.api.Assertions;
@@ -102,7 +102,7 @@ public class DefaultableConfigTests {
                             mapper.getBuilderConfig().accept(builder, mapper.getNewValue().apply(defaultableConfig));
                         }));
 
-                        configManager.configureConfigs();
+                        configManager.finalizeConfigs();
                         Assertions.assertEquals(mapper.getNewValue().apply(defaultableConfig), mapper.getValueGetter().apply(configManager.getDefaultableConfig()));
                     }
                 }));
@@ -158,7 +158,7 @@ public class DefaultableConfigTests {
 
     private static abstract class DefaultableTestExecutable<T> implements Executable {
         DefaultableConfigMapper<T> mapper;
-        LocalGitDependencyManagerInstance lgdInstance;
+        LGDManagers lgdInstance;
         IConfigManager configManager;
         DefaultableConfig defaultableConfig;
 

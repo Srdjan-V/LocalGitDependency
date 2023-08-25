@@ -4,7 +4,7 @@ import org.gradle.api.Project;
 
 public interface IProjectManager extends Manager {
     static IProjectManager createProject(Project project) {
-        return new ManagersInstances(project).getProjectManager();
+        return new ManagerInstances(project).getProjectManager();
     }
     static IProjectManager createInstance(Managers managers) {
         return new ProjectManager(managers);

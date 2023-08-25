@@ -1,21 +1,19 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
-import groovy.lang.Closure;
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultDependencyConfig;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.UnknownTaskException;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.util.GradleVersion;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
@@ -33,7 +31,9 @@ import static io.github.srdjanv.localgitdependency.Constants.TASKS_GROUP_INTERNA
 // TODO: 29/07/2023 rewrite
 final class DependencyManager extends ManagerBase implements IDependencyManager {
     private final Set<Dependency> dependencies = new HashSet<>();
-    private final List<DependencyConfig.Builder> unResolvedDependencies = new ArrayList<>();
+    private final List<DependencyConfig> unResolvedDependencies = new ArrayList<>();
+    private final Map<String, Set<Dependency.Type>> types = new HashMap<>();
+
     private SourceSetContainer rootSourceSetContainer;
     private Function<SourceSet, String[]> taskSupplier;
 
@@ -61,11 +61,11 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     }
 
     @Override
-    public void registerDependency(@Nullable String configurationName, @NotNull String dependencyURL, @Nullable @SuppressWarnings("rawtypes") Closure configureClosure) {
-        DependencyConfig.Builder dependencyConfigBuilder = new DependencyConfig.Builder(dependencyURL);
-        dependencyConfigBuilder.configuration(configurationName);
-        ClosureUtil.delegateNullSafe(configureClosure, dependencyConfigBuilder);
-        unResolvedDependencies.add(dependencyConfigBuilder);
+    public DependencyConfig registerDependency(@NotNull final String dependencyURL) {
+        Objects.requireNonNull(dependencyURL);
+        var dep = getProject().getObjects().newInstance(DefaultDependencyConfig.class, dependencyURL, this);
+        unResolvedDependencies.add(dep);
+        return dep;
     }
 
     @Override
@@ -135,6 +135,11 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
 
         if (addRepositoryMavenLocal) addRepositoryMavenLocal();
         if (addRepositoryMavenProjectLocal) addRepositoryMavenProjectLocal();
+    }
+
+    @Override
+    public void markBuild(String dep, Dependency.Type type) {
+        types.computeIfAbsent(dep, d -> new HashSet<>()).add(type);
     }
 
     private void addRepositoryMavenLocal() {

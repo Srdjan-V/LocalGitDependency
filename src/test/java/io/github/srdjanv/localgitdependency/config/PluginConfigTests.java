@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.config;
 import io.github.srdjanv.localgitdependency.ProjectInstance;
 import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfigFields;
-import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
+import io.github.srdjanv.localgitdependency.extentions.LGDManagers;
 import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
@@ -92,7 +92,7 @@ public class PluginConfigTests {
                             }
                         }));
 
-                        configManager.configureConfigs();
+                        configManager.finalizeConfigs();
                         Assertions.assertEquals(mapper.getNewValue().apply(defaultPluginConfigs), mapper.getValueGetter().apply(configManager.getPluginConfig()));
                     }
                 }));
@@ -108,7 +108,7 @@ public class PluginConfigTests {
                             mapper.getBuilderConfig().accept(builder, mapper.getNewValue().apply(defaultPluginConfigs));
                         }));
 
-                        Assertions.assertThrows(GradleException.class, configManager::configureConfigs);
+                        Assertions.assertThrows(GradleException.class, configManager::finalizeConfigs);
                     }
                 }));
     }
@@ -128,7 +128,7 @@ public class PluginConfigTests {
                             builder.automaticCleanup(false);
                         }));
 
-                        configManager.configureConfigs();
+                        configManager.finalizeConfigs();
                         Assertions.assertEquals(new File(defaultDirFile, newPathFileName).toString(),
                                 mapper.getValueGetter().apply(configManager.getPluginConfig()).toString());
                     }
@@ -152,7 +152,7 @@ public class PluginConfigTests {
 
     private static abstract class PluginTestExecutable<T> implements Executable {
         PluginConfigMapper<T> mapper;
-        LocalGitDependencyManagerInstance lgdInstance;
+        LGDManagers lgdInstance;
         IConfigManager configManager;
         PluginConfig defaultPluginConfigs;
 

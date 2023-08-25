@@ -1,20 +1,20 @@
 package io.github.srdjanv.localgitdependency.extentions;
 
 import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
+import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import org.gradle.api.Project;
 
-public class LocalGitDependencyManagerInstance implements Managers {
+public final class LGDManagers implements Managers {
     private final IProjectManager manager;
 
-    public LocalGitDependencyManagerInstance(Project project) {
+    public LGDManagers(Project project) {
         this.manager = IProjectManager.createProject(project);
     }
 
@@ -59,12 +59,12 @@ public class LocalGitDependencyManagerInstance implements Managers {
     }
 
     @Override
-    public LocalGitDependencyExtension getLocalGitDependencyExtension() {
-        return manager.getLocalGitDependencyExtension();
+    public ICleanupManager getCleanupManager() {
+        return manager.getCleanupManager();
     }
 
     @Override
-    public ICleanupManager getCleanupManager() {
-        return manager.getCleanupManager();
+    public <T> T getExtensionByType(Class<T> type) {
+        return manager.getExtensionByType(type);
     }
 }

@@ -1,10 +1,10 @@
 package io.github.srdjanv.localgitdependency.cleanup;
 
+import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,21 +27,21 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
     public void init() {
         PluginConfig props = getConfigManager().getPluginConfig();
 
-        if (!props.getAutomaticCleanup()) {
+        if (!props.automaticCleanup().get()) {
             ManagerLogger.info("Skipping cleanup");
             return;
         }
 
-        cleanLibsDir(props.getGitDir());
-        cleanMavenDir(props.getMavenDir());
-        cleanDataDir(props.getPersistentDir());
+        cleanLibsDir(props.libsDir().getAsFile().get());
+/*        cleanMavenDir(props.getMavenDir());
+        cleanDataDir(props.getPersistentDir());*/
     }
 
     private void cleanLibsDir(File libsDir) {
         if (!libsDir.exists()) return;
         iterateDirs(libsDir, (dir, dep) -> dir.equals(dep.getGitInfo().getDir()));
     }
-
+/*
     private void cleanMavenDir(File mavenDir) {
         if (!mavenDir.exists()) return;
         iterateDirs(mavenDir, (dir, dep) -> {
@@ -61,7 +61,7 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
     private void cleanDataDir(File dataDir) {
         if (!dataDir.exists()) return;
         iterateDirs(dataDir, (dir, dep) -> dir.equals(new File(dataDir, dep.getName())));
-    }
+    }*/
 
     private void iterateDirs(File fileDir, BiPredicate<File, Dependency> validDir) {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileDir.toPath())) {

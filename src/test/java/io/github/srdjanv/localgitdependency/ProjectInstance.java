@@ -1,6 +1,6 @@
 package io.github.srdjanv.localgitdependency;
 
-import io.github.srdjanv.localgitdependency.extentions.LocalGitDependencyManagerInstance;
+import io.github.srdjanv.localgitdependency.extentions.LGDManagers;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
@@ -60,7 +60,7 @@ public class ProjectInstance {
         return getLGDManager(project).getProjectManager();
     }
 
-    public static LocalGitDependencyManagerInstance getLGDManager(Project project) {
-        return project.getExtensions().findByType(LocalGitDependencyManagerInstance.class);
+    public static LGDManagers getLGDManager(Project project) {
+        return project.getExtensions().findByType(LGDManagers.class);
     }
 }

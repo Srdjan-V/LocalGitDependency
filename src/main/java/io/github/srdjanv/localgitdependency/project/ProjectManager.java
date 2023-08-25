@@ -2,12 +2,12 @@ package io.github.srdjanv.localgitdependency.project;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
+import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
-import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
         PROJECT_RUNNERS = new ArrayList<>(10);
         PROJECT_RUNNERS.add(ManagerRunner.<IConfigManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getConfigManager);
-            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("configureConfigs"));
+            managerRunner.setTask(clazz -> clazz.getDeclaredMethod("finalizeConfigs"));
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<IConfigManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getConfigManager);

@@ -1,5 +1,8 @@
 package io.github.srdjanv.localgitdependency.config.dependency;
 
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
+
 public final class Launchers {
     private Launchers() {
     }
@@ -17,32 +20,32 @@ public final class Launchers {
         /**
          * Sets the tasks should explicitly run
          */
-        void explicit(Boolean explicit);
+        Property<Boolean> explicit();
 
         /**
          * This will set what files should trigger a launcher rerun
          * <p>
          * Currently, this checked by String::Contains
          */
-        void setTaskTriggers(String... files);
+        ListProperty<String> setTaskTriggers();
 
         /**
          * Same as above, but it adds to the default existing ones
          */
-        void addTaskTriggers(String... files);
+        ListProperty<String> addTaskTriggers();
 
-        void preTasksWithArguments(String... args);
+        ListProperty<String> preTasksWithArguments();
 
-        void preTasks(String... tasks);
+        ListProperty<String> preTasks();
 
-        void mainTasksWithArguments(String... args);
+        ListProperty<String> mainTasksWithArguments();
 
-        void mainTasks(String... tasks);
+        ListProperty<String> mainTasks();
 
-        void postTasksWithArguments(String... args);
+        ListProperty<String> postTasksWithArguments();
 
-        void postTasks(String... tasks);
+        ListProperty<String> postTasks();
 
-        void forwardOutput(Boolean forwardOutput);
+        Property<String> forwardOutput(Boolean forwardOutput);
     }
 }
