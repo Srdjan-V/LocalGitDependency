@@ -4,14 +4,16 @@ import groovy.lang.GroovyObjectSupport;
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
 import javax.inject.Inject;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class DefaultDependencyConfig extends GroovyObjectSupport implements DependencyConfig, ConfigFinalizer {
     @Inject
-    public DefaultDependencyConfig(String url, Managers managers) {
+    public DefaultDependencyConfig(final String url, final Managers managers) {
         getUrl().convention(url).finalizeValue();
         getName().convention(managers.getProject().provider(() -> getNameFromUrl(getUrl().get())));
 
@@ -22,12 +24,21 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
         getTryGeneratingSourceJar().convention(managers.getProject().provider(() -> defaultable.getTryGeneratingSourceJar().get()));
         getTryGeneratingJavaDocJar().convention(managers.getProject().provider(() -> defaultable.getTryGeneratingJavaDocJar().get()));
         getRegisterDependencyRepositoryToProject().convention(managers.getProject().provider(() -> defaultable.getRegisterDependencyRepositoryToProject().get()));
-        getBuildTargets().convention(managers.getProject().provider(() -> defaultable.getBuildTargets().get()));
+        getBuildTargets().convention(managers.getProject().provider(() -> {
+            var defaultBuildTargets = defaultable.getBuildTargets().get();
+            var targetedBuilds = managers.getDependencyManager().getMarkedBuild(getName().get());
+            if (targetedBuilds == null) return defaultBuildTargets;
+            var newSet = new HashSet<>(defaultBuildTargets);
+            newSet.addAll(targetedBuilds);
+            return newSet;
+        }));
         getBuildLauncher().convention(managers.getProject().getObjects().newInstance(DefaultLauncherConfig.class, managers));
     }
 
     @Override
     public void finalizeProps() {
+        ClassUtil.finalizeProperties(this, DependencyConfig.class);
+        ((DefaultLauncherConfig) getBuildLauncher().get()).finalizeProps();
     }
 
 

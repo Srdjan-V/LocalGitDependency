@@ -5,6 +5,7 @@ import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
 import javax.inject.Inject;
 import java.util.Collections;
@@ -24,6 +25,6 @@ public abstract class DefaultDefaultableConfig extends GroovyObjectSupport imple
 
     @Override
     public void finalizeProps() {
-
+        ClassUtil.finalizeProperties(this, DefaultableConfig.class);
     }
 }

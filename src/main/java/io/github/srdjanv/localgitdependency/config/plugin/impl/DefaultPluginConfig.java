@@ -5,6 +5,7 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
 import javax.inject.Inject;
 
@@ -21,6 +22,6 @@ public abstract class DefaultPluginConfig extends GroovyObjectSupport implements
 
     @Override
     public void finalizeProps() {
-
+        ClassUtil.finalizeProperties(this, PluginConfig.class);
     }
 }

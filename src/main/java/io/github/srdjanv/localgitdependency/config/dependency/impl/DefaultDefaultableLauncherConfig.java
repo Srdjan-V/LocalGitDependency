@@ -4,6 +4,7 @@ import groovy.lang.GroovyObjectSupport;
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableLauncherConfig;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
 import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +18,6 @@ public abstract class DefaultDefaultableLauncherConfig extends GroovyObjectSuppo
 
     @Override
     public void finalizeProps() {
-
+        ClassUtil.finalizeProperties(this, DefaultableLauncherConfig.class);
     }
 }

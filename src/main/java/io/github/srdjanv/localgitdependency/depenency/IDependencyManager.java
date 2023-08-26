@@ -5,6 +5,7 @@ import io.github.srdjanv.localgitdependency.project.Manager;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.project.TaskDescription;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Set;
@@ -23,4 +24,6 @@ public interface IDependencyManager extends Manager {
     @Unmodifiable
     Set<Dependency> getDependencies();
     void markBuild(String dep, Dependency.Type type);
+    @Nullable
+    Set<Dependency.Type> getMarkedBuild(String dep);
 }

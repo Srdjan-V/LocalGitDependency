@@ -6,6 +6,7 @@ import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
@@ -19,6 +20,7 @@ public final class DefaultLaunchers {
         @Inject
         public Startup(Managers managers) {
             super(managers);
+            getTaskTriggers().convention(Collections.emptyList());
         }
     }
 
@@ -34,10 +36,11 @@ public final class DefaultLaunchers {
         }
     }
 
-    public abstract static class Build extends Base implements Launchers.Build{
+    public abstract static class Build extends Base implements Launchers.Build {
         @Inject
         public Build(Managers managers) {
             super(managers);
+            getTaskTriggers().convention(Collections.emptyList());
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
                 return Arrays.asList("--init-script", dependencyProperty.get().getGradleInfo().getInitScript().getAbsolutePath());
             }));
@@ -50,7 +53,15 @@ public final class DefaultLaunchers {
         protected Property<Boolean> isRunNeeded;
 
         public Base(Managers managers) {
+            getExplicit().convention(false);
+            getForwardOutput().convention(true);
+            getPreTasksArguments().convention(Collections.emptyList());
+            getPreTasks().convention(Collections.emptyList());
+            getPostTasksArguments().convention(Collections.emptyList());
+            getPostTasks().convention(Collections.emptyList());
+
             dependencyProperty = managers.getProject().getObjects().property(Dependency.class);
+            isRunNeeded = managers.getProject().getObjects().property(Boolean.class);
         }
 
         public Property<Dependency> getDependencyProperty() {
@@ -63,7 +74,7 @@ public final class DefaultLaunchers {
 
         @Override
         public void finalizeProps() {
-
+            ClassUtil.finalizeProperties(this, Launchers.Base.class);
         }
     }
 

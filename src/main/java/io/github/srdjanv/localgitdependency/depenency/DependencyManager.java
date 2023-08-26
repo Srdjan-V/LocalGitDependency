@@ -13,6 +13,7 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.util.GradleVersion;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
@@ -64,11 +65,11 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     @Override
     public boolean resolveRegisteredDependencies() {
         for (var dependencyConfig : unResolvedDependencies) {
-            var builds = buildMarkers.get(dependencyConfig.getName().get()); // TODO: 26/08/2023
-            if (builds != null) dependencyConfig.getBuildTargets().addAll(builds);
+            ((DefaultDependencyConfig) dependencyConfig).finalizeProps();
             dependencies.add(new Dependency(this, dependencyConfig));
         }
         unResolvedDependencies.clear();
+        buildMarkers.clear();
         return !dependencies.isEmpty();
     }
 
@@ -99,6 +100,11 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     @Override
     public void markBuild(String dep, Dependency.Type type) {
         buildMarkers.computeIfAbsent(dep, d -> new HashSet<>()).add(type);
+    }
+
+    @Override
+    public @Nullable Set<Dependency.Type> getMarkedBuild(String dep) {
+        return buildMarkers.get(dep);
     }
 
     private void flatDirRepos(Dependency dependency) {

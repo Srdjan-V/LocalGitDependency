@@ -1,9 +1,12 @@
 package io.github.srdjanv.localgitdependency.util;
 
+import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.util.annotations.NullableData;
+import org.gradle.api.provider.Property;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +55,48 @@ public final class ClassUtil {
     @FunctionalInterface
     public interface FieldConsumer {
         void accept(Field field) throws Exception;
+    }
+
+    public static <D> void finalizeProperties(final D targetObj, final Class<D> clazz) {
+        iterateMethods(clazz, method -> {
+            for (Class<?> anInterface : method.getReturnType().getInterfaces()) {
+                if (anInterface == Property.class) {
+                    ((Property<?>) method.invoke(targetObj)).finalizeValue();
+                    return;
+                }
+            }
+        }, Collections.singletonList(() -> ConfigFinalizer.class.getDeclaredMethod("finalizeProps")));
+    }
+
+    public static void iterateMethods(Class<?> clazz, final MethodConsumer action, final List<MethodSuppler> methodBlackList) {
+        try {
+            var resolvedMethodBlackList = new ArrayList<Method>();
+            for (MethodSuppler methodSupplier : methodBlackList) {
+                resolvedMethodBlackList.add(methodSupplier.get());
+            }
+
+            do {
+                for (Method method : clazz.getDeclaredMethods()) {
+                    if (resolvedMethodBlackList.contains(method)) return;
+                    method.setAccessible(true);
+                    action.accept(method);
+                }
+                clazz = clazz.getSuperclass();
+                if (clazz == null) break;
+            } while (clazz != Object.class);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Unexpected error while reflecting %s class", clazz.getSimpleName()), e);
+        }
+    }
+
+    @FunctionalInterface
+    public interface MethodSuppler {
+        Method get() throws Exception;
+    }
+
+    @FunctionalInterface
+    public interface MethodConsumer {
+        void accept(Method method) throws Exception;
     }
 
     @NotNull

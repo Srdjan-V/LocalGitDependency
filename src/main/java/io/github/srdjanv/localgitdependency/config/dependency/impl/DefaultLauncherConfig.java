@@ -4,6 +4,7 @@ import groovy.lang.GroovyObjectSupport;
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
 import javax.inject.Inject;
 
@@ -21,6 +22,9 @@ public abstract class DefaultLauncherConfig extends GroovyObjectSupport implemen
 
     @Override
     public void finalizeProps() {
-
+        ClassUtil.finalizeProperties(this, LauncherConfig.class);
+        ((DefaultLaunchers.Startup) getStartup().get()).finalizeProps();
+        ((DefaultLaunchers.Probe) getProbe().get()).finalizeProps();
+        ((DefaultLaunchers.Build) getBuild().get()).finalizeProps();
     }
 }
