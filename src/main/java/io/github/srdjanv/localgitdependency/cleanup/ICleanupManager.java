@@ -9,5 +9,5 @@ public interface ICleanupManager extends Manager {
         return new CleanupManager(projectInstances);
     }
     @TaskDescription("cleaning directories")
-    void init();
+    boolean init();
 }

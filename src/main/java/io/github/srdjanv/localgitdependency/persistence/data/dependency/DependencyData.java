@@ -3,6 +3,8 @@ package io.github.srdjanv.localgitdependency.persistence.data.dependency;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 
+import java.util.Set;
+
 @NonNullData
 public class DependencyData {
     private String initFileSHA1;
@@ -12,7 +14,7 @@ public class DependencyData {
     private String probeTasksTriggersSHA1;
     private Boolean buildTasksSuccessful;
     private String buildTasksTriggersSHA1;
-    private Dependency.Type dependencyType;
+    private Set<Dependency.Type> buildTypes;
 
     public String getInitFileSHA1() {
         return initFileSHA1;
@@ -70,11 +72,11 @@ public class DependencyData {
         this.buildTasksTriggersSHA1 = buildTasksTriggersSHA1;
     }
 
-    public Dependency.Type getDependencyType() {
-        return dependencyType;
+    public Set<Dependency.Type> getBuildTypes() {
+        return buildTypes;
     }
 
-    public void setDependencyType(Dependency.Type dependencyType) {
-        this.dependencyType = dependencyType;
+    public void setBuildTypes(Set<Dependency.Type> buildTypes) {
+        this.buildTypes = buildTypes;
     }
 }

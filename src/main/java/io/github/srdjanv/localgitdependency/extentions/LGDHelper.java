@@ -13,16 +13,14 @@ import java.util.Objects;
 
 public class LGDHelper extends GroovyObjectSupport {
     private final Managers managers;
+
     public LGDHelper(Managers managers) {
         this.managers = managers;
     }
-/*
 
-    */
-/**
+    /**
      * default maven local publishing
-     *//*
-
+     */
     public Provider<org.gradle.api.artifacts.Dependency> mavenLocal(@NotNull final String notation) {
         return mavenLocal(notation, Actions.doNothing());
     }
@@ -33,39 +31,6 @@ public class LGDHelper extends GroovyObjectSupport {
     ) {
         return repo(Dependency.Type.MavenLocal, notation, config);
     }
-
-    */
-/**
-     * publishing to a maven inside the project file structure
-     *//*
-
-    public Provider<org.gradle.api.artifacts.Dependency> mavenProjectLocal(@NotNull final String notation) {
-        return mavenProjectLocal(notation, Actions.doNothing());
-    }
-
-    public Provider<org.gradle.api.artifacts.Dependency> mavenProjectLocal(
-            @NotNull final String notation,
-            @NotNull final Action<org.gradle.api.artifacts.Dependency> config
-    ) {
-        return repo(Dependency.Type.MavenProjectLocal, notation, config);
-    }
-
-    */
-/**
-     * same as MavenProjectLocal except that every project has its own maven local folder
-     *//*
-
-    public Provider<org.gradle.api.artifacts.Dependency> mavenProjectDependencyLocal(@NotNull final String notation) {
-        return mavenProjectDependencyLocal(notation, Actions.doNothing());
-    }
-
-    public Provider<org.gradle.api.artifacts.Dependency> mavenProjectDependencyLocal(
-            @NotNull final String notation,
-            @NotNull final Action<org.gradle.api.artifacts.Dependency> config
-    ) {
-        return repo(Dependency.Type.MavenProjectDependencyLocal, notation, config);
-    }
-*/
 
     /**
      * crates a flat dir repository at the build libs of the project
@@ -163,13 +128,13 @@ public class LGDHelper extends GroovyObjectSupport {
         }*/
 
         return switch (inputNotation.length) {
-            case 1 -> depNotation[0] + archiveNotation + depNotation[2];
-            case 2 -> depNotation[0] + inputNotation[1] + depNotation[2];
+            case 1 -> depNotation[0] + ":" + archiveNotation + ":" + depNotation[2];
+            case 2 -> depNotation[0] + ":" + inputNotation[1] + ":" + depNotation[2];
             case 3 -> {
                 if (inputNotation[1].split("\\.").length != 0) {
-                    yield depNotation[0] + archiveNotation + inputNotation[1];
+                    yield depNotation[0] + ":" + archiveNotation + ":" + inputNotation[1];
                 }
-                yield depNotation[0] + inputNotation[1] + depNotation[2];
+                yield depNotation[0] + ":" + inputNotation[1] + ":" + depNotation[2];
             }
             default -> throw new IllegalStateException("Unexpected value: " + inputNotation.length);
         };

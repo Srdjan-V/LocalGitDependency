@@ -98,6 +98,7 @@ public class Dependency {
 
 
     public enum Type {
+        MavenLocal,
         JarFlatDir,
         Jar,
         Task

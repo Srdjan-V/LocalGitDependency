@@ -13,9 +13,10 @@ public abstract class DefaultPluginConfig extends GroovyObjectSupport implements
     @Inject
     public DefaultPluginConfig(Managers managers) {
         getLibsDir().convention(Constants.libsDir.apply(managers.getProject()));
-        getAutomaticCleanup().convention(true);
+        getAutomaticCleanup().convention(managers.getProject().provider(()-> {
+            return getLibsDir().get().equals(Constants.libsDir.apply(managers.getProject()));
+        }));
         getKeepInitScriptUpdated().convention(true);
-        getGenerateGradleTasks().convention(true);
         getGenerateGradleTasks().convention(true);
         getDisablePluginExecution().convention(false);
     }

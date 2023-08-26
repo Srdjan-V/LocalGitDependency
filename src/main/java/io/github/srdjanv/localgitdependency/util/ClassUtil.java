@@ -77,7 +77,7 @@ public final class ClassUtil {
 
             do {
                 for (Method method : clazz.getDeclaredMethods()) {
-                    if (resolvedMethodBlackList.contains(method)) return;
+                    if (resolvedMethodBlackList.contains(method)) continue;
                     method.setAccessible(true);
                     action.accept(method);
                 }

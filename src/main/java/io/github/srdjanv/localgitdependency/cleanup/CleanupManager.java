@@ -24,46 +24,20 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
     }
 
     @Override
-    public void init() {
+    public boolean init() {
         PluginConfig props = getConfigManager().getPluginConfig();
 
-        if (!props.getAutomaticCleanup().get()) {
-            ManagerLogger.info("Skipping cleanup");
-            return;
-        }
-
-        cleanLibsDir(props.getLibsDir().getAsFile().get());
-/*        cleanMavenDir(props.getMavenDir());
-        cleanDataDir(props.getPersistentDir());*/
+        if (!props.getAutomaticCleanup().get()) return false;
+        return cleanLibsDir(props.getLibsDir().getAsFile().get());
     }
 
-    private void cleanLibsDir(File libsDir) {
-        if (!libsDir.exists()) return;
-        iterateDirs(libsDir, (dir, dep) -> dir.equals(dep.getGitInfo().getDir()));
-    }
-/*
-    private void cleanMavenDir(File mavenDir) {
-        if (!mavenDir.exists()) return;
-        iterateDirs(mavenDir, (dir, dep) -> {
-            switch (dep.getDependencyType()) {
-                case MavenProjectDependencyLocal:
-                    return dir.equals(dep.getMavenFolder());
-
-                case MavenProjectLocal:
-                    return dir.equals(dep.getMavenFolder().getParentFile());
-
-                default:
-                    return true;
-            }
-        });
+    private boolean cleanLibsDir(File libsDir) {
+        if (!libsDir.exists()) return false;
+        return iterateDirs(libsDir, (dir, dep) -> dir.equals(dep.getGitInfo().getDir()));
     }
 
-    private void cleanDataDir(File dataDir) {
-        if (!dataDir.exists()) return;
-        iterateDirs(dataDir, (dir, dep) -> dir.equals(new File(dataDir, dep.getName())));
-    }*/
-
-    private void iterateDirs(File fileDir, BiPredicate<File, Dependency> validDir) {
+    private boolean iterateDirs(File fileDir, BiPredicate<File, Dependency> validDir) {
+        boolean didWork = false;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileDir.toPath())) {
             rootDir:
             for (Path path : stream) {
@@ -73,11 +47,13 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
                     }
                     ManagerLogger.info("Cleaning directory at {}", path.toAbsolutePath());
                     deleteDir(path);
+                    didWork = true;
                 }
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+        return didWork;
     }
 
     private void deleteDir(Path path) throws IOException {

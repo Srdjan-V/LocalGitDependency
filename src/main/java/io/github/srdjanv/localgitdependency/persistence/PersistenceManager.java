@@ -113,12 +113,11 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
                     DependencyData data = (DependencyData) dataWrapper.getData();
                     persistentInfo.setDependencyData(data);
 
-                    // TODO: 26/08/2023 fix 
-/*                    if (data.getDependencyType() != dependency.getBuildTargets()) {
-                        data.setDependencyType(dependency.getBuildTargets());
+                    if (!data.getBuildTypes().containsAll(dependency.getBuildTargets())) {
+                        data.setBuildTypes(dependency.getBuildTargets());
                         persistentInfo.setDependencyTypeChanged();
                         persistentInfo.setDirty();
-                    }*/
+                    }
                 }
                 case ProjectProbeData -> {
                     ProjectProbeData probeData = (ProjectProbeData) dataWrapper.getData();
