@@ -24,7 +24,9 @@ public final class GradleLaunchers implements ConfigFinalizer {
 
     private GradleLaunchers(Dependency dependency, DependencyConfig dependencyConfig) {
         var launcherConfig = dependencyConfig.getBuildLauncher().get();
-        executable = FileUtil.toFile(launcherConfig.getExecutable().get(), "getExecutable");
+        if (launcherConfig.getExecutable().isPresent()) {
+            executable = FileUtil.toFile(launcherConfig.getExecutable().get(), "getExecutable");
+        } else executable = null;
         gradleDaemonMaxIdleTime = launcherConfig.getGradleDaemonMaxIdleTime().get();
 
         startup = (DefaultLaunchers.Startup) launcherConfig.getStartup().get();

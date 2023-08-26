@@ -15,13 +15,20 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
         getUrl().convention(url).finalizeValue();
         getName().convention(managers.getProject().provider(() -> getNameFromUrl(getUrl().get())));
 
-        // TODO: 25/08/2023 conventions
+        final var defaultable = managers.getConfigManager().getDefaultableConfig();
+        getKeepGitUpdated().convention(managers.getProject().provider(() -> defaultable.getKeepGitUpdated().get()));
+        getKeepInitScriptUpdated().convention(managers.getProject().provider(() -> defaultable.getKeepInitScriptUpdated().get()));
+        getGenerateGradleTasks().convention(managers.getProject().provider(() -> defaultable.getGenerateGradleTasks().get()));
+        getTryGeneratingSourceJar().convention(managers.getProject().provider(() -> defaultable.getTryGeneratingSourceJar().get()));
+        getTryGeneratingJavaDocJar().convention(managers.getProject().provider(() -> defaultable.getTryGeneratingJavaDocJar().get()));
+        getRegisterDependencyRepositoryToProject().convention(managers.getProject().provider(() -> defaultable.getRegisterDependencyRepositoryToProject().get()));
+        getBuildTargets().convention(managers.getProject().provider(() -> defaultable.getBuildTargets().get()));
+        getBuildLauncher().convention(managers.getProject().getObjects().newInstance(DefaultLauncherConfig.class, managers));
     }
 
     @Override
     public void finalizeProps() {
     }
-
 
 
     private static String getNameFromUrl(String url) {

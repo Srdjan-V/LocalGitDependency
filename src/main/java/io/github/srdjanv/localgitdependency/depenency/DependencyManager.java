@@ -64,8 +64,8 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     @Override
     public boolean resolveRegisteredDependencies() {
         for (var dependencyConfig : unResolvedDependencies) {
-            var builds = buildMarkers.get(dependencyConfig.getName().get());
-            dependencyConfig.getBuildTargets().addAll(builds);
+            var builds = buildMarkers.get(dependencyConfig.getName().get()); // TODO: 26/08/2023
+            if (builds != null) dependencyConfig.getBuildTargets().addAll(builds);
             dependencies.add(new Dependency(this, dependencyConfig));
         }
         unResolvedDependencies.clear();

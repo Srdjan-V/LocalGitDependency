@@ -118,7 +118,7 @@ final class ManagerRunner<T extends Manager> {
 
                 if (declaredMethod.isAnnotationPresent(TaskDescription.class)) {
                     taskName = declaredMethod.getAnnotation(TaskDescription.class).value();
-                    if (declaredMethod.getReturnType() != boolean.class && declaredMethod.getReturnType() != Void.class)
+                    if (declaredMethod.getReturnType() != boolean.class && declaredMethod.getReturnType() != void.class)
                         throw new RuntimeException();
 
                     return;

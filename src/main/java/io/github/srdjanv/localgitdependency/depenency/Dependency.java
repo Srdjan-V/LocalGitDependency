@@ -28,9 +28,9 @@ public class Dependency {
 
     public Dependency(Managers managers, DependencyConfig dependencyConfig) {
         this.name = dependencyConfig.getName().get();
-        var lgdeIde = managers.getLGDExtensionByType(LGDIDE.class);
-        this.mappers = (DefaultSourceSetMapper) lgdeIde.getMappers().findByName(name);
-        this.ideSupport = mappers != null || lgdeIde.getEnableIdeSupport().get(); // TODO: 25/08/2023
+        var lgdIde = managers.getLGDExtensionByType(LGDIDE.class);
+        this.mappers = (DefaultSourceSetMapper) lgdIde.getMappers().findByName(name);
+        this.ideSupport = mappers != null ? mappers.getRecursive().get() : lgdIde.getEnableIdeSupport().get();
         this.shouldRegisterRepository = dependencyConfig.getRegisterDependencyRepositoryToProject().get();
         this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks().get();
         this.buildTargets = Collections.unmodifiableSet(dependencyConfig.getBuildTargets().get());

@@ -4,6 +4,7 @@ import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapper;
+import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -17,12 +18,19 @@ public final class DefaultSourceSetMapper extends GroovyObjectSupport implements
     private final Property<SourceSet> targetSourceSet;
     private final Property<Boolean> recursive;
 
-    public DefaultSourceSetMapper(final SourceSetContainer container, final Managers managers, final String name) {
+    public DefaultSourceSetMapper(final SourceSetContainer container,
+                                  final LGDIDE lgdide,
+                                  final Managers managers,
+                                  final String name) {
         this.container = container;
         this.name = name;
         depMappings = managers.getProject().getObjects().listProperty(String.class);
         targetSourceSet = managers.getProject().getObjects().property(SourceSet.class);
-        recursive = managers.getProject().getObjects().property(Boolean.class); // TODO: 25/08/2023
+        recursive = managers.getProject().getObjects().property(Boolean.class);
+
+        depMappings.convention(managers.getProject().provider(()-> lgdide.getDefaultDepMappings().get()));
+        targetSourceSet.convention(managers.getProject().provider(()-> lgdide.getDefaultTargetSourceSet().get()));
+        recursive.convention(managers.getProject().provider(()-> lgdide.getRecursive().get()));
     }
 
     @Override
