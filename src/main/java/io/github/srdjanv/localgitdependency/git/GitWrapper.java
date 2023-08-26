@@ -18,7 +18,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.github.srdjanv.localgitdependency.git.GitInfo.TargetType.BRANCH;
-import static org.eclipse.jgit.lib.Constants.*;
+import static org.eclipse.jgit.lib.Constants.R_HEADS;
+import static org.eclipse.jgit.lib.Constants.R_REMOTES;
 
 // Some code has been taken from
 // https://github.com/alexvasilkov/GradleGitDependenciesPlugin/blob/master/src/main/groovy/com/alexvasilkov/gradle/git/utils/GitUtils.groovy
@@ -111,31 +112,31 @@ final class GitWrapper implements AutoCloseable {
 
         final String persistentStartupTasksTriggersSHA1 = persistentInfo.getStartupTasksTriggersSHA1();
         if (persistentStartupTasksTriggersSHA1 == null) {
-            launchers.getStartup().setRunNeeded();
+            launchers.getStartup().getIsRunNeeded().set(true);
             persistentInfo.setStartupTasksTriggersSHA1(startupTasksTriggersSHA1);
         } else if (!persistentStartupTasksTriggersSHA1.equals(startupTasksTriggersSHA1)) {
             ManagerLogger.info("Dependency {} has new local changes, for startupTasks marking dependency for reStartup", gitInfo.getDependency().getName());
-            launchers.getStartup().setRunNeeded();
+            launchers.getStartup().getIsRunNeeded().set(true);
             persistentInfo.setStartupTasksTriggersSHA1(startupTasksTriggersSHA1);
         }
 
         final String persistentProbeTasksTriggersSHA1 = persistentInfo.getProbeTasksTriggersSHA1();
         if (persistentProbeTasksTriggersSHA1 == null) {
-            launchers.getProbe().setRunNeeded();
+            launchers.getProbe().getIsRunNeeded().set(true);
             persistentInfo.setProbeTasksTriggersSHA1(probeTasksTriggersSHA1);
         } else if (!persistentProbeTasksTriggersSHA1.equals(probeTasksTriggersSHA1)) {
             ManagerLogger.info("Dependency {} has new local changes, for probeTasks marking dependency for reProbe", gitInfo.getDependency().getName());
-            launchers.getProbe().setRunNeeded();
+            launchers.getProbe().getIsRunNeeded().set(true);
             persistentInfo.setProbeTasksTriggersSHA1(probeTasksTriggersSHA1);
         }
 
         final String persistentBuildTasksTriggersSHA1 = persistentInfo.getBuildTasksTriggersSHA1();
         if (persistentBuildTasksTriggersSHA1 == null) {
-            launchers.getBuild().setRunNeeded();
+            launchers.getBuild().getIsRunNeeded().set(true);
             persistentInfo.setBuildTasksTriggersSHA1(buildTasksTriggersSHA1);
         } else if (!persistentBuildTasksTriggersSHA1.equals(buildTasksTriggersSHA1)) {
             ManagerLogger.info("Dependency {} has new local changes, for buildTasks marking dependency to be rebuild", gitInfo.getDependency().getName());
-            launchers.getBuild().setRunNeeded();
+            launchers.getBuild().getIsRunNeeded().set(true);
             persistentInfo.setBuildTasksTriggersSHA1(buildTasksTriggersSHA1);
         }
     }
@@ -161,20 +162,20 @@ final class GitWrapper implements AutoCloseable {
                 startupTasksTriggersSHA1 = calculateSHA1(
                         changes.stream().filter(
                                 string -> launchers.getStartup().
-                                        getTaskTriggers().contains(string)).collect(Collectors.toList()));
+                                        getTaskTriggers().get().contains(string)).collect(Collectors.toList()));
 
                 probeTasksTriggersSHA1 = calculateSHA1(
                         changes.stream().filter(
                                 string -> launchers.getProbe().
-                                        getTaskTriggers().contains(string)).collect(Collectors.toList()));
+                                        getTaskTriggers().get().contains(string)).collect(Collectors.toList()));
 
-                if (launchers.getBuild().getTaskTriggers().isEmpty()) {
+                if (launchers.getBuild().getTaskTriggers().get().isEmpty()) {
                     buildTasksTriggersSHA1 = calculateSHA1(changes);
                 } else {
                     buildTasksTriggersSHA1 = calculateSHA1(
                             changes.stream().filter(
                                     string -> launchers.getBuild().
-                                            getTaskTriggers().contains(string)).collect(Collectors.toList()));
+                                            getTaskTriggers().get().contains(string)).collect(Collectors.toList()));
                 }
 
                 return hasLocalChanges = true;

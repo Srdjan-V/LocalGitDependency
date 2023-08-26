@@ -83,8 +83,9 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
         final long start = System.currentTimeMillis();
         PluginLogger.title("{} starting {} tasks", formattedName, Constants.EXTENSION_NAME);
         try {
+            // TODO: 26/08/2023
             for (ManagerRunner<?> projectRunner : PROJECT_RUNNERS) {
-                projectRunner.runAndLog(getProjectManagers());
+                //projectRunner.runAndLog(getProjectManagers());
             }
         } catch (Throwable e) {
             throwable = e;

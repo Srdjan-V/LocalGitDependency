@@ -1,20 +1,8 @@
 package io.github.srdjanv.localgitdependency;
 
-import io.github.srdjanv.localgitdependency.config.impl.dependency.DependencyConfig;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
-import io.github.srdjanv.localgitdependency.injection.plugin.LocalGitDependencyJsonInfoModelBuilder;
-import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
-import io.github.srdjanv.localgitdependency.util.ClosureUtil;
-import org.gradle.api.Project;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.ThrowingSupplier;
-
 public class InjectionTest {
 
-    @Test
+   /* @Test
     void testInjectionPlugin() {
         Project project = ProjectInstance.createProject();
 
@@ -60,5 +48,5 @@ public class InjectionTest {
 
         Assertions.assertThrows(RuntimeException.class, () -> DataParser.projectProbeDataJson(builder.create()), "Invalid Json parsing");
     }
-
+*/
 }

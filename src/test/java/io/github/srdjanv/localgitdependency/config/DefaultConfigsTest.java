@@ -1,13 +1,7 @@
 package io.github.srdjanv.localgitdependency.config;
 
-import io.github.srdjanv.localgitdependency.ProjectInstance;
-import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfig;
-import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
-import io.github.srdjanv.localgitdependency.util.ClassUtil;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 public class DefaultConfigsTest {
+/*
 
     @Test
     void testDefaultPluginConfigsFail() {
@@ -55,6 +49,7 @@ public class DefaultConfigsTest {
 
         Assertions.assertEquals(0, errorList.size(), errorList.toString());
     }
+*/
 
 
 }

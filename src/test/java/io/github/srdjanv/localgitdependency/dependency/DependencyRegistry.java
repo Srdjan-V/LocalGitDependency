@@ -1,11 +1,7 @@
 package io.github.srdjanv.localgitdependency.dependency;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class DependencyRegistry {
-    private static final List<DependencyRegistry> registry = new ArrayList<>();
+  /*  private static final List<DependencyRegistry> registry = new ArrayList<>();
 
     static {
         //gradle 8.1.1
@@ -37,5 +33,5 @@ public class DependencyRegistry {
         this.gitRev = gitRev;
         this.startupTasks = startupTasks;
     }
-
+*/
 }

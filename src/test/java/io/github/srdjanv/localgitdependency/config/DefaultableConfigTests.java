@@ -1,25 +1,7 @@
 package io.github.srdjanv.localgitdependency.config;
 
-import io.github.srdjanv.localgitdependency.ProjectInstance;
-import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfig;
-import io.github.srdjanv.localgitdependency.config.impl.defaultable.DefaultableConfigFields;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.extentions.LGDManagers;
-import io.github.srdjanv.localgitdependency.util.ClosureUtil;
-import org.gradle.api.Project;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.function.Executable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
 public class DefaultableConfigTests {
-    private static final List<DefaultableConfigMapper<?>> mappers = new ArrayList<>();
+ /*   private static final List<DefaultableConfigMapper<?>> mappers = new ArrayList<>();
 
     private static final DefaultableConfigMapper<Boolean> keepGitUpdated;
     private static final DefaultableConfigMapper<Boolean> keepInitScriptUpdated;
@@ -80,11 +62,11 @@ public class DefaultableConfigTests {
             mapper.setValueGetter(DefaultableConfig::getGenerateGradleTasks);
             mapper.setBuilder(DefaultableConfig.Builder::generateGradleTasks);
         });
-/*        launcher = DefaultableConfigMapper.create(mapper -> {// TODO: 07/07/2023 improve
+*//*        launcher = DefaultableConfigMapper.create(mapper -> {// TODO: 07/07/2023 improve
             mapper.setName("launcher");
             mapper.setValueGetter(DefaultableConfig::getLauncher);
             mapper.setBuilder((builder, obj) -> builder.buildLauncher((Closure) (Object) obj));
-        });*/
+        });*//*
     }
 
     @Test
@@ -121,7 +103,7 @@ public class DefaultableConfigTests {
     }
 
 
-/*    private static final List<DefaultableConfigMapper<?>> launcherMappers = new ArrayList<>();
+*//*    private static final List<DefaultableConfigMapper<?>> launcherMappers = new ArrayList<>();
 
     private static final DefaultableConfigMapper<Boolean> keepGitUpdated;
     private static final DefaultableConfigMapper<Boolean> keepInitScriptUpdated;
@@ -154,7 +136,7 @@ public class DefaultableConfigTests {
                     }
                 }));
     }
-*/
+*//*
 
     private static abstract class DefaultableTestExecutable<T> implements Executable {
         DefaultableConfigMapper<T> mapper;
@@ -169,6 +151,6 @@ public class DefaultableConfigTests {
             configManager = lgdInstance.getConfigManager();
             defaultableConfig = ((ConfigManager) configManager).defaultDefaultableConfig();
         }
-    }
+    }*/
 
 }

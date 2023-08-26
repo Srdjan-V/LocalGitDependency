@@ -11,15 +11,18 @@ import org.jetbrains.annotations.NotNull;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public final class LGDHelper extends GroovyObjectSupport {
+public class LGDHelper extends GroovyObjectSupport {
     private final Managers managers;
     public LGDHelper(Managers managers) {
         this.managers = managers;
     }
+/*
 
-    /**
+    */
+/**
      * default maven local publishing
-     */
+     *//*
+
     public Provider<org.gradle.api.artifacts.Dependency> mavenLocal(@NotNull final String notation) {
         return mavenLocal(notation, Actions.doNothing());
     }
@@ -31,9 +34,11 @@ public final class LGDHelper extends GroovyObjectSupport {
         return repo(Dependency.Type.MavenLocal, notation, config);
     }
 
-    /**
+    */
+/**
      * publishing to a maven inside the project file structure
-     */
+     *//*
+
     public Provider<org.gradle.api.artifacts.Dependency> mavenProjectLocal(@NotNull final String notation) {
         return mavenProjectLocal(notation, Actions.doNothing());
     }
@@ -45,9 +50,11 @@ public final class LGDHelper extends GroovyObjectSupport {
         return repo(Dependency.Type.MavenProjectLocal, notation, config);
     }
 
-    /**
+    */
+/**
      * same as MavenProjectLocal except that every project has its own maven local folder
-     */
+     *//*
+
     public Provider<org.gradle.api.artifacts.Dependency> mavenProjectDependencyLocal(@NotNull final String notation) {
         return mavenProjectDependencyLocal(notation, Actions.doNothing());
     }
@@ -58,6 +65,7 @@ public final class LGDHelper extends GroovyObjectSupport {
     ) {
         return repo(Dependency.Type.MavenProjectDependencyLocal, notation, config);
     }
+*/
 
     /**
      * crates a flat dir repository at the build libs of the project
@@ -146,13 +154,13 @@ public final class LGDHelper extends GroovyObjectSupport {
             Dependency dependency,
             Dependency.Type type
     ) {
-        final String archiveNotation;
-        switch (type) {
+        final String archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
+/*        switch (type) {
             case MavenLocal, JarFlatDir ->
                     archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
             case MavenProjectLocal, MavenProjectDependencyLocal -> archiveNotation = dependency.getName();
             default -> throw new IllegalStateException();
-        }
+        }*/
 
         return switch (inputNotation.length) {
             case 1 -> depNotation[0] + archiveNotation + depNotation[2];
@@ -174,13 +182,13 @@ public final class LGDHelper extends GroovyObjectSupport {
             Dependency dependency,
             Dependency.Type type
     ) {
-        final String archiveNotation;
-        switch (type) {
+        final String archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
+/*        switch (type) {
             case MavenLocal, JarFlatDir ->
                     archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
             case MavenProjectLocal, MavenProjectDependencyLocal -> archiveNotation = dependency.getName();
             default -> throw new IllegalStateException();
-        }
+        }*/
 
         return switch (inputNotation.length) {
             case 1 -> depNotation[0] + archiveNotation + depNotation[2];

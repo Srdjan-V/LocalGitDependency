@@ -29,7 +29,7 @@ public class Dependency {
     public Dependency(Managers managers, DependencyConfig dependencyConfig) {
         this.name = dependencyConfig.getName().get();
         var lgdeIde = managers.getExtensionByType(LGDIDE.class);
-        this.mappers = lgdeIde.getMappers().findByName(name);
+        this.mappers = (DefaultSourceSetMapper) lgdeIde.getMappers().findByName(name);
         this.ideSupport = mappers != null || lgdeIde.getEnableIdeSupport().get(); // TODO: 25/08/2023
         this.shouldRegisterRepository = dependencyConfig.getRegisterDependencyRepositoryToProject().get();
         this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks().get();

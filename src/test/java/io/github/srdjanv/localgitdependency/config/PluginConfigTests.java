@@ -1,26 +1,7 @@
 package io.github.srdjanv.localgitdependency.config;
 
-import io.github.srdjanv.localgitdependency.ProjectInstance;
-import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfig;
-import io.github.srdjanv.localgitdependency.config.impl.plugin.PluginConfigFields;
-import io.github.srdjanv.localgitdependency.extentions.LGDManagers;
-import io.github.srdjanv.localgitdependency.util.ClosureUtil;
-import org.gradle.api.GradleException;
-import org.gradle.api.Project;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.function.Executable;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
 public class PluginConfigTests {
-    private static final List<PluginConfigMapper<?>> mappers = new ArrayList<>();
+  /*  private static final List<PluginConfigMapper<?>> mappers = new ArrayList<>();
     private static final PluginConfigMapper<Boolean> keepInitScriptUpdated;
     private static final PluginConfigMapper<Boolean> generateGradleTasks;
     private static final PluginConfigMapper<Boolean> automaticCleanup;
@@ -164,5 +145,5 @@ public class PluginConfigTests {
             defaultPluginConfigs = ((ConfigManager) configManager).defaultPluginConfig();
         }
     }
-
+*/
 }

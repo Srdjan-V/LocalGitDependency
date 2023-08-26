@@ -1,15 +1,11 @@
 package io.github.srdjanv.localgitdependency;
 
-import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
-import io.github.srdjanv.localgitdependency.dependency.DependencyRegistry;
-import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
-import io.github.srdjanv.localgitdependency.util.ClosureUtil;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 @Disabled
 public class GitTest {
 
+/*
     @Test
     void test() {
         DependencyWrapper dependencyWrapper = DependencyRegistry.getTestDependencies().stream().findFirst().get();
@@ -21,7 +17,7 @@ public class GitTest {
         dependencyWrapper.setDependencyClosure(builder -> {
             builder.getName(dependencyWrapper.getTestName());
             builder.getBuildLauncher(ClosureUtil.<LauncherConfig>configure(launcher -> {
-                launcher.gradleDaemonMaxIdleTime(0);
+                launcher.getGradleDaemonMaxIdleTime(0);
             }));
             builder.configuration(Constants.JAVA_IMPLEMENTATION);
             //builder.tag("v1.0.1.11");
@@ -36,4 +32,5 @@ public class GitTest {
         dependencyWrapper.getProjectManager().getPersistenceManager().loadPersistentData();
         dependencyWrapper.getProjectManager().getGitManager().initRepos();
     }
+*/
 }

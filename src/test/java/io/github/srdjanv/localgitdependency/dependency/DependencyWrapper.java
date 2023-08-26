@@ -1,22 +1,7 @@
 package io.github.srdjanv.localgitdependency.dependency;
 
-import groovy.lang.Closure;
-import io.github.srdjanv.localgitdependency.ProjectInstance;
-import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
-import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
-import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
-import io.github.srdjanv.localgitdependency.config.dependency.common.CommonConfig;
-import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.project.IProjectManager;
-import io.github.srdjanv.localgitdependency.util.ClosureUtil;
-import org.junit.jupiter.api.Assertions;
-
-import java.util.Optional;
-import java.util.function.Consumer;
-
 public class DependencyWrapper {
-    private IProjectManager projectManager;
+ /*   private IProjectManager projectManager;
     private final String dependencyName;
     private final String gitUrl;
     private final String gitRev;
@@ -180,7 +165,7 @@ public class DependencyWrapper {
         Complete,
         OnlyDependencyRegistered,
         Starting
-    }
+    }*/
 
 
 }

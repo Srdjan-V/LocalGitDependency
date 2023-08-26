@@ -33,8 +33,8 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
 
     @Override
     public void finalizeConfigs() {
-         pluginConfig.finalizeProps();
-         defaultableConfig.finalizeProps();
+        ((DefaultPluginConfig) pluginConfig).finalizeProps();
+        ((DefaultDefaultableConfig) defaultableConfig).finalizeProps();
     }
 
 /*    private void customPathsCheck(PluginConfig pluginConfig) {

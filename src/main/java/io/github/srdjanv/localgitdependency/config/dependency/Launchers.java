@@ -20,9 +20,9 @@ public final class Launchers {
         /**
          * Sets the tasks should explicitly run
          */
-        Property<Boolean> explicit();
+        Property<Boolean> getExplicit();
 
-        Property<String> forwardOutput(Boolean forwardOutput);
+        Property<Boolean> getForwardOutput();
 
         /**
          * This will set what files should trigger a launcher rerun

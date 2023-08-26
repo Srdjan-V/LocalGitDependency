@@ -28,8 +28,7 @@ public final class DefaultLaunchers {
             super(managers);
             getTaskTriggers().convention(Arrays.asList("settings.gradle", "build.gradle", "gradle.properties"));
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
-                File initScriptFolder = managers.getConfigManager().getPluginConfig().getPersistentDir(); // TODO: 25/08/2023
-                File mainInit = Constants.concatFile.apply(initScriptFolder, Constants.MAIN_INIT_SCRIPT_GRADLE);
+                File mainInit = Constants.concatFile.apply(Constants.lgdDir.apply(managers.getProject()).getAsFile(), Constants.MAIN_INIT_SCRIPT_GRADLE);
                 return Arrays.asList("--init-script", mainInit.getAbsolutePath());
             }));
         }
@@ -48,6 +47,7 @@ public final class DefaultLaunchers {
 
     public abstract static class Base extends GroovyObjectSupport implements Launchers.Base, ConfigFinalizer {
         protected Property<Dependency> dependencyProperty;
+        protected Property<Boolean> isRunNeeded;
 
         public Base(Managers managers) {
             dependencyProperty = managers.getProject().getObjects().property(Dependency.class);
@@ -55,6 +55,10 @@ public final class DefaultLaunchers {
 
         public Property<Dependency> getDependencyProperty() {
             return dependencyProperty;
+        }
+
+        public Property<Boolean> getIsRunNeeded() {
+            return isRunNeeded;
         }
 
         @Override

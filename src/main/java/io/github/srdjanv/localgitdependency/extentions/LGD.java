@@ -7,7 +7,7 @@ import io.github.srdjanv.localgitdependency.project.Managers;
 import org.gradle.api.Action;
 import org.gradle.internal.Actions;
 
-public final class LGD {
+public class LGD {
     public static final String NAME = "lgd";
 
     private final Managers managers;

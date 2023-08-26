@@ -1,6 +1,8 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
+import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultLaunchers;
 import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
@@ -12,6 +14,8 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.Task
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import org.eclipse.jgit.util.sha1.SHA1;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Provider;
 import org.gradle.tooling.*;
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import org.gradle.util.GradleVersion;
@@ -103,17 +107,17 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
     private boolean checkForNeedlesTaskRunning(
             Dependency dependency,
-            Function<GradleLaunchers, GradleLaunchers.Base> launcher,
+            Function<GradleLaunchers, DefaultLaunchers.Base> launcher,
             Predicate<Dependency> persistentSuccessStatus,
             Consumer<PersistentInfo> statusUpdater,
             @Nullable Predicate<Dependency> customChecks
     ) {
         boolean checkTasks = false;
-        if (launcher.apply(dependency.getGradleInfo().getLaunchers()).isExplicit()) {
+        if (launcher.apply(dependency.getGradleInfo().getLaunchers()).getExplicit().get()) {
             checkTasks = true;
         } else if (dependency.getGitInfo().hasRefreshed()) {
             checkTasks = true;
-        } else if (launcher.apply(dependency.getGradleInfo().getLaunchers()).isRunNeeded()) {
+        } else if (launcher.apply(dependency.getGradleInfo().getLaunchers()).getIsRunNeeded().getOrElse(false)) {
             checkTasks = true;
         } else if (customChecks != null) {
             if (customChecks.test(dependency)) {
@@ -123,17 +127,18 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         if (checkTasks || !persistentSuccessStatus.test(dependency)) {
             final var targetLauncher = launcher.apply(dependency.getGradleInfo().getLaunchers());
-            if (targetLauncher instanceof GradleLaunchers.Probe) {
+            if (targetLauncher instanceof Launchers.Probe) {
                 return true;
             }
 
             List<String> tasks = Stream.of(
                             targetLauncher.getPreTasks(),
-                            targetLauncher.getMainTasks(this, dependency),
+                            targetLauncher.getMainTasks(),
                             targetLauncher.getPostTasks()).
+                    map(Provider::get).
                     flatMap(List::stream).collect(Collectors.toList());
 
-            if (tasks.size() == 0) {
+            if (tasks.isEmpty()) {
                 statusUpdater.accept(dependency.getPersistentInfo());
                 return false;
             } else {
@@ -151,20 +156,20 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getStartup(),
-                startup -> startup.getPreTasksArguments(this, dependency),
-                GradleLaunchers.Base::getPreTasks,
+                Launchers.Base::getPreTasksArguments,
+                Launchers.Base::getPreTasks,
                 startupTasksStatusResultHandler);
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getStartup(),
-                startup -> startup.getMainTasksArguments(this, dependency),
-                startup -> startup.getMainTasks(this, dependency),
+                Launchers.Base::getMainTasksArguments,
+                Launchers.Base::getMainTasks,
                 startupTasksStatusResultHandler);
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getStartup(),
-                startup -> startup.getPostTasksArguments(this, dependency),
-                GradleLaunchers.Base::getPostTasks,
+                Launchers.Base::getPostTasksArguments,
+                Launchers.Base::getPostTasks,
                 startupTasksStatusResultHandler);
 
         long spent = System.currentTimeMillis() - start;
@@ -179,21 +184,21 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getProbe(),
-                probe -> probe.getPreTasksArguments(this, dependency),
-                GradleLaunchers.Base::getPreTasks,
+                Launchers.Base::getPreTasksArguments,
+                Launchers.Base::getPreTasks,
                 probeTasksStatusResultHandler);
 
         runGradleModel(dependency,
                 dependency.getGradleInfo().getLaunchers().getProbe(),
-                probe -> probe.getMainTasksArguments(this, dependency),
-                probe -> probe.getMainTasks(this, dependency)
+                Launchers.Base::getMainTasksArguments,
+                Launchers.Base::getMainTasks
         );
 
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getProbe(),
-                probe -> probe.getPostTasksArguments(this, dependency),
-                GradleLaunchers.Base::getPostTasks,
+                Launchers.Base::getPostTasksArguments,
+                Launchers.Base::getPostTasks,
                 probeTasksStatusResultHandler);
 
         long spent = System.currentTimeMillis() - start;
@@ -207,44 +212,44 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getBuild(),
-                build -> build.getPreTasksArguments(this, dependency),
-                GradleLaunchers.Base::getPreTasks,
+                Launchers.Base::getPreTasksArguments,
+                Launchers.Base::getPreTasks,
                 buildStatusResultHandler);
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getBuild(),
-                build -> build.getMainTasksArguments(this, dependency),
-                build -> build.getMainTasks(this, dependency),
+                Launchers.Base::getMainTasksArguments,
+                Launchers.Base::getMainTasks,
                 buildStatusResultHandler);
 
         runTaskStage(dependency,
                 dependency.getGradleInfo().getLaunchers().getBuild(),
-                build -> build.getPostTasksArguments(this, dependency),
-                GradleLaunchers.Base::getPostTasks,
+                Launchers.Base::getPostTasksArguments,
+                Launchers.Base::getPostTasks,
                 buildStatusResultHandler);
 
         long spent = System.currentTimeMillis() - start;
         ManagerLogger.info("Finished building in {} ms", spent);
     }
 
-    private <GL extends GradleLaunchers.Base> void runTaskStage(
+    private <GL extends Launchers.Base> void runTaskStage(
             Dependency dependency,
             GL baseLauncher,
-            Function<GL, List<String>> argsFunction,
-            Function<GL, List<String>> tasksFunction,
+            Function<GL, ListProperty<String>> argsFunction,
+            Function<GL, ListProperty<String>> tasksFunction,
             Function<Dependency, ResultHandler<Void>> function
     ) {
         var tasks = tasksFunction.apply(baseLauncher);
-        if (tasks.size() == 0) return;
+        if (tasks.get().isEmpty()) return;
 
         var args = argsFunction.apply(baseLauncher);
         final String[] arrArgs;
-        if (args.size() != 0) {
-            arrArgs = args.toArray(new String[0]);
+        if (args.get().isEmpty()) {
+            arrArgs = args.get().toArray(new String[0]);
             ManagerLogger.info("Args: {}", (Object) arrArgs);
         } else arrArgs = new String[0];
 
-        final String[] arrTasks = tasks.toArray(new String[0]);
+        final String[] arrTasks = tasks.get().toArray(new String[0]);
         ManagerLogger.info("Tasks: {}", (Object) arrTasks);
 
         DefaultGradleConnector connector = getGradleConnector(dependency);
@@ -256,7 +261,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                 build.setJavaHome(dependency.getGradleInfo().getLaunchers().getExecutable());
             }
             // TODO: 15/07/2023 fix formatting
-            if (baseLauncher.isForwardOutput()) {
+            if (baseLauncher.getForwardOutput().get()) {
                 build.setStandardOutput(System.out);
                 build.setStandardError(System.err);
             }
@@ -264,21 +269,21 @@ final class GradleManager extends ManagerBase implements IGradleManager {
         }
     }
 
-    private <GL extends GradleLaunchers.Base> void runGradleModel(
+    private <GL extends Launchers.Base> void runGradleModel(
             Dependency dependency,
             GL baseLauncher,
-            Function<GL, List<String>> argsFunction,
-            Function<GL, List<String>> tasksFunction
+            Function<GL, ListProperty<String>> argsFunction,
+            Function<GL, ListProperty<String>> tasksFunction
     ) {
         var tasks = tasksFunction.apply(baseLauncher);
         var args = argsFunction.apply(baseLauncher);
 
-        if (tasks.size() == 0 && args.size() == 0) return;
+        if (tasks.get().isEmpty() && args.get().isEmpty()) return;
 
-        final String[] arrArgs = args.toArray(new String[0]);
+        final String[] arrArgs = args.get().toArray(new String[0]);
         ManagerLogger.info("Args: {}", (Object) arrArgs);
 
-        final String[] arrTasks = tasks.toArray(new String[0]);
+        final String[] arrTasks = tasks.get().toArray(new String[0]);
         ManagerLogger.info("Tasks: {}", (Object) arrTasks);
 
         DefaultGradleConnector connector = getGradleConnector(dependency);
@@ -290,7 +295,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                 customModelBuilder.setJavaHome(dependency.getGradleInfo().getLaunchers().getExecutable());
             }
             // TODO: 15/07/2023 fix formatting
-            if (baseLauncher.isForwardOutput()) {
+            if (baseLauncher.getForwardOutput().get()) {
                 customModelBuilder.setStandardOutput(System.out);
                 customModelBuilder.setStandardError(System.err);
             }
@@ -341,7 +346,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             configuration = gradleInit -> gradleInit.setTasks(t -> t.addAll(tasks));
         }
 
-        switch (dependency.getBuildTargets()) {
+/*        switch (dependency.getBuildTargets()) {
             case MavenProjectDependencyLocal:
             case MavenProjectLocal:
             case MavenLocal:
@@ -353,9 +358,12 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
             default:
                 throw new IllegalStateException();
-        }
+        }*/
+
+        return generateJarInitScript(configuration);
     }
 
+/*
     private String generateMavenInitScript(Dependency dependency, Consumer<GradleInit> configuration) {
         List<Consumer<GradleInit>> configurations = new ArrayList<>();
         configurations.add(gradleInit -> gradleInit.setPlugins(pluginsList -> {
@@ -373,6 +381,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         return GradleInit.crateInitProject(configurations);
     }
+*/
 
     private String generateJarInitScript(Consumer<GradleInit> configuration) {
         List<Consumer<GradleInit>> configurations = new ArrayList<>();
@@ -395,10 +404,10 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
     private void validateMainInitScript() {
         PluginConfig pluginConfig = getConfigManager().getPluginConfig();
-        File mainInit = Constants.concatFile.apply(pluginConfig.getPersistentDir(), Constants.MAIN_INIT_SCRIPT_GRADLE);
+        File mainInit = Constants.concatFile.apply(Constants.lgdDir.apply(getProject()).getAsFile(), Constants.MAIN_INIT_SCRIPT_GRADLE);
         validateScript(
                 mainInit,
-                pluginConfig.getKeepInitScriptUpdated(),
+                pluginConfig.getKeepInitScriptUpdated().get(),
                 GradleInit::createInitProbe,
                 getPersistenceManager()::getInitScriptSHA,
                 getPersistenceManager()::setInitScriptSHA);

@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit;
 public abstract class DefaultDefaultableLauncherConfig extends GroovyObjectSupport implements DefaultableLauncherConfig, ConfigFinalizer {
     @Inject
     public DefaultDefaultableLauncherConfig(Managers managers) {
-        gradleDaemonMaxIdleTime().convention((int) TimeUnit.MINUTES.toSeconds(2));
-        forwardOutput().convention(true);
+        getGradleDaemonMaxIdleTime().convention((int) TimeUnit.MINUTES.toSeconds(2));
+        getForwardOutput().convention(true);
     }
 
     @Override

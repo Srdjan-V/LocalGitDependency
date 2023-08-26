@@ -60,8 +60,7 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
 
     @Override
     public void loadProjectPersistentData() {
-        File initScriptFolder = getConfigManager().getPluginConfig().getPersistentDir();
-        projectDataJson = Constants.concatFile.apply(initScriptFolder, Constants.PROJECT_DATA_JSON);
+        projectDataJson = Constants.concatFile.apply(Constants.lgdDir.apply(getProject()).getAsFile(), Constants.PROJECT_DATA_JSON);
 
         if (projectDataJson.exists()) {
             if (projectDataJson.isDirectory()) {
@@ -108,11 +107,13 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
                 case DependencyData -> {
                     DependencyData data = (DependencyData) dataWrapper.getData();
                     persistentInfo.setDependencyData(data);
-                    if (data.getDependencyType() != dependency.getBuildTargets()) {
+
+                    // TODO: 26/08/2023 fix 
+/*                    if (data.getDependencyType() != dependency.getBuildTargets()) {
                         data.setDependencyType(dependency.getBuildTargets());
                         persistentInfo.setDependencyTypeChanged();
                         persistentInfo.setDirty();
-                    }
+                    }*/
                 }
                 case ProjectProbeData -> {
                     ProjectProbeData probeData = (ProjectProbeData) dataWrapper.getData();

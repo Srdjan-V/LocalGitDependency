@@ -7,5 +7,5 @@ public interface DefaultableConfig extends CommonConfig {
     /**
      * @see DefaultableLauncherConfig
      */
-    Property<DefaultableLauncherConfig> buildLauncher();
+    Property<DefaultableLauncherConfig> getBuildLauncher();
 }

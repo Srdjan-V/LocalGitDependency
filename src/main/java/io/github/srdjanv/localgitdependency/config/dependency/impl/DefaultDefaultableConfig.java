@@ -16,7 +16,7 @@ public abstract class DefaultDefaultableConfig extends GroovyObjectSupport imple
         getTryGeneratingSourceJar().convention(false);
         getTryGeneratingJavaDocJar().convention(false);
         getRegisterDependencyRepositoryToProject().convention(true);
-        buildLauncher().convention(managers.getProject().getObjects().newInstance(DefaultDefaultableLauncherConfig.class, managers));
+        getBuildLauncher().convention(managers.getProject().getObjects().newInstance(DefaultDefaultableLauncherConfig.class, managers));
     }
 
     @Override
