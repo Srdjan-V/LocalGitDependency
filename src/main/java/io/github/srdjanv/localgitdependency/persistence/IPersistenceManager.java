@@ -14,9 +14,9 @@ public interface IPersistenceManager extends Manager {
     @TaskDescription("loading persistent data")
     void loadPersistentData();
     @TaskDescription("saving persistent data")
-    void savePersistentData();
+    boolean savePersistentData();
     void loadProjectPersistentData();
-    void saveProjectPersistentData();
+    boolean saveProjectPersistentData();
     void loadDependencyPersistentData(Dependency dependency);
-    void saveDependencyPersistentData(Dependency dependency);
+    boolean saveDependencyPersistentData(Dependency dependency);
 }

@@ -51,11 +51,12 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
     }
 
     @Override
-    public void savePersistentData() {
-        saveProjectPersistentData();
+    public boolean savePersistentData() {
+        boolean didWork = saveProjectPersistentData();
         for (Dependency dependency : getDependencyManager().getDependencies()) {
-            saveDependencyPersistentData(dependency);
+            didWork |= saveDependencyPersistentData(dependency);
         }
+        return didWork;
     }
 
     @Override
@@ -79,22 +80,26 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
     }
 
     @Override
-    public void saveProjectPersistentData() {
+    public boolean saveProjectPersistentData() {
         if (dirty) {
             DataParser.simpleSaveDataToFileJson(projectDataJson, projectData);
             dirty = false;
+            return true;
         }
+        return false;
     }
 
     @Override
-    public void saveDependencyPersistentData(Dependency dependency) {
+    public boolean saveDependencyPersistentData(Dependency dependency) {
         PersistentInfo persistentInfo = dependency.getPersistentInfo();
 
         if (persistentInfo.isDirty()) {
             List<?> data = Arrays.asList(persistentInfo.getDependencyData(), persistentInfo.getProbeData());
             DataParser.complexSaveDataToFileJson(persistentInfo.getPersistentFile(), data, DataLayout.getDependencyLayout());
             dirty = false;
+            return true;
         }
+        return false;
     }
 
     @Override

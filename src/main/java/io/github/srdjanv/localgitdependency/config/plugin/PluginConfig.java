@@ -25,4 +25,6 @@ public interface PluginConfig {
      *
      */
     Property<Boolean> getAutomaticCleanup();
+
+    Property<Boolean> getDisablePluginExecution();
 }

@@ -48,19 +48,16 @@ final class ManagerInstances implements Managers {
         }
 
         extensions = new HashMap<>(3);
-        {
-            var ex =  project.getExtensions().create(LGD.NAME, LGD.class, this);
-            extensions.put(LGD.class, ex);
-        }
-        {
-            var ex = new LGDHelper(this);
-            project.getDependencies().getExtensions().add(LGD.NAME, ex);
-            extensions.put(LGDHelper.class, ex);
-        }
-        {
-            var ex =  project.getExtensions().create(LGDIDE.NAME, LGDIDE.class, this);
-            extensions.put(LGDIDE.class, ex);
-        }
+        Object ext;
+        ext = project.getExtensions().create(LGD.NAME, LGD.class, this);
+        extensions.put(LGD.class, ext);
+
+        ext = new LGDHelper(this);
+        project.getDependencies().getExtensions().add(LGD.NAME, ext);
+        extensions.put(LGDHelper.class, ext);
+
+        ext = project.getExtensions().create(LGDIDE.NAME, LGDIDE.class, this);
+        extensions.put(LGDIDE.class, ext);
     }
 
     @Override
@@ -109,7 +106,7 @@ final class ManagerInstances implements Managers {
     }
 
     @Override
-    public <T> T getExtensionByType(Class<T> type) {
+    public <T> T getLGDExtensionByType(Class<T> type) {
         var ex = extensions.get(type);
         if (!type.isInstance(ex)) throw new IllegalStateException();
         return (T) ex;

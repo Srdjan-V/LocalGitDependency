@@ -64,7 +64,7 @@ public final class LGDManagers implements Managers {
     }
 
     @Override
-    public <T> T getExtensionByType(Class<T> type) {
-        return manager.getExtensionByType(type);
+    public <T> T getLGDExtensionByType(Class<T> type) {
+        return manager.getLGDExtensionByType(type);
     }
 }

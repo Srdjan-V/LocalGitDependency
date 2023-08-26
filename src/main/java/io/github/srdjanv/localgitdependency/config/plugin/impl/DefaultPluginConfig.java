@@ -16,6 +16,7 @@ public abstract class DefaultPluginConfig extends GroovyObjectSupport implements
         getKeepInitScriptUpdated().convention(true);
         getGenerateGradleTasks().convention(true);
         getGenerateGradleTasks().convention(true);
+        getDisablePluginExecution().convention(false);
     }
 
     @Override

@@ -19,5 +19,5 @@ public interface Managers {
     IPersistenceManager getPersistenceManager();
     ITasksManager getTasksManager();
     ICleanupManager getCleanupManager();
-    <T> T getExtensionByType(Class<T> type);
+    <T> T getLGDExtensionByType(Class<T> type);
 }

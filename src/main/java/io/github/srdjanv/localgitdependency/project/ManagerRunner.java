@@ -4,12 +4,19 @@ import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 final class ManagerRunner<T extends Manager> {
     private Function<Managers, T> managerRunner;
     private ReflectionFunction<Class<T>, Method> methodFunction;
+    private List<Predicate<Managers>> skipChecks;
+    private RunLogType runLogType;
     private Method method;
     private String taskName;
 
@@ -24,12 +31,11 @@ final class ManagerRunner<T extends Manager> {
     }
 
     private void verify() {
-        if (managerRunner == null) {
-            throw new NullPointerException("ManagerRunner is null");
-        }
-        if (methodFunction == null) {
-            throw new NullPointerException("MethodFunction is null");
-        }
+        Objects.requireNonNull(managerRunner, "ManagerRunner is null");
+        Objects.requireNonNull(methodFunction, "MethodFunction is null");
+        Objects.requireNonNull(runLogType, "RunLogType is null");
+
+        if (skipChecks == null) skipChecks = Collections.emptyList();
     }
 
     public void setManagerSupplier(Function<Managers, T> managerRunner) {
@@ -40,20 +46,53 @@ final class ManagerRunner<T extends Manager> {
         this.methodFunction = methodFunction;
     }
 
-    public void runAndLog(Managers managers) {
-        final long start = System.currentTimeMillis();
-        T manager = managerRunner.apply(managers);
-        oneTimeRuntimeSetup(manager);
+    public void setRunLogType(RunLogType runLogType) {
+        this.runLogType = runLogType;
+    }
 
+    public void addSkipCheck(Predicate<Managers> skipCheck) {
+        if (skipChecks == null) skipChecks = new ArrayList<>();
+        skipChecks.add(skipCheck);
+    }
+
+    public void runAndLog(Managers managers) {
+        final T manager = managerRunner.apply(managers);
+        if (skipChecks.stream().anyMatch(test -> test.test(manager))) return;
+        oneTimeRuntimeSetup(manager);
+        switch (runLogType) {
+            case SILENT -> silent(manager);
+            case MINIMAL -> minimal(manager);
+            case FULL -> full(manager);
+        }
+    }
+
+    private void silent(T manager) {
+        invokeMethod(manager);
+    }
+
+    private void minimal(T manager) {
+        final long start = System.currentTimeMillis();
+        final long spent = System.currentTimeMillis() - start;
+
+        var ret = invokeMethod(manager);
+        if (ret != null) {
+            if ((Boolean) ret) PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
+            return;
+        }
+        PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
+    }
+
+    private void full(T manager) {
+        final long start = System.currentTimeMillis();
         PluginLogger.task("{}: Started {}", manager.getManagerName(), taskName);
         invokeMethod(manager);
         final long spent = System.currentTimeMillis() - start;
         PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
     }
 
-    private void invokeMethod(T manager) {
+    private Object invokeMethod(T manager) {
         try {
-            method.invoke(manager);
+            return method.invoke(manager);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
@@ -75,10 +114,13 @@ final class ManagerRunner<T extends Manager> {
         for (Class<?> anInterface : manager.getClass().getInterfaces()) {
             for (Method declaredMethod : anInterface.getDeclaredMethods()) {
                 if (!declaredMethod.getName().equals(method.getName())) continue;
-                if (declaredMethod.getParameters().length != 0) continue;
+                if (declaredMethod.getParameterCount() != method.getParameterCount()) continue;
 
                 if (declaredMethod.isAnnotationPresent(TaskDescription.class)) {
                     taskName = declaredMethod.getAnnotation(TaskDescription.class).value();
+                    if (declaredMethod.getReturnType() != boolean.class && declaredMethod.getReturnType() != Void.class)
+                        throw new RuntimeException();
+
                     return;
                 } else {
                     throw new RuntimeException(String.format("Method with name %s is not annotated with %s", method.getName(), TaskDescription.class.getSimpleName()));
@@ -90,5 +132,11 @@ final class ManagerRunner<T extends Manager> {
 
     public interface ReflectionFunction<T, R> {
         R apply(T t) throws NoSuchMethodException;
+    }
+
+    public enum RunLogType {
+        SILENT,
+        MINIMAL,
+        FULL
     }
 }

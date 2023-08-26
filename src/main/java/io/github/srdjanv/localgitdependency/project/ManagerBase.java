@@ -74,7 +74,7 @@ public abstract class ManagerBase implements Manager {
     }
 
     @Override
-    public <T> T getExtensionByType(Class<T> type) {
-        return managers.getExtensionByType(type);
+    public <T> T getLGDExtensionByType(Class<T> type) {
+        return managers.getLGDExtensionByType(type);
     }
 }
