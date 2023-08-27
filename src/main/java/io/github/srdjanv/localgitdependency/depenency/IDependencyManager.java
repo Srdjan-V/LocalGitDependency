@@ -19,8 +19,6 @@ public interface IDependencyManager extends Manager {
     boolean resolveRegisteredDependencies();
     @TaskDescription("adding built dependencies")
     boolean registerRepos();
-    @TaskDescription("handling SourceSets")
-    boolean handelSourceSets();
     @Unmodifiable
     Set<Dependency> getDependencies();
     void markBuild(String dep, Dependency.Type type);

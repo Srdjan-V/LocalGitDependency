@@ -8,6 +8,7 @@ import io.github.srdjanv.localgitdependency.extentions.LGDHelper;
 import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
+import io.github.srdjanv.localgitdependency.ideintegration.IIDEManager;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import org.gradle.api.Project;
@@ -22,6 +23,7 @@ final class ManagerInstances implements Managers {
     private final IProjectManager projectManager;
     private final IConfigManager configManager;
     private final IDependencyManager dependencyManager;
+    private final IIDEManager iIdeManager;
     private final IGitManager gitManager;
     private final IGradleManager gradleManager;
     private final IPersistenceManager persistenceManager;
@@ -36,6 +38,7 @@ final class ManagerInstances implements Managers {
         final List<ManagerBase> managerList = new ArrayList<>(8);
         managerList.add((ManagerBase) (projectManager = IProjectManager.createInstance(this)));
         managerList.add((ManagerBase) (dependencyManager = IDependencyManager.createInstance(this)));
+        managerList.add((ManagerBase) (iIdeManager = IIDEManager.createInstance(this)));
         managerList.add((ManagerBase) (configManager = IConfigManager.createInstance(this)));
         managerList.add((ManagerBase) (gitManager = IGitManager.createInstance(this)));
         managerList.add((ManagerBase) (gradleManager = IGradleManager.createInstance(this)));
@@ -77,6 +80,11 @@ final class ManagerInstances implements Managers {
     @Override
     public IDependencyManager getDependencyManager() {
         return dependencyManager;
+    }
+
+    @Override
+    public IIDEManager getIDEManager() {
+        return iIdeManager;
     }
 
     @Override

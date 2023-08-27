@@ -72,14 +72,13 @@ final class ManagerRunner<T extends Manager> {
 
     private void minimal(T manager) {
         final long start = System.currentTimeMillis();
-        final long spent = System.currentTimeMillis() - start;
 
         var ret = invokeMethod(manager);
         if (ret != null) {
-            if ((Boolean) ret) PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
+            if ((Boolean) ret) PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, System.currentTimeMillis() - start);
             return;
         }
-        PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
+        PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, System.currentTimeMillis() - start);
     }
 
     private void full(T manager) {

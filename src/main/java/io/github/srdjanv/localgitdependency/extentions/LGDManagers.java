@@ -5,6 +5,7 @@ import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
+import io.github.srdjanv.localgitdependency.ideintegration.IIDEManager;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import io.github.srdjanv.localgitdependency.project.Managers;
@@ -36,6 +37,11 @@ public final class LGDManagers implements Managers {
     @Override
     public IDependencyManager getDependencyManager() {
         return manager.getDependencyManager();
+    }
+
+    @Override
+    public IIDEManager getIDEManager() {
+        return manager.getIDEManager();
     }
 
     @Override
