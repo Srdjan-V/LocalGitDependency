@@ -3,6 +3,7 @@ package io.github.srdjanv.localgitdependency.config.dependency.impl;
 import groovy.lang.GroovyObjectSupport;
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
@@ -12,6 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class DefaultDependencyConfig extends GroovyObjectSupport implements DependencyConfig, ConfigFinalizer {
+    private final LauncherConfig launcherConfig;
+
     @Inject
     public DefaultDependencyConfig(final String url, final Managers managers) {
         getUrl().convention(url).finalizeValue();
@@ -32,15 +35,19 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
             newSet.addAll(targetedBuilds);
             return newSet;
         }));
-        getBuildLauncher().convention(managers.getProject().getObjects().newInstance(DefaultLauncherConfig.class, managers));
+        launcherConfig = managers.getProject().getObjects().newInstance(DefaultLauncherConfig.class, managers);
+    }
+
+    @Override
+    public LauncherConfig getBuildLauncher() {
+        return launcherConfig;
     }
 
     @Override
     public void finalizeProps() {
         ClassUtil.finalizeProperties(this, DependencyConfig.class);
-        ((DefaultLauncherConfig) getBuildLauncher().get()).finalizeProps();
+        ((DefaultLauncherConfig) getBuildLauncher()).finalizeProps();
     }
-
 
     private static String getNameFromUrl(String url) {
         if (url == null) return null;

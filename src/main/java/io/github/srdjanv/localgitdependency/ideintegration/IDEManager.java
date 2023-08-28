@@ -3,6 +3,7 @@ package io.github.srdjanv.localgitdependency.ideintegration;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.ideintegration.adapters.Adapter;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
@@ -59,14 +60,11 @@ public class IDEManager extends ManagerBase implements IIDEManager {
     }
 
     private void handleIdeSupport(Dependency dependency) {
-        var rootProject = getProject().getRootProject();
+        final var rootProject = getProject().getRootProject();
         //create source sets of the dependency
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
             var sourceSet = rootSourceSetContainer.create(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
-                sourceSetConf.java(conf -> {
-                    conf.setSrcDirs(sourceSetData.getSources());
-                    conf.getDestinationDirectory().set(rootProject.file(sourceSetData.getBuildClassesDir()));
-                });
+                Adapter.JAVA.configureSource(sourceSetConf, sourceSetData, rootProject);
                 sourceSetConf.resources(conf -> {
                     conf.setSrcDirs(sourceSetData.getResources());
                     conf.getDestinationDirectory().set(rootProject.file(sourceSetData.getBuildResourcesDir()));
@@ -105,34 +103,35 @@ public class IDEManager extends ManagerBase implements IIDEManager {
             }
 
             //link source sets to the main project using mappers
-            SourceSetMapper sourceSetMapper = dependency.getSourceSetMapper();
-            final Set<String> dependentSourceSets = new HashSet<>();
-            for (String dependentSourceSetName : sourceSetMapper.getDepMappings().get()) {
-                if (sourceSetData.getName().equals(dependentSourceSetName)) {
-                    dependentSourceSets.add(dependentSourceSetName);
-                    if (sourceSetMapper.getRecursive().get()) {
-                        dependentSourceSets.addAll(sourceSetData.getDependentSourceSets());
+            for (SourceSetMapper.Mapping mapping : dependency.getSourceSetMapper().getMappings()) {
+                final Set<String> dependentSourceSets = new HashSet<>();
+                for (String dependentSourceSetName : mapping.getDependents().get()) {
+                    if (sourceSetData.getName().equals(dependentSourceSetName)) {
+                        dependentSourceSets.add(dependentSourceSetName);
+                        if (mapping.getRecursive().get()) {
+                            dependentSourceSets.addAll(sourceSetData.getDependentSourceSets());
+                        }
                     }
                 }
-            }
 
-            for (String dependentSourceSetName : dependentSourceSets) {
-                final SourceSet projectSet;
-                if (getProject() == rootProject) {
-                    projectSet = sourceSetMapper.getTargetSourceSet().get();
-                } else {
-                    var subProjectSourceSetContainer = getProject().getExtensions().getByType(SourceSetContainer.class);
-                    projectSet = subProjectSourceSetContainer.getByName(sourceSetMapper.getTargetSourceSet().get().getName()); // TODO: 25/08/2023 probably not needed, test
+                for (String dependentSourceSetName : dependentSourceSets) {
+                    final SourceSet projectSet;
+                    if (getProject() == rootProject) {
+                        projectSet = mapping.getTargetSourceSet().get();
+                    } else {
+                        var subProjectSourceSetContainer = getProject().getExtensions().getByType(SourceSetContainer.class);
+                        projectSet = subProjectSourceSetContainer.getByName(mapping.getTargetSourceSet().get().getName()); // TODO: 25/08/2023 probably not needed, test
+                    }
+
+                    final var sourceData = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
+                            stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst().
+                            orElseThrow(() -> new IllegalArgumentException(
+                                    String.format("Source set %s not found for dependency %s", dependentSourceSetName, dependency.getName())));
+
+                    final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
+                    projectSet.setCompileClasspath(projectSet.getCompileClasspath().
+                            plus(set.getOutput()));
                 }
-
-                final var sourceData = dependency.getPersistentInfo().getProbeData().getSourceSetsData().
-                        stream().filter(probe -> probe.getName().equals(dependentSourceSetName)).findFirst().
-                        orElseThrow(() -> new IllegalArgumentException(
-                                String.format("Source set %s not found for dependency %s", dependentSourceSetName, dependency.getName())));
-
-                final var set = getSourceSetByName(rootSourceSetContainer, dependency, sourceData);
-                projectSet.setCompileClasspath(projectSet.getCompileClasspath().
-                        plus(set.getOutput()));
             }
         }
     }

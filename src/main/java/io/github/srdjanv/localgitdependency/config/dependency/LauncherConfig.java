@@ -4,7 +4,7 @@ import io.github.srdjanv.localgitdependency.config.dependency.defaultable.Defaul
 import org.gradle.api.provider.Property;
 
 public interface LauncherConfig extends DefaultableLauncherConfig {
-    Property<Launchers.Startup> getStartup();
-    Property<Launchers.Probe> getProbe();
-    Property<Launchers.Build> getBuild();
+    Launchers.Startup getStartup();
+    Launchers.Probe getProbe();
+    Launchers.Build getBuild();
 }

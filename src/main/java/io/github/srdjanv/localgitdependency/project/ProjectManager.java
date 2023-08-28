@@ -7,6 +7,7 @@ import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
 import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
+import io.github.srdjanv.localgitdependency.ideintegration.IIDEManager;
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.project.ManagerRunner.RunLogType;
@@ -77,8 +78,8 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
             managerRunner.setRunLogType(RunLogType.MINIMAL);
             managerRunner.addSkipCheck(emptyDepsSkip);
         }));
-        PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
-            managerRunner.setManagerSupplier(Managers::getDependencyManager);
+        PROJECT_RUNNERS.add(ManagerRunner.<IIDEManager>create(managerRunner -> {
+            managerRunner.setManagerSupplier(Managers::getIDEManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("handelSourceSets"));
             managerRunner.setRunLogType(RunLogType.MINIMAL);
             managerRunner.addSkipCheck(emptyDepsSkip);

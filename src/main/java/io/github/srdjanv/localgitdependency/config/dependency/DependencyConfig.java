@@ -27,6 +27,6 @@ public interface DependencyConfig extends CommonConfig {
     /**
      * @see LauncherConfig
      */
-    Property<LauncherConfig> getBuildLauncher();
+    LauncherConfig getBuildLauncher();
 
 }

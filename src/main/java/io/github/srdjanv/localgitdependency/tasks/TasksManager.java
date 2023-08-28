@@ -38,7 +38,7 @@ class TasksManager extends ManagerBase implements ITasksManager {
             taskCreator = this::createTask;
         }
 
-        if (Boolean.TRUE.equals(getConfigManager().getPluginConfig().getGenerateGradleTasks())) {
+        if (Boolean.TRUE.equals(getConfigManager().getPluginConfig().getGenerateGradleTasks().get())) {
             taskCreator.create(Constants.STARTUP_ALL_DEPENDENCIES, RunAllStartupTasks.class, getProjectManagers());
             taskCreator.create(Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class, getProjectManagers());
             taskCreator.create(Constants.PROBE_ALL_DEPENDENCIES, ProbeAllDependenciesTask.class, getProjectManagers());

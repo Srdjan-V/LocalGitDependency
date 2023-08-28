@@ -1,52 +1,48 @@
 package io.github.srdjanv.localgitdependency.config.dependency.impl;
 
+import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import org.gradle.api.Action;
+import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
+import javax.inject.Inject;
+
 public final class DefaultSourceSetMapper extends GroovyObjectSupport implements SourceSetMapper, ConfigFinalizer {
     private final SourceSetContainer container;
+    private final Managers managers;
+    private final LGDIDE lgdide;
     private final String name;
-    private final ListProperty<String> depMappings;
-    private final Property<SourceSet> targetSourceSet;
     private final Property<Boolean> recursive;
+    private final NamedDomainObjectContainer<Mapping> mappings;
 
     public DefaultSourceSetMapper(final SourceSetContainer container,
                                   final LGDIDE lgdide,
                                   final Managers managers,
                                   final String name) {
         this.container = container;
+        this.managers = managers;
+        this.lgdide = lgdide;
         this.name = name;
-        depMappings = managers.getProject().getObjects().listProperty(String.class);
-        targetSourceSet = managers.getProject().getObjects().property(SourceSet.class);
         recursive = managers.getProject().getObjects().property(Boolean.class);
 
-        depMappings.convention(managers.getProject().provider(()-> lgdide.getDefaultDepMappings().get()));
-        targetSourceSet.convention(managers.getProject().provider(()-> lgdide.getDefaultTargetSourceSet().get()));
-        recursive.convention(managers.getProject().provider(()-> lgdide.getRecursive().get()));
+        recursive.convention(managers.getProject().provider(() -> lgdide.getRecursive().get()));
+        mappings = managers.getProject().getObjects().domainObjectContainer(Mapping.class, named -> {
+            return managers.getProject().getObjects().newInstance(DefaultMapping.class, named, managers, container, this);
+        });
     }
 
     @Override
     public String getName() {
         return name;
-    }
-
-
-    @Override
-    public ListProperty<String> getDepMappings() {
-        return depMappings;
-    }
-
-    @Override
-    public Property<SourceSet> getTargetSourceSet() {
-        return targetSourceSet;
     }
 
     @Override
@@ -56,21 +52,34 @@ public final class DefaultSourceSetMapper extends GroovyObjectSupport implements
 
     @Override
     public void finalizeProps() {
-        depMappings.finalizeValue();
-        targetSourceSet.finalizeValue();
-        recursive.finalizeValue();
+        recursive.finalizeValue(); // TODO: 28/08/2023
     }
 
     @Override
-    public void map(SourceSet manSourceSet, Object... args) {
-        targetSourceSet.set(manSourceSet);
+    public void map(SourceSet sourceSet, Object... args) {
+        var mapping = managers.getProject().getObjects().newInstance(DefaultMapping.class, sourceSet, managers, this);
+        mappings.add(mapping);
         for (Object arg : args) {
             if (arg instanceof CharSequence sequence) {
-                depMappings.add(String.valueOf(sequence)); // TODO: 24/08/2023 format
+                mapping.dependents.add(String.valueOf(sequence));
             } else if (arg instanceof SourceSet set) {
-                depMappings.add(set.getName());
+                mapping.dependents.add(set.getName());
+            } else if (arg instanceof Closure<?> closure) {
+                closure.setDelegate(mapping);
+                closure.setResolveStrategy(Closure.DELEGATE_ONLY);
+                closure.call();
             } else throw new IllegalArgumentException(String.valueOf(arg));
         }
+    }
+
+    @Override
+    public void mappings(Action<NamedDomainObjectContainer<Mapping>> action) {
+        action.execute(mappings);
+    }
+
+    @Override
+    public NamedDomainObjectContainer<Mapping> getMappings() {
+        return mappings;
     }
 
     @SuppressWarnings("unused")
@@ -86,5 +95,56 @@ public final class DefaultSourceSetMapper extends GroovyObjectSupport implements
             throw new MissingMethodException("map", null, new Object[]{name, value});
         }
         map(container.maybeCreate(name), valueArr);
+    }
+
+    public static class DefaultMapping extends GroovyObjectSupport implements Mapping {
+        private final Property<SourceSet> targetSourceSet;
+        private final ListProperty<String> dependents;
+        private final Property<Boolean> recursive;
+
+        @Inject
+        public DefaultMapping(final String name,
+                              final Managers managers,
+                              final SourceSetContainer container,
+                              final DefaultSourceSetMapper mapper) {
+            targetSourceSet = managers.getProject().getObjects().property(SourceSet.class);
+            targetSourceSet.value(container.findByName(name)).finalizeValue();
+
+            dependents = managers.getProject().getObjects().listProperty(String.class);
+            recursive = managers.getProject().getObjects().property(Boolean.class);
+
+            dependents.convention(managers.getProject().provider(() -> mapper.lgdide.getDefaultDepMappings().get()));
+            recursive.convention(managers.getProject().provider(() -> mapper.getRecursive().get()));
+        }
+
+        @Override
+        public String getName() {
+            return targetSourceSet.get().getName();
+        }
+
+        @Override
+        public Property<SourceSet> getTargetSourceSet() {
+            return targetSourceSet;
+        }
+
+        @Override
+        public ListProperty<String> getDependents() {
+            return dependents;
+        }
+
+        @Override
+        public Property<Boolean> getRecursive() {
+            return recursive;
+        }
+
+        @SuppressWarnings("unused")
+        public Object propertyMissing(String propertyName) {
+            return null;
+        }
+
+        @SuppressWarnings("unused")
+        public void methodMissing(String name, Object value) {
+
+        }
     }
 }

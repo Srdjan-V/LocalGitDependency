@@ -37,7 +37,7 @@ public class LGDIDE extends GroovyObjectSupport {
         this.managers = managers;
         final var container = managers.getProject().getExtensions().getByType(SourceSetContainer.class);
         this.mappers = managers.getProject().getObjects().domainObjectContainer(SourceSetMapper.class, name -> {
-            return new DefaultSourceSetMapper(container,this, managers, name);
+            return managers.getProject().getObjects().newInstance(DefaultSourceSetMapper.class, container, this, managers, name);
         });
 
         enableIdeSupport = managers.getProject().getObjects().property(Boolean.class);
