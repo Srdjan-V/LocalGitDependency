@@ -157,7 +157,7 @@ localGitDependency {
 #### Gradle Interaction ####
 
 The build process in decided into several stages, startup, probe and build. Each one has its one pre, main and post
-tasks and arguments
+jarTasks and arguments
 
 ```
 localGitDependency {

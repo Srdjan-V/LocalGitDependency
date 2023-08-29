@@ -1,8 +1,10 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata;
 
+import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.directoryset.DirectorySetData;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -22,15 +24,11 @@ public class SourceSetData extends SourceSetDataFields {
 
     public static class Builder extends SourceSetDataFields {
         private Builder() {
+            directorySets = new ArrayList<>();
         }
 
         public Builder setName(String name) {
             this.name = name;
-            return this;
-        }
-
-        public Builder setBuildClassesDir(String buildClassesDir) {
-            this.buildClassesDir = buildClassesDir;
             return this;
         }
 
@@ -49,13 +47,13 @@ public class SourceSetData extends SourceSetDataFields {
             return this;
         }
 
-        public Builder setSources(List<String> sources) {
-            this.sources = sources;
+        public Builder setResources(List<String> resources) {
+            this.resources = resources;
             return this;
         }
 
-        public Builder setResources(List<String> resources) {
-            this.resources = resources;
+        public Builder addDirectorySet(DirectorySetData directorySet) {
+            this.directorySets.add(directorySet);
             return this;
         }
 
@@ -66,10 +64,6 @@ public class SourceSetData extends SourceSetDataFields {
 
     public String getName() {
         return name;
-    }
-
-    public String getBuildClassesDir() {
-        return buildClassesDir;
     }
 
     public String getBuildResourcesDir() {
@@ -84,8 +78,8 @@ public class SourceSetData extends SourceSetDataFields {
         return compileClasspath;
     }
 
-    public List<String> getSources() {
-        return sources;
+    public List<DirectorySetData> getDirectorySetData() {
+        return directorySets;
     }
 
     public List<String> getResources() {

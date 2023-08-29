@@ -1,7 +1,6 @@
 package io.github.srdjanv.localgitdependency;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
@@ -45,21 +44,6 @@ public final class Constants {
     //Main plugin data
     public final static String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
     public final static String PROJECT_DATA_JSON = "projectData.json";
-
-    //Name generators
-    public final static Function<PublicationData, String> PublicationTaskName = p -> {
-        String publicationName = p.getPublicationName();
-
-        return "publish" + publicationName.substring(0, 1).toUpperCase() + publicationName.substring(1) +
-                "PublicationToMavenLocal";
-    };
-    public final static Function<PublicationData, String> FilePublicationTaskName = p -> {
-        String publicationName = p.getPublicationName();
-        String repositoryName = p.getRepositoryName();
-
-        return "publish" + publicationName.substring(0, 1).toUpperCase() + publicationName.substring(1) + "PublicationTo" +
-                repositoryName.substring(0, 1).toUpperCase() + repositoryName.substring(1) + "Repository";
-    };
 
     public static final Function<Dependency, String> RepositoryFlatDir = dependency -> dependency.getName() + "FlatDir";
     public static final Function<SubDependencyData, String> RepositorySubFlatDir = dependency -> dependency.getName() + "FlatDir";

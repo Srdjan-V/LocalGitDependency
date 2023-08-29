@@ -5,6 +5,7 @@ import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.ideintegration.adapters.Adapter;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.directoryset.DirectorySetData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import org.gradle.api.UnknownTaskException;
@@ -64,7 +65,11 @@ public class IDEManager extends ManagerBase implements IIDEManager {
         //create source sets of the dependency
         for (SourceSetData sourceSetData : dependency.getPersistentInfo().getProbeData().getSourceSetsData()) {
             var sourceSet = rootSourceSetContainer.create(getSourceSetName(dependency, sourceSetData), sourceSetConf -> {
-                Adapter.JAVA.configureSource(sourceSetConf, sourceSetData, rootProject);
+                for (DirectorySetData directorySet : sourceSetData.getDirectorySetData()) {
+                    switch (directorySet.getType()) {
+                        case Java -> Adapter.JAVA.configure(sourceSetConf, directorySet, rootProject);
+                    }
+                }
                 sourceSetConf.resources(conf -> {
                     conf.setSrcDirs(sourceSetData.getResources());
                     conf.getDestinationDirectory().set(rootProject.file(sourceSetData.getBuildResourcesDir()));

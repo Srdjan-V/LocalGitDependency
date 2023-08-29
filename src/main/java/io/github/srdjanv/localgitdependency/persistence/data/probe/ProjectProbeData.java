@@ -1,9 +1,7 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe;
 
-import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
 import org.gradle.api.JavaVersion;
@@ -50,28 +48,18 @@ public class ProjectProbeData extends ProjectProbeDataFields {
             return this;
         }
 
-        public Builder setCanProjectUseWithSourcesJar(boolean canProjectUseWithSourcesJar) {
+        public Builder setCanProjectUseWithSourcesJar(Boolean canProjectUseWithSourcesJar) {
             this.canProjectUseWithSourcesJar = canProjectUseWithSourcesJar;
             return this;
         }
 
-        public Builder setCanProjectUseWithJavadocJar(boolean canProjectUseWithJavadocJar) {
+        public Builder setCanProjectUseWithJavadocJar(Boolean canProjectUseWithJavadocJar) {
             this.canProjectUseWithJavadocJar = canProjectUseWithJavadocJar;
-            return this;
-        }
-
-        public Builder setArtifactTasks(List<TaskData> artifactTasks) {
-            this.artifactTasks = artifactTasks;
             return this;
         }
 
         public Builder setSourceSetsData(List<SourceSetData> sourceSetsData) {
             this.sourceSetsData = sourceSetsData;
-            return this;
-        }
-
-        public Builder setPublicationData(PublicationData publicationData) {
-            this.publicationData = publicationData;
             return this;
         }
 
@@ -106,24 +94,18 @@ public class ProjectProbeData extends ProjectProbeDataFields {
         return javaVersion;
     }
 
-    public boolean isCanProjectUseWithSourcesJar() {
+    @Nullable
+    public Boolean isCanProjectUseWithSourcesJar() {
         return canProjectUseWithSourcesJar;
     }
 
-    public boolean isCanProjectUseWithJavadocJar() {
+    @Nullable
+    public Boolean isCanProjectUseWithJavadocJar() {
         return canProjectUseWithJavadocJar;
-    }
-
-    public List<TaskData> getArtifactTasks() {
-        return artifactTasks;
     }
 
     public List<SourceSetData> getSourceSetsData() {
         return sourceSetsData;
-    }
-
-    public PublicationData getPublicationData() {
-        return publicationData;
     }
 
     public List<SubDependencyData> getSubDependencyData() {

@@ -30,10 +30,13 @@ dependencies {
 
     //enables java 17 features on java 8
     String jabelPlugin = 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+    String jna = 'net.java.dev.jna:jna-platform:5.13.0'
     compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
 
     annotationProcessor jabelPlugin
+    annotationProcessor jna
     testAnnotationProcessor jabelPlugin
+    testAnnotationProcessor jna
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
 }
 

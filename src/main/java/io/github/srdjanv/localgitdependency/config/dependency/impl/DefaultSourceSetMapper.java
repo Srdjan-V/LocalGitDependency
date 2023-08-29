@@ -16,7 +16,7 @@ import org.gradle.api.tasks.SourceSetContainer;
 
 import javax.inject.Inject;
 
-public final class DefaultSourceSetMapper extends GroovyObjectSupport implements SourceSetMapper, ConfigFinalizer {
+public abstract class DefaultSourceSetMapper extends GroovyObjectSupport implements SourceSetMapper, ConfigFinalizer {
     private final SourceSetContainer container;
     private final Managers managers;
     private final LGDIDE lgdide;
@@ -24,6 +24,7 @@ public final class DefaultSourceSetMapper extends GroovyObjectSupport implements
     private final Property<Boolean> recursive;
     private final NamedDomainObjectContainer<Mapping> mappings;
 
+    @Inject
     public DefaultSourceSetMapper(final SourceSetContainer container,
                                   final LGDIDE lgdide,
                                   final Managers managers,
@@ -57,7 +58,7 @@ public final class DefaultSourceSetMapper extends GroovyObjectSupport implements
 
     @Override
     public void map(SourceSet sourceSet, Object... args) {
-        var mapping = managers.getProject().getObjects().newInstance(DefaultMapping.class, sourceSet, managers, this);
+        var mapping = managers.getProject().getObjects().newInstance(DefaultMapping.class, sourceSet.getName(), managers, this);
         mappings.add(mapping);
         for (Object arg : args) {
             if (arg instanceof CharSequence sequence) {
@@ -135,16 +136,6 @@ public final class DefaultSourceSetMapper extends GroovyObjectSupport implements
         @Override
         public Property<Boolean> getRecursive() {
             return recursive;
-        }
-
-        @SuppressWarnings("unused")
-        public Object propertyMissing(String propertyName) {
-            return null;
-        }
-
-        @SuppressWarnings("unused")
-        public void methodMissing(String name, Object value) {
-
         }
     }
 }

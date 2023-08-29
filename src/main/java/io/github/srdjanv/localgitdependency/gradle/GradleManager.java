@@ -5,12 +5,11 @@ import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultLaunchers;
 import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.depenency.Dependency.Type;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.publicationdata.PublicationData;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.taskdata.TaskData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import org.eclipse.jgit.util.sha1.SHA1;
@@ -24,10 +23,8 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Array;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -305,92 +302,45 @@ final class GradleManager extends ManagerBase implements IGradleManager {
     }
 
     private String createDependencyInitScript(Dependency dependency) {
-        // TODO: 18/02/2023 work on this
-        ProjectProbeData data = dependency.getPersistentInfo().getProbeData();
-        var gradleVersion = GradleVersion.version(data.getProjectGradleVersion());
+        final var gradleVersion = GradleVersion.version(dependency.getPersistentInfo().getProbeData().getProjectGradleVersion());
 
-        final Consumer<GradleInit> configuration;
+        List<Consumer<GradleInit>> initScriptBuilder = new ArrayList<>();
+        var tags = dependency.getBuildTargets();
+
         if (gradleVersion.compareTo(GradleVersion.version("6.0")) >= 0) {
-            configuration = gradleInit -> gradleInit.setJavaJars(jars -> {
-                if (dependency.getGradleInfo().isTryGeneratingSourceJar() &&
-                        data.isCanProjectUseWithSourcesJar()) {
-                    jars.add(GradleInit.JavaJars.sources());
-                }
-                if (dependency.getGradleInfo().isTryGeneratingJavaDocJar() &&
-                        data.isCanProjectUseWithJavadocJar()) {
-                    jars.add(GradleInit.JavaJars.javadoc());
-                }
-            });
+            if (tags.stream().anyMatch(tag ->
+                    Arrays.asList(Type.MavenLocal, Type.JarFlatDir, Type.Jar, Type.Task).contains(tag)))
+                buildJavaJars(dependency, initScriptBuilder);
+
         } else {
-            PublicationData publicationObject = dependency.getPersistentInfo().getProbeData().getPublicationData();
-            List<GradleInit.Task> tasks = new ArrayList<>();
-            for (final String taskName : publicationObject.getTasks()) {
-                TaskData taskData = dependency.getPersistentInfo().getProbeData().getArtifactTasks().
-                        stream().filter(taskData1 -> taskData1.getName().equals(taskName)).
-                        findAny().orElseThrow(IllegalStateException::new);
-
-                switch (taskData.getClassifier()) {
-                    case "sources":
-                        if (dependency.getGradleInfo().isTryGeneratingSourceJar()) {
-                            tasks.add(new GradleInit.Task(taskData.getName(), "sourceSets.main.allJava", taskData.getClassifier(), true));
-                        }
-                        break;
-
-                    case "javadoc":
-                        if (dependency.getGradleInfo().isTryGeneratingJavaDocJar()) {
-                            tasks.add(new GradleInit.Task(taskData.getName(), "sourceSets.main.allJava", taskData.getClassifier(), true));
-                        }
-                }
-            }
-
-            configuration = gradleInit -> gradleInit.setTasks(t -> t.addAll(tasks));
+            if (tags.stream().anyMatch(tag ->
+                    Arrays.asList(Type.JarFlatDir, Type.Jar, Type.Task).contains(tag)))
+                buildTaskJars(dependency, initScriptBuilder);
         }
 
-/*        switch (dependency.getBuildTargets()) {
-            case MavenProjectDependencyLocal:
-            case MavenProjectLocal:
-            case MavenLocal:
-                return generateMavenInitScript(dependency, configuration);
-
-            case JarFlatDir:
-            case Jar:
-                return generateJarInitScript(configuration);
-
-            default:
-                throw new IllegalStateException();
-        }*/
-
-        return generateJarInitScript(configuration);
+        return GradleInit.crateInitProject(initScriptBuilder);
     }
 
-/*
-    private String generateMavenInitScript(Dependency dependency, Consumer<GradleInit> configuration) {
-        List<Consumer<GradleInit>> configurations = new ArrayList<>();
-        configurations.add(gradleInit -> gradleInit.setPlugins(pluginsList -> {
-            pluginsList.add(GradleInit.Plugins.java());
-            pluginsList.add(GradleInit.Plugins.mavenPublish());
+    private void buildJavaJars(final Dependency dependency, final List<Consumer<GradleInit>> builder) {
+        builder.add(gradleInit -> gradleInit.configureJavaJars(jars -> {
+            if (dependency.getGradleInfo().isTryGeneratingSourceJar() &&
+                    Boolean.TRUE.equals(dependency.getPersistentInfo().getProbeData().isCanProjectUseWithSourcesJar()))
+                jars.add(GradleInit.JavaJars.SOURCES);
+
+            if (dependency.getGradleInfo().isTryGeneratingJavaDocJar() &&
+                    Boolean.TRUE.equals(dependency.getPersistentInfo().getProbeData().isCanProjectUseWithJavadocJar()))
+                jars.add(GradleInit.JavaJars.JAVADOC);
         }));
-
-        configurations.add(configuration);
-        configurations.add(gradleInit -> {
-            gradleInit.setPublishing(p -> p.add(new GradleInit.Publication(
-                    dependency.getPersistentInfo().getProbeData().getPublicationData().getRepositoryName(),
-                    dependency.getMavenFolder(),
-                    dependency.getPersistentInfo().getProbeData().getPublicationData().getPublicationName())));
-        });
-
-        return GradleInit.crateInitProject(configurations);
     }
-*/
 
-    private String generateJarInitScript(Consumer<GradleInit> configuration) {
-        List<Consumer<GradleInit>> configurations = new ArrayList<>();
-        configurations.add(gradleInit -> gradleInit.setPlugins(pluginsList -> {
-            pluginsList.add(GradleInit.Plugins.java());
+    private void buildTaskJars(final Dependency dependency, final List<Consumer<GradleInit>> builder) {
+        builder.add(gradleInit -> gradleInit.configureJarTasks(tasks -> {
+            if (dependency.getGradleInfo().isTryGeneratingSourceJar())
+                tasks.add(GradleInit.JarTasks.SOURCES);
+
+            if (dependency.getGradleInfo().isTryGeneratingJavaDocJar())
+                tasks.add(GradleInit.JarTasks.JAVADOC);
         }));
-        configurations.add(configuration);
-
-        return GradleInit.crateInitProject(configurations);
     }
 
     private void validateDependencyInitScript(Dependency dependency) {

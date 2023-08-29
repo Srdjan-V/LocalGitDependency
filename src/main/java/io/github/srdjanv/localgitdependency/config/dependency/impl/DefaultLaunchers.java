@@ -18,7 +18,7 @@ public final class DefaultLaunchers {
 
     public abstract static class Startup extends Base implements Launchers.Startup {
         @Inject
-        public Startup(Managers managers) {
+        public Startup(final Managers managers) {
             super(managers);
             getTaskTriggers().convention(Collections.emptyList());
         }
@@ -26,7 +26,7 @@ public final class DefaultLaunchers {
 
     public abstract static class Probe extends Base implements Launchers.Probe {
         @Inject
-        public Probe(Managers managers) {
+        public Probe(final Managers managers) {
             super(managers);
             getTaskTriggers().convention(Arrays.asList("settings.gradle", "build.gradle", "gradle.properties"));
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
@@ -38,21 +38,26 @@ public final class DefaultLaunchers {
 
     public abstract static class Build extends Base implements Launchers.Build {
         @Inject
-        public Build(Managers managers) {
+        public Build(final Managers managers) {
             super(managers);
             getTaskTriggers().convention(Collections.emptyList());
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
                 return Arrays.asList("--init-script", dependencyProperty.get().getGradleInfo().getInitScript().getAbsolutePath());
             }));
-            getMainTasks().convention(Collections.singletonList("build"));
+            getMainTasks().convention(managers.getProject().provider(()-> {
+                var tags = dependencyProperty.get().getBuildTargets();
+                if (tags.isEmpty()) return Collections.emptyList();
+                if (tags.contains(Dependency.Type.MavenLocal)) return Collections.singletonList("publishToMavenLocal");
+                return Collections.singletonList("build");
+            }));
         }
     }
 
     public abstract static class Base extends GroovyObjectSupport implements Launchers.Base, ConfigFinalizer {
-        protected Property<Dependency> dependencyProperty;
-        protected Property<Boolean> isRunNeeded;
+        protected final Property<Dependency> dependencyProperty;
+        protected final Property<Boolean> isRunNeeded;
 
-        public Base(Managers managers) {
+        public Base(final Managers managers) {
             getExplicit().convention(false);
             getForwardOutput().convention(true);
             getPreTasksArguments().convention(Collections.emptyList());
