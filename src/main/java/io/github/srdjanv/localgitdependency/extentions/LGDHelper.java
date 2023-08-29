@@ -2,6 +2,7 @@ package io.github.srdjanv.localgitdependency.extentions;
 
 import groovy.lang.GroovyObjectSupport;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -60,7 +61,7 @@ public class LGDHelper extends GroovyObjectSupport {
         managers.getDependencyManager().markBuild(name, type);
 
         return managers.getProject().provider(() -> {
-            var resolvedNotation = resolveNotation(type, notation);
+            var resolvedNotation = resolveNotation(notation);
             var dep = managers.getProject().getDependencies().create(resolvedNotation);
             config.execute(dep);
             return dep;
@@ -74,29 +75,18 @@ public class LGDHelper extends GroovyObjectSupport {
         } else return args[0];
     }
 
-    private String resolveNotation(final Dependency.Type type, final String notationTarget) {
+    private String resolveNotation(final String notationTarget) {
         final var inputNotation = notationTarget.split(":");
         final var dep = getDependency(notationTarget, inputNotation);
-        final var depNotation =
-                dep.getPersistentInfo().getProbeData().getProjectID().split(":");
 
-        if (inputNotation.length >= 4) { // full sub dep notation
-            return getSubDepNotation(depNotation, inputNotation, dep, type);
-        }
+        final SubDependencyData subDep;
+        if (inputNotation.length > 1) {
+            subDep = getSubDependency(inputNotation, dep);
+        } else subDep = null;
 
-        if (inputNotation.length == 3) { // full dep notation
-            return getDepNotation(depNotation, inputNotation, dep, type);
-        }
-
-        if (inputNotation.length == 2) {
-            if (inputNotation[1].equals(dep.getPersistentInfo().getProbeData().getArchivesBaseName())
-                    || inputNotation[1].equals(dep.getName())) {
-                return getDepNotation(depNotation, inputNotation, dep, type);
-            }
-            return getSubDepNotation(depNotation, inputNotation, dep, type);
-        }
-
-        return getDepNotation(depNotation, inputNotation, dep, type);
+        if (subDep == null) {
+            return getDepNotation(inputNotation, dep);
+        } else return getSubDepNotation(inputNotation, subDep);
     }
 
     private Dependency getDependency(final String notation, final String[] args) {
@@ -104,25 +94,47 @@ public class LGDHelper extends GroovyObjectSupport {
             return managers.getDependencyManager().getDependencies().stream()
                     .filter(d -> d.getName().equals(notation))
                     .findFirst()
-                    .orElseThrow(() -> new NoSuchElementException("No value present"));
+                    .orElseThrow(() ->
+                            new NoSuchElementException(String.format("Dependency with name: %s not found", notation)));
         } else
             return managers.getDependencyManager().getDependencies().stream()
                     .filter(d -> d.getName().equals(args[0]))
                     .findFirst()
-                    .orElseThrow(() -> new NoSuchElementException("No value present"));
+                    .orElseThrow(() ->
+                            new NoSuchElementException(String.format("Dependency with name: %s not found", args[0])));
+    }
+
+    private SubDependencyData getSubDependency(final String[] inputNotation, final Dependency dependency) {
+        for (SubDependencyData subDependency :
+                dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
+            var notation = subDependency.getName().split("\\.");
+            if (notation.length == 1 && inputNotation[1].equals(notation[0])) return subDependency;
+
+            if (notation.length > inputNotation.length) continue;
+
+            boolean valid = true;
+            for (int i = 0; i < notation.length; i++) {
+                if (!notation[i].equals(inputNotation[i])) valid = false;
+            }
+
+            if (valid) return subDependency;
+        }
+        return null;
+    }
+
+    private String getDepNotation(final String[] inputNotation, final Dependency dependency) {
+        return getDepNotation(
+                dependency.getPersistentInfo().getProbeData().getProjectID().split(":"),
+                inputNotation,
+                dependency.getPersistentInfo().getProbeData().getArchivesBaseName());
+    }
+
+    private String getSubDepNotation(final String[] inputNotation, final SubDependencyData dep) {
+        return getDepNotation(dep.getArchivesBaseName().split("\\."), inputNotation, dep.getArchivesBaseName());
     }
 
     private String getDepNotation(
-            final String[] depNotation, final String[] inputNotation, Dependency dependency, Dependency.Type type) {
-        final String archiveNotation =
-                dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
-        /*        switch (type) {
-            case MavenLocal, JarFlatDir ->
-                    archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
-            case MavenProjectLocal, MavenProjectDependencyLocal -> archiveNotation = dependency.getName();
-            default -> throw new IllegalStateException();
-        }*/
-
+            final String[] depNotation, final String[] inputNotation, final String archiveNotation) {
         return switch (inputNotation.length) {
             case 1 -> depNotation[0] + ":" + archiveNotation + ":" + depNotation[2];
             case 2 -> depNotation[0] + ":" + inputNotation[1] + ":" + depNotation[2];
@@ -131,31 +143,6 @@ public class LGDHelper extends GroovyObjectSupport {
                     yield depNotation[0] + ":" + archiveNotation + ":" + inputNotation[1];
                 }
                 yield depNotation[0] + ":" + inputNotation[1] + ":" + depNotation[2];
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + inputNotation.length);
-        };
-    }
-
-    // TODO: 24/08/2023
-    private String getSubDepNotation(
-            final String[] depNotation, final String[] inputNotation, Dependency dependency, Dependency.Type type) {
-        final String archiveNotation =
-                dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
-        /*        switch (type) {
-            case MavenLocal, JarFlatDir ->
-                    archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
-            case MavenProjectLocal, MavenProjectDependencyLocal -> archiveNotation = dependency.getName();
-            default -> throw new IllegalStateException();
-        }*/
-
-        return switch (inputNotation.length) {
-            case 1 -> depNotation[0] + archiveNotation + depNotation[2];
-            case 2 -> depNotation[0] + inputNotation[1] + depNotation[2];
-            case 3 -> {
-                if (inputNotation[1].split("\\.").length != 0) {
-                    yield depNotation[0] + archiveNotation + inputNotation[1];
-                }
-                yield depNotation[0] + inputNotation[1] + depNotation[2];
             }
             default -> throw new IllegalStateException("Unexpected value: " + inputNotation.length);
         };
