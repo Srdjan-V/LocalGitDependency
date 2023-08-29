@@ -11,7 +11,6 @@ public class DependencyClassInvoker {
     private final Class<Dependency> depClazz;
     private final MethodHandle method$getName;
     private final MethodHandle method$getDependencyType;
-    private final MethodHandle method$getMavenFolder;
     private final MethodHandle method$getGitInfo;
     private final MethodHandle method$getPersistentInfo;
 
@@ -32,7 +31,6 @@ public class DependencyClassInvoker {
 
         method$getName = lookup.unreflect(depClazz.getDeclaredMethod("getName"));
         method$getDependencyType = lookup.unreflect(depClazz.getDeclaredMethod("getBuildTargets"));
-        method$getMavenFolder = lookup.unreflect(depClazz.getDeclaredMethod("getMavenFolder"));
         method$getGitInfo = lookup.unreflect(depClazz.getDeclaredMethod("getGitInfo"));
         method$getPersistentInfo = lookup.unreflect(depClazz.getDeclaredMethod("getPersistentInfo"));
     }
@@ -45,10 +43,6 @@ public class DependencyClassInvoker {
 
     public Dependency.Type getDependencyType() throws Throwable {
         return Dependency.Type.values()[((Enum) method$getDependencyType.invoke(depObj)).ordinal()];
-    }
-
-    public File getMavenFolder() throws Throwable {
-        return (File) method$getMavenFolder.invoke(depObj);
     }
 
     public Object getGitInfo() throws Throwable {

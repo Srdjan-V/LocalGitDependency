@@ -15,7 +15,6 @@ public class SubDependencyClassInvoker {
     private final MethodHandle method$getArchivesBaseName;
     private final MethodHandle method$getDependencyType;
     private final MethodHandle method$getGitDir;
-    private final MethodHandle method$getMavenFolder;
 
     public static SubDependencyClassInvoker createInvoker(MethodHandles.Lookup lookup, @Nullable SubDependencyClassInvoker invoker, Object subDep) throws Throwable {
         var clazz = subDep.getClass();
@@ -36,7 +35,6 @@ public class SubDependencyClassInvoker {
         method$getArchivesBaseName = lookup.unreflect(clazz.getDeclaredMethod("getArchivesBaseName"));
         method$getDependencyType = lookup.unreflect(clazz.getDeclaredMethod("getDependencyType"));
         method$getGitDir = lookup.unreflect(clazz.getDeclaredMethod("getGitDir"));
-        method$getMavenFolder = lookup.unreflect(clazz.getDeclaredMethod("getMavenFolder"));
     }
 
     private Object subDep;
@@ -59,9 +57,5 @@ public class SubDependencyClassInvoker {
 
     public String getGitDir() throws Throwable {
         return (String) method$getGitDir.invoke(subDep);
-    }
-
-    public String getMavenFolder() throws Throwable {
-        return (String) method$getMavenFolder.invoke(subDep);
     }
 }

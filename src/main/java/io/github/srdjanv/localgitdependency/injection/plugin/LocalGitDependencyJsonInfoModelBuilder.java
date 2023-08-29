@@ -134,11 +134,9 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         List<SourceSetData> sourceSets = new ArrayList<>();
         for (SourceSet sourceSet : sourceContainer) {
             final String buildResourcesDir;
-            if (sourceSet.getOutput().getResourcesDir() == null) {
-                buildResourcesDir = "";
-            } else {
+            if (sourceSet.getOutput().getResourcesDir() != null) {
                 buildResourcesDir = sourceSet.getOutput().getResourcesDir().getAbsolutePath();
-            }
+            } else buildResourcesDir = null;
 
             final List<String> compileClasspath = new ArrayList<>();
             final Set<String> dependentSourceSets = new HashSet<>();
@@ -172,8 +170,8 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
                     setName(sourceSet.getName()).
                     addDirectorySet(buildJavaDirectorySet(sourceSet)).
                     setBuildResourcesDir(buildResourcesDir).
-                    setDependentSourceSets(dependentSourceSets).
                     setCompileClasspath(compileClasspath).
+                    setDependentSourceSets(dependentSourceSets).
                     setResources(resourcePaths);
 
             sourceSets.add(builder.create());
@@ -242,13 +240,7 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
                     setGitDir(gitInfoInvoker.getDir().getAbsolutePath()).
                     setArchivesBaseName(probeInvoker.getArchivesBaseName());
 
-            var mavenFolder = depInvoker.getMavenFolder();
-            if (mavenFolder != null) {
-                builder.setMavenFolder(mavenFolder.getAbsolutePath());
-            }
-
             subDependencyDataList.add(builder.create());
-
             for (Object subDependencyData : probeInvoker.getSubDependencyData()) {
                 subInvoker = SubDependencyClassInvoker.createInvoker(lookup, subInvoker, subDependencyData);
                 subDependencyDataList.add(
@@ -258,7 +250,7 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
                                 setDependencyType(subInvoker.getDependencyType()).
                                 setGitDir(subInvoker.getGitDir()).
                                 setArchivesBaseName(subInvoker.getArchivesBaseName()).
-                                setMavenFolder(subInvoker.getMavenFolder()).create());
+                                create());
             }
         }
 

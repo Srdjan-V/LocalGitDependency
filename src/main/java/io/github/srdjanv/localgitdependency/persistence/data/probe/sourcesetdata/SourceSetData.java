@@ -3,6 +3,7 @@ package io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdat
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.directoryset.DirectorySetData;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,7 @@ public class SourceSetData extends SourceSetDataFields {
         return name;
     }
 
+    @Nullable
     public String getBuildResourcesDir() {
         return buildResourcesDir;
     }

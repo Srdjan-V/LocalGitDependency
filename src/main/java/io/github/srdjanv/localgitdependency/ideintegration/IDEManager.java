@@ -72,7 +72,8 @@ public class IDEManager extends ManagerBase implements IIDEManager {
                 }
                 sourceSetConf.resources(conf -> {
                     conf.setSrcDirs(sourceSetData.getResources());
-                    conf.getDestinationDirectory().set(rootProject.file(sourceSetData.getBuildResourcesDir()));
+                    if (sourceSetData.getBuildResourcesDir() != null)
+                        conf.getDestinationDirectory().set(rootProject.file(sourceSetData.getBuildResourcesDir()));
                 });
             });
 

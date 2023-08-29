@@ -43,11 +43,6 @@ public class SubDependencyData extends SubDependencyFields{
             return this;
         }
 
-        public Builder setMavenFolder(String mavenFolder) {
-            this.mavenFolder = mavenFolder;
-            return this;
-        }
-
         public SubDependencyData create() {
             return new SubDependencyData(this);
         }
@@ -72,10 +67,6 @@ public class SubDependencyData extends SubDependencyFields{
 
     public String getGitDir() {
         return gitDir;
-    }
-
-    public String getMavenFolder() {
-        return mavenFolder;
     }
 
 }
