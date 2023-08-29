@@ -1,7 +1,6 @@
 package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.Constants;
-
 import java.util.List;
 import java.util.Map;
 

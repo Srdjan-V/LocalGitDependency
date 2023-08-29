@@ -1,18 +1,19 @@
 package io.github.srdjanv.localgitdependency.injection.plugin.invokers;
 
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import org.jetbrains.annotations.Nullable;
 
 public class PersistentInfoClassInvoker {
     private final Class<PersistentInfo> clazz;
     private final MethodHandle method$getProbeData;
 
-    public static PersistentInfoClassInvoker createInvoker(MethodHandles.Lookup lookup,
-                                                           @Nullable PersistentInfoClassInvoker invoker,
-                                                           DependencyClassInvoker depInvoker) throws Throwable {
+    public static PersistentInfoClassInvoker createInvoker(
+            MethodHandles.Lookup lookup,
+            @Nullable PersistentInfoClassInvoker invoker,
+            DependencyClassInvoker depInvoker)
+            throws Throwable {
 
         var persistentInfo = depInvoker.getPersistentInfo();
         if (invoker == null) {
@@ -25,12 +26,12 @@ public class PersistentInfoClassInvoker {
         return invoker;
     }
 
-    public PersistentInfoClassInvoker(MethodHandles.Lookup lookup, Class<?> dataClazz) throws NoSuchMethodException, IllegalAccessException {
+    public PersistentInfoClassInvoker(MethodHandles.Lookup lookup, Class<?> dataClazz)
+            throws NoSuchMethodException, IllegalAccessException {
         this.clazz = (Class<PersistentInfo>) dataClazz;
 
         method$getProbeData = lookup.unreflect(clazz.getDeclaredMethod("getProbeData"));
     }
-
 
     private Object info;
 

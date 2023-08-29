@@ -7,13 +7,12 @@ import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
-
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 public class Dependency {
     private final String name;
@@ -30,23 +29,25 @@ public class Dependency {
         this.name = dependencyConfig.getName().get();
         var lgdIde = managers.getLGDExtensionByType(LGDIDE.class);
         this.mappers = (DefaultSourceSetMapper) lgdIde.getMappers().findByName(name);
-        this.ideSupport = mappers != null ? mappers.getRecursive().get() : lgdIde.getEnableIdeSupport().get();
-        this.shouldRegisterRepository = dependencyConfig.getRegisterDependencyRepositoryToProject().get();
+        this.ideSupport = mappers != null
+                ? mappers.getRecursive().get()
+                : lgdIde.getEnableIdeSupport().get();
+        this.shouldRegisterRepository =
+                dependencyConfig.getRegisterDependencyRepositoryToProject().get();
         this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks().get();
-        this.buildTargets = Collections.unmodifiableSet(dependencyConfig.getBuildTargets().get());
+        this.buildTargets =
+                Collections.unmodifiableSet(dependencyConfig.getBuildTargets().get());
 
         this.gitInfo = new GitInfo(managers, dependencyConfig, this);
         this.gradleInfo = new GradleInfo(managers, dependencyConfig, this);
         this.persistentInfo = new PersistentInfo(managers, dependencyConfig, this);
     }
 
-    @NotNull
-    public String getName() {
+    @NotNull public String getName() {
         return name;
     }
 
-    @Nullable
-    public DefaultSourceSetMapper getSourceSetMapper() {
+    @Nullable public DefaultSourceSetMapper getSourceSetMapper() {
         return mappers;
     }
 
@@ -62,24 +63,20 @@ public class Dependency {
         return generateGradleTasks;
     }
 
-    @NotNull
-    @Unmodifiable
+    @NotNull @Unmodifiable
     public Set<Type> getBuildTargets() {
         return buildTargets;
     }
 
-    @NotNull
-    public GitInfo getGitInfo() {
+    @NotNull public GitInfo getGitInfo() {
         return gitInfo;
     }
 
-    @NotNull
-    public GradleInfo getGradleInfo() {
+    @NotNull public GradleInfo getGradleInfo() {
         return gradleInfo;
     }
 
-    @NotNull
-    public PersistentInfo getPersistentInfo() {
+    @NotNull public PersistentInfo getPersistentInfo() {
         return persistentInfo;
     }
 
@@ -96,12 +93,10 @@ public class Dependency {
         return Objects.hash(name);
     }
 
-
     public enum Type {
         MavenLocal,
         JarFlatDir,
         Jar,
         Task
     }
-
 }

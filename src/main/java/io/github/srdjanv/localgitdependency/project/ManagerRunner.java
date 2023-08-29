@@ -1,7 +1,6 @@
 package io.github.srdjanv.localgitdependency.project;
 
 import io.github.srdjanv.localgitdependency.logger.PluginLogger;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,8 +26,7 @@ final class ManagerRunner<T extends Manager> {
         return managerRunner;
     }
 
-    private ManagerRunner() {
-    }
+    private ManagerRunner() {}
 
     private void verify() {
         Objects.requireNonNull(managerRunner, "ManagerRunner is null");
@@ -75,10 +73,16 @@ final class ManagerRunner<T extends Manager> {
 
         var ret = invokeMethod(manager);
         if (ret != null) {
-            if ((Boolean) ret) PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, System.currentTimeMillis() - start);
+            if ((Boolean) ret)
+                PluginLogger.task(
+                        "{}: Finished {} in {} ms",
+                        manager.getManagerName(),
+                        taskName,
+                        System.currentTimeMillis() - start);
             return;
         }
-        PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, System.currentTimeMillis() - start);
+        PluginLogger.task(
+                "{}: Finished {} in {} ms", manager.getManagerName(), taskName, System.currentTimeMillis() - start);
     }
 
     private void full(T manager) {
@@ -116,17 +120,21 @@ final class ManagerRunner<T extends Manager> {
                 if (declaredMethod.getParameterCount() != method.getParameterCount()) continue;
 
                 if (declaredMethod.isAnnotationPresent(TaskDescription.class)) {
-                    taskName = declaredMethod.getAnnotation(TaskDescription.class).value();
+                    taskName =
+                            declaredMethod.getAnnotation(TaskDescription.class).value();
                     if (declaredMethod.getReturnType() != boolean.class && declaredMethod.getReturnType() != void.class)
                         throw new RuntimeException();
 
                     return;
                 } else {
-                    throw new RuntimeException(String.format("Method with name %s is not annotated with %s", method.getName(), TaskDescription.class.getSimpleName()));
+                    throw new RuntimeException(String.format(
+                            "Method with name %s is not annotated with %s",
+                            method.getName(), TaskDescription.class.getSimpleName()));
                 }
             }
         }
-        throw new RuntimeException(String.format("Method with name %s not found in class %s", method.getName(), Managers.class.getSimpleName()));
+        throw new RuntimeException(String.format(
+                "Method with name %s not found in class %s", method.getName(), Managers.class.getSimpleName()));
     }
 
     public interface ReflectionFunction<T, R> {

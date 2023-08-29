@@ -1,19 +1,17 @@
 package io.github.srdjanv.localgitdependency.persistence.data;
 
+import static io.github.srdjanv.localgitdependency.util.ClassUtil.validData;
+
 import com.google.gson.*;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.util.ErrorUtil;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static io.github.srdjanv.localgitdependency.util.ClassUtil.validData;
-
 public class DataParser {
-    private DataParser() {
-    }
+    private DataParser() {}
 
     public static final Gson gson;
 
@@ -112,5 +110,4 @@ public class DataParser {
             throw new RuntimeException(e);
         }
     }
-
 }

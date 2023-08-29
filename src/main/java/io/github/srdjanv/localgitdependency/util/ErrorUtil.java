@@ -1,9 +1,8 @@
 package io.github.srdjanv.localgitdependency.util;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import org.gradle.api.GradleException;
-
 import java.util.List;
+import org.gradle.api.GradleException;
 
 public final class ErrorUtil {
     private final String message;
@@ -44,8 +43,7 @@ public final class ErrorUtil {
     }
 
     public String getMessage() {
-        if (hasErrors())
-            return errors.toString();
+        if (hasErrors()) return errors.toString();
         return null;
     }
 
@@ -58,5 +56,4 @@ public final class ErrorUtil {
         if (hasErrors()) return new GradleException(errors.toString());
         throw new IllegalStateException("This should not be possible");
     }
-
 }

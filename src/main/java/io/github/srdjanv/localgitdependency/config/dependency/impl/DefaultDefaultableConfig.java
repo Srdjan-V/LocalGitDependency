@@ -6,11 +6,11 @@ import io.github.srdjanv.localgitdependency.config.dependency.defaultable.Defaul
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
-
-import javax.inject.Inject;
 import java.util.Collections;
+import javax.inject.Inject;
 
-public abstract class DefaultDefaultableConfig extends GroovyObjectSupport implements DefaultableConfig, ConfigFinalizer {
+public abstract class DefaultDefaultableConfig extends GroovyObjectSupport
+        implements DefaultableConfig, ConfigFinalizer {
     @Inject
     public DefaultDefaultableConfig(Managers managers) {
         getKeepGitUpdated().convention(true);
@@ -20,7 +20,10 @@ public abstract class DefaultDefaultableConfig extends GroovyObjectSupport imple
         getTryGeneratingJavaDocJar().convention(false);
         getRegisterDependencyRepositoryToProject().convention(true);
         getBuildTargets().convention(Collections.singleton(Dependency.Type.JarFlatDir));
-        getBuildLauncher().convention(managers.getProject().getObjects().newInstance(DefaultDefaultableLauncherConfig.class, managers));
+        getBuildLauncher()
+                .convention(managers.getProject()
+                        .getObjects()
+                        .newInstance(DefaultDefaultableLauncherConfig.class, managers));
     }
 
     @Override

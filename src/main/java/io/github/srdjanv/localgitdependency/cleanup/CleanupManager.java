@@ -5,7 +5,6 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -20,8 +19,7 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
     }
 
     @Override
-    protected void managerConstructor() {
-    }
+    protected void managerConstructor() {}
 
     @Override
     public boolean init() {
@@ -65,7 +63,7 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
                     Files.delete(file);
                 } catch (AccessDeniedException exception) {
                     if (!Files.isWritable(file)) {
-                        FilePremonitions.getReadPermissions().accept(file);//read only files cant be deleted
+                        FilePremonitions.getReadPermissions().accept(file); // read only files cant be deleted
                         Files.delete(file);
                     } else {
                         throw exception;
@@ -81,5 +79,4 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
             }
         });
     }
-
 }

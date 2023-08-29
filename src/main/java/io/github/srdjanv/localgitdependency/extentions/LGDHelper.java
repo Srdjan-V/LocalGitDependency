@@ -3,13 +3,12 @@ package io.github.srdjanv.localgitdependency.extentions;
 import groovy.lang.GroovyObjectSupport;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import org.gradle.api.Action;
 import org.gradle.api.provider.Provider;
 import org.gradle.internal.Actions;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.NoSuchElementException;
-import java.util.Objects;
 
 public class LGDHelper extends GroovyObjectSupport {
     private final Managers managers;
@@ -26,9 +25,7 @@ public class LGDHelper extends GroovyObjectSupport {
     }
 
     public Provider<org.gradle.api.artifacts.Dependency> mavenLocal(
-            @NotNull final String notation,
-            @NotNull final Action<org.gradle.api.artifacts.Dependency> config
-    ) {
+            @NotNull final String notation, @NotNull final Action<org.gradle.api.artifacts.Dependency> config) {
         return repo(Dependency.Type.MavenLocal, notation, config);
     }
 
@@ -40,13 +37,11 @@ public class LGDHelper extends GroovyObjectSupport {
     }
 
     public Provider<org.gradle.api.artifacts.Dependency> flatDir(
-            @NotNull final String notation,
-            @NotNull final Action<org.gradle.api.artifacts.Dependency> config
-    ) {
+            @NotNull final String notation, @NotNull final Action<org.gradle.api.artifacts.Dependency> config) {
         return repo(Dependency.Type.JarFlatDir, notation, config);
     }
 
-/*    //directly add jar dependencies to the project
+    /*    //directly add jar dependencies to the project
     public Provider<FileCollection> jar(@NotNull final String notation) {
         getDependencyManager().markBuild(getDependencyName(notation), io.github.srdjanv.localgitdependency.depenency.Dependency.Type.Jar);
     }
@@ -58,8 +53,7 @@ public class LGDHelper extends GroovyObjectSupport {
     private Provider<org.gradle.api.artifacts.Dependency> repo(
             final @NotNull Dependency.Type type,
             final @NotNull String notation,
-            final @NotNull Action<org.gradle.api.artifacts.Dependency> config
-    ) {
+            final @NotNull Action<org.gradle.api.artifacts.Dependency> config) {
         Objects.requireNonNull(notation);
         Objects.requireNonNull(config);
         final var name = getDependencyName(notation);
@@ -83,19 +77,20 @@ public class LGDHelper extends GroovyObjectSupport {
     private String resolveNotation(final Dependency.Type type, final String notationTarget) {
         final var inputNotation = notationTarget.split(":");
         final var dep = getDependency(notationTarget, inputNotation);
-        final var depNotation = dep.getPersistentInfo().getProbeData().getProjectID().split(":");
+        final var depNotation =
+                dep.getPersistentInfo().getProbeData().getProjectID().split(":");
 
-        if (inputNotation.length >= 4) {//full sub dep notation
+        if (inputNotation.length >= 4) { // full sub dep notation
             return getSubDepNotation(depNotation, inputNotation, dep, type);
         }
 
-        if (inputNotation.length == 3) {//full dep notation
+        if (inputNotation.length == 3) { // full dep notation
             return getDepNotation(depNotation, inputNotation, dep, type);
         }
 
         if (inputNotation.length == 2) {
-            if (inputNotation[1].equals(dep.getPersistentInfo().getProbeData().getArchivesBaseName()) ||
-                    inputNotation[1].equals(dep.getName())) {
+            if (inputNotation[1].equals(dep.getPersistentInfo().getProbeData().getArchivesBaseName())
+                    || inputNotation[1].equals(dep.getName())) {
                 return getDepNotation(depNotation, inputNotation, dep, type);
             }
             return getSubDepNotation(depNotation, inputNotation, dep, type);
@@ -107,20 +102,21 @@ public class LGDHelper extends GroovyObjectSupport {
     private Dependency getDependency(final String notation, final String[] args) {
         if (args.length == 0) {
             return managers.getDependencyManager().getDependencies().stream()
-                    .filter(d -> d.getName().equals(notation)).findFirst().orElseThrow(() -> new NoSuchElementException("No value present"));
+                    .filter(d -> d.getName().equals(notation))
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException("No value present"));
         } else
             return managers.getDependencyManager().getDependencies().stream()
-                    .filter(d -> d.getName().equals(args[0])).findFirst().orElseThrow(() -> new NoSuchElementException("No value present"));
+                    .filter(d -> d.getName().equals(args[0]))
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException("No value present"));
     }
 
     private String getDepNotation(
-            final String[] depNotation,
-            final String[] inputNotation,
-            Dependency dependency,
-            Dependency.Type type
-    ) {
-        final String archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
-/*        switch (type) {
+            final String[] depNotation, final String[] inputNotation, Dependency dependency, Dependency.Type type) {
+        final String archiveNotation =
+                dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
+        /*        switch (type) {
             case MavenLocal, JarFlatDir ->
                     archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
             case MavenProjectLocal, MavenProjectDependencyLocal -> archiveNotation = dependency.getName();
@@ -142,13 +138,10 @@ public class LGDHelper extends GroovyObjectSupport {
 
     // TODO: 24/08/2023
     private String getSubDepNotation(
-            final String[] depNotation,
-            final String[] inputNotation,
-            Dependency dependency,
-            Dependency.Type type
-    ) {
-        final String archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
-/*        switch (type) {
+            final String[] depNotation, final String[] inputNotation, Dependency dependency, Dependency.Type type) {
+        final String archiveNotation =
+                dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
+        /*        switch (type) {
             case MavenLocal, JarFlatDir ->
                     archiveNotation = dependency.getPersistentInfo().getProbeData().getArchivesBaseName();
             case MavenProjectLocal, MavenProjectDependencyLocal -> archiveNotation = dependency.getName();
@@ -167,5 +160,4 @@ public class LGDHelper extends GroovyObjectSupport {
             default -> throw new IllegalStateException("Unexpected value: " + inputNotation.length);
         };
     }
-
 }

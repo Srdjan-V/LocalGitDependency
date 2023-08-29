@@ -11,6 +11,7 @@ public class LGD {
     public static final String NAME = "lgd";
 
     private final Managers managers;
+
     public LGD(Managers managers) {
         this.managers = managers;
     }
@@ -18,6 +19,7 @@ public class LGD {
     public void plugin(Action<PluginConfig> action) {
         action.execute(managers.getConfigManager().getPluginConfig());
     }
+
     public void defaults(Action<DefaultableConfig> action) {
         action.execute(managers.getConfigManager().getDefaultableConfig());
     }
@@ -27,7 +29,6 @@ public class LGD {
     }
 
     public void register(String dependencyURL, Action<DependencyConfig> action) {
-       action.execute( managers.getDependencyManager().registerDependency(dependencyURL));
+        action.execute(managers.getDependencyManager().registerDependency(dependencyURL));
     }
-
 }

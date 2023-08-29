@@ -1,7 +1,7 @@
 package io.github.srdjanv.localgitdependency.dependency;
 
 public class DependencyWrapper {
- /*   private IProjectManager projectManager;
+    /*   private IProjectManager projectManager;
     private final String dependencyName;
     private final String gitUrl;
     private final String gitRev;
@@ -166,6 +166,5 @@ public class DependencyWrapper {
         OnlyDependencyRegistered,
         Starting
     }*/
-
 
 }

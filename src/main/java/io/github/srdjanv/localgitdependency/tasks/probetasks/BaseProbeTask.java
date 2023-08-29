@@ -8,5 +8,4 @@ interface BaseProbeTask {
         manager.getGradleManager().startProbeTasks(dependency);
         manager.getPersistenceManager().saveDependencyPersistentData(dependency);
     }
-
 }

@@ -3,7 +3,6 @@ package io.github.srdjanv.localgitdependency.git;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,8 +14,7 @@ final class GitManager extends ManagerBase implements IGitManager {
     }
 
     @Override
-    protected void managerConstructor() {
-    }
+    protected void managerConstructor() {}
 
     @Override
     public void initRepos() {

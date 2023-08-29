@@ -29,6 +29,7 @@ public class DataWrapper {
     public DataType getDataType() {
         return dataType;
     }
+
     public boolean isValid() {
         return valid;
     }

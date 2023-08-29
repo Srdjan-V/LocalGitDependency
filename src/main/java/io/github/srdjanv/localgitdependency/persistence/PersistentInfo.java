@@ -7,13 +7,12 @@ import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import org.gradle.internal.impldep.org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.File;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.gradle.internal.impldep.org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class PersistentInfo {
     private final Dependency dependency;
@@ -29,26 +28,22 @@ public final class PersistentInfo {
 
         // TODO: 25/08/2023 test
         this.persistentFile = Constants.persistentJsonFile.apply(
-                Constants.lgdDir.apply(managers.getProject()).getAsFile(),
-                dependency.getName());
+                Constants.lgdDir.apply(managers.getProject()).getAsFile(), dependency.getName());
     }
 
     public boolean hasDependencyTypeChanged() {
         return dependencyTypeChanged;
     }
 
-    @NotNull
-    public File getPersistentFile() {
+    @NotNull public File getPersistentFile() {
         return persistentFile;
     }
 
-    @NotNull
-    public Dependency getDependency() {
+    @NotNull public Dependency getDependency() {
         return dependency;
     }
 
-    @Nullable
-    public String getInitFileSHA1() {
+    @Nullable public String getInitFileSHA1() {
         return dependencyData.getInitFileSHA1();
     }
 
@@ -72,13 +67,10 @@ public final class PersistentInfo {
     }
 
     public void setStartupTasksStatus(boolean status) {
-        setTaskData(dependencyData::getStartupTasksSuccessful,
-                dependencyData::setStartupTasksSuccessful,
-                status);
+        setTaskData(dependencyData::getStartupTasksSuccessful, dependencyData::setStartupTasksSuccessful, status);
     }
 
-    @Nullable
-    public String getStartupTasksTriggersSHA1() {
+    @Nullable public String getStartupTasksTriggersSHA1() {
         return dependencyData.getStartupTasksTriggersSHA1();
     }
 
@@ -88,13 +80,10 @@ public final class PersistentInfo {
     }
 
     public void setProbeTasksStatus(boolean status) {
-        setTaskData(dependencyData::getProbeTasksSuccessful,
-                dependencyData::setProbeTasksSuccessful,
-                status);
+        setTaskData(dependencyData::getProbeTasksSuccessful, dependencyData::setProbeTasksSuccessful, status);
     }
 
-    @Nullable
-    public String getProbeTasksTriggersSHA1() {
+    @Nullable public String getProbeTasksTriggersSHA1() {
         return dependencyData.getProbeTasksTriggersSHA1();
     }
 
@@ -104,13 +93,10 @@ public final class PersistentInfo {
     }
 
     public void setBuildStatus(boolean status) {
-        setTaskData(dependencyData::getBuildTasksSuccessful,
-                dependencyData::setBuildTasksSuccessful,
-                status);
+        setTaskData(dependencyData::getBuildTasksSuccessful, dependencyData::setBuildTasksSuccessful, status);
     }
 
-    @Nullable
-    public String getBuildTasksTriggersSHA1() {
+    @Nullable public String getBuildTasksTriggersSHA1() {
         return dependencyData.getBuildTasksTriggersSHA1();
     }
 

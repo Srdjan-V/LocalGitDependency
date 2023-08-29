@@ -7,8 +7,7 @@ public class ProjectData implements ProjectDataGetters, ProjectDataSetter {
     private String mainInitSHA1;
     private String pluginVersion;
 
-    public ProjectData() {
-    }
+    public ProjectData() {}
 
     @Override
     public String getMainInitSHA1() {

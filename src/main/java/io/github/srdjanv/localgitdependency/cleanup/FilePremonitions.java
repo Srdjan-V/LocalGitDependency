@@ -9,8 +9,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 class FilePremonitions {
-    private FilePremonitions() {
-    }
+    private FilePremonitions() {}
 
     private static Consumer<Path> readPermissions;
 
@@ -43,5 +42,4 @@ class FilePremonitions {
             };
         }
     }
-
 }

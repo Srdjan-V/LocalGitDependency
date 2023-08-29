@@ -4,15 +4,14 @@ import groovy.lang.GroovyObjectSupport;
 import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultSourceSetMapper;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import java.util.Collections;
+import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
-
-import javax.inject.Inject;
-import java.util.Collections;
 
 public class LGDIDE extends GroovyObjectSupport {
     public static final String NAME = "lgdide";
@@ -27,17 +26,19 @@ public class LGDIDE extends GroovyObjectSupport {
      * @param enableIdeSupport if it should enable ide support
      */
     private final Property<Boolean> enableIdeSupport;
+
     private final Property<Boolean> recursive;
     private final Property<SourceSet> defaultTargetSourceSet;
     private final ListProperty<String> defaultDepMappings;
-
 
     @Inject
     public LGDIDE(final Managers managers) {
         this.managers = managers;
         final var container = managers.getProject().getExtensions().getByType(SourceSetContainer.class);
         this.mappers = managers.getProject().getObjects().domainObjectContainer(SourceSetMapper.class, name -> {
-            return managers.getProject().getObjects().newInstance(DefaultSourceSetMapper.class, container, this, managers, name);
+            return managers.getProject()
+                    .getObjects()
+                    .newInstance(DefaultSourceSetMapper.class, container, this, managers, name);
         });
 
         enableIdeSupport = managers.getProject().getObjects().property(Boolean.class);

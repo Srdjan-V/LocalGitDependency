@@ -7,7 +7,6 @@ import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
-
 import java.lang.reflect.Field;
 
 interface BasePrintInfoTask {
@@ -18,9 +17,7 @@ interface BasePrintInfoTask {
         for (Field field : Dependency.class.getDeclaredFields()) {
             field.setAccessible(true);
 
-            if (filter(field.getType(),
-                    GitInfo.class, GradleInfo.class,
-                    PersistentInfo.class, Closure.class)) continue;
+            if (filter(field.getType(), GitInfo.class, GradleInfo.class, PersistentInfo.class, Closure.class)) continue;
 
             Object fieldVal = field.get(dependency);
             stringBuilder.append(Constants.TAB_INDENT);
@@ -55,5 +52,4 @@ interface BasePrintInfoTask {
 
         return false;
     }
-
 }

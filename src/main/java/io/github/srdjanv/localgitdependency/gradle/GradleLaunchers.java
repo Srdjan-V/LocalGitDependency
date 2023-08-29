@@ -1,15 +1,13 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
-
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultLaunchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
+import java.io.File;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
 
 public final class GradleLaunchers implements ConfigFinalizer {
     public static GradleLaunchers build(Dependency dependency, DependencyConfig dependencyConfig) {
@@ -40,34 +38,25 @@ public final class GradleLaunchers implements ConfigFinalizer {
     }
 
     @Override
-    public void finalizeProps() {
+    public void finalizeProps() {}
 
-    }
-
-    @Nullable
-    public File getExecutable() {
+    @Nullable public File getExecutable() {
         return executable;
     }
 
-    @NotNull
-    public Integer getGradleDaemonMaxIdleTime() {
+    @NotNull public Integer getGradleDaemonMaxIdleTime() {
         return gradleDaemonMaxIdleTime;
     }
 
-    @NotNull
-    public DefaultLaunchers.Startup getStartup() {
+    @NotNull public DefaultLaunchers.Startup getStartup() {
         return startup;
     }
 
-    @NotNull
-    public DefaultLaunchers.Probe getProbe() {
+    @NotNull public DefaultLaunchers.Probe getProbe() {
         return probe;
     }
 
-    @NotNull
-    public DefaultLaunchers.Build getBuild() {
+    @NotNull public DefaultLaunchers.Build getBuild() {
         return build;
     }
-
-
 }

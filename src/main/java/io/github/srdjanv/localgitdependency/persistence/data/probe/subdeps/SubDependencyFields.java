@@ -9,7 +9,7 @@ public class SubDependencyFields {
     String archivesBaseName;
     Dependency.Type dependencyType;
     String gitDir;
+
     @NullableData
     String mavenFolder;
-
 }

@@ -9,6 +9,7 @@ public interface IGradleManager extends Manager {
     static IGradleManager createInstance(Managers managers) {
         return new GradleManager(managers);
     }
+
     @TaskDescription("setting up gradle files")
     void initGradleAPI();
 
@@ -16,6 +17,8 @@ public interface IGradleManager extends Manager {
     void startBuildTasks();
 
     void startStartupTasks(Dependency dependency);
+
     void startProbeTasks(Dependency dependency);
+
     void startBuildTasks(Dependency dependency);
 }

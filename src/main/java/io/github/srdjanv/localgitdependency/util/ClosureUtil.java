@@ -1,15 +1,13 @@
 package io.github.srdjanv.localgitdependency.util;
 
 import groovy.lang.Closure;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 public final class ClosureUtil {
-    private ClosureUtil() {
-    }
+    private ClosureUtil() {}
 
     public static boolean delegateNullSafe(@Nullable Closure closure, @NotNull Object delegate) {
         if (closure != null) {

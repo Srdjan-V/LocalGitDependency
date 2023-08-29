@@ -4,17 +4,13 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
 public final class Launchers {
-    private Launchers() {
-    }
+    private Launchers() {}
 
-    public interface Startup extends Base {
-    }
+    public interface Startup extends Base {}
 
-    public interface Probe extends Base {
-    }
+    public interface Probe extends Base {}
 
-    public interface Build extends Base {
-    }
+    public interface Build extends Base {}
 
     public interface Base {
         /**

@@ -5,8 +5,7 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 
 public class PluginLogger {
-    private PluginLogger() {
-    }
+    private PluginLogger() {}
 
     static final String ANSI_RESET = "\u001B[0m";
     static final String ANSI_YELLOW = "\u001B[33m";
@@ -14,7 +13,7 @@ public class PluginLogger {
     static final String ANSI_CYAN = "\u001B[36m";
     static final String ANSI_RED = "\u001B[31m";
 
-    final static Logger logger = Logging.getLogger("local-git-dependency");
+    static final Logger logger = Logging.getLogger("local-git-dependency");
 
     public static void title(String info, Object... args) {
         logger.lifecycle(ANSI_CYAN + info + ANSI_RESET, args);

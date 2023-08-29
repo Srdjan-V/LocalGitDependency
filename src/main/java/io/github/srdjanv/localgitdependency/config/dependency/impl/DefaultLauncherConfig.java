@@ -6,7 +6,6 @@ import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
-
 import javax.inject.Inject;
 
 public abstract class DefaultLauncherConfig extends GroovyObjectSupport implements LauncherConfig, ConfigFinalizer {
@@ -16,9 +15,16 @@ public abstract class DefaultLauncherConfig extends GroovyObjectSupport implemen
 
     @Inject
     public DefaultLauncherConfig(Managers managers) {
-        var defaultable = managers.getConfigManager().getDefaultableConfig().getBuildLauncher().get();
-        getGradleDaemonMaxIdleTime().convention(managers.getProject().provider(() -> defaultable.getGradleDaemonMaxIdleTime().get()));
-        getForwardOutput().convention(managers.getProject().provider(() -> defaultable.getForwardOutput().get()));
+        var defaultable = managers.getConfigManager()
+                .getDefaultableConfig()
+                .getBuildLauncher()
+                .get();
+        getGradleDaemonMaxIdleTime()
+                .convention(managers.getProject()
+                        .provider(() -> defaultable.getGradleDaemonMaxIdleTime().get()));
+        getForwardOutput()
+                .convention(managers.getProject()
+                        .provider(() -> defaultable.getForwardOutput().get()));
 
         startup = managers.getProject().getObjects().newInstance(DefaultLaunchers.Startup.class, managers);
         probe = managers.getProject().getObjects().newInstance(DefaultLaunchers.Probe.class, managers);

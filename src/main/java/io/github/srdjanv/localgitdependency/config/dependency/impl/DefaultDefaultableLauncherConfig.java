@@ -5,11 +5,11 @@ import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableLauncherConfig;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
-
-import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
+import javax.inject.Inject;
 
-public abstract class DefaultDefaultableLauncherConfig extends GroovyObjectSupport implements DefaultableLauncherConfig, ConfigFinalizer {
+public abstract class DefaultDefaultableLauncherConfig extends GroovyObjectSupport
+        implements DefaultableLauncherConfig, ConfigFinalizer {
     @Inject
     public DefaultDefaultableLauncherConfig(Managers managers) {
         getGradleDaemonMaxIdleTime().convention((int) TimeUnit.MINUTES.toSeconds(2));

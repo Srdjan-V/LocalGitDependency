@@ -10,12 +10,11 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeD
 import io.github.srdjanv.localgitdependency.persistence.data.project.ProjectData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import org.gradle.api.GradleException;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import org.gradle.api.GradleException;
 
 final class PersistenceManager extends ManagerBase implements IPersistenceManager {
     private ProjectData projectData;
@@ -28,8 +27,7 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
     }
 
     @Override
-    protected void managerConstructor() {
-    }
+    protected void managerConstructor() {}
 
     @Override
     public String getInitScriptSHA() {
@@ -61,11 +59,13 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
 
     @Override
     public void loadProjectPersistentData() {
-        projectDataJson = Constants.concatFile.apply(Constants.lgdDir.apply(getProject()).getAsFile(), Constants.PROJECT_DATA_JSON);
+        projectDataJson = Constants.concatFile.apply(
+                Constants.lgdDir.apply(getProject()).getAsFile(), Constants.PROJECT_DATA_JSON);
 
         if (projectDataJson.exists()) {
             if (projectDataJson.isDirectory()) {
-                throw new GradleException(Constants.PROJECT_DATA_JSON + " at " + projectDataJson.getAbsolutePath() + " can not be a directory");
+                throw new GradleException(Constants.PROJECT_DATA_JSON + " at " + projectDataJson.getAbsolutePath()
+                        + " can not be a directory");
             }
             projectData = DataParser.simpleLoadDataFromFileJson(projectDataJson, ProjectData.class, ProjectData::new);
             if (!Objects.equals(projectData.getPluginVersion(), Constants.PLUGIN_VERSION)) {
@@ -95,7 +95,8 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
 
         if (persistentInfo.isDirty()) {
             List<?> data = Arrays.asList(persistentInfo.getDependencyData(), persistentInfo.getProbeData());
-            DataParser.complexSaveDataToFileJson(persistentInfo.getPersistentFile(), data, DataLayout.getDependencyLayout());
+            DataParser.complexSaveDataToFileJson(
+                    persistentInfo.getPersistentFile(), data, DataLayout.getDependencyLayout());
             dirty = false;
             return true;
         }
@@ -106,14 +107,16 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
     public void loadDependencyPersistentData(Dependency dependency) {
         PersistentInfo persistentInfo = dependency.getPersistentInfo();
 
-        List<DataWrapper> dataList = DataParser.complexLoadDataFromFileJson(persistentInfo.getPersistentFile(), DataLayout.getDependencyLayout());
+        List<DataWrapper> dataList = DataParser.complexLoadDataFromFileJson(
+                persistentInfo.getPersistentFile(), DataLayout.getDependencyLayout());
         for (DataWrapper dataWrapper : dataList) {
             switch (dataWrapper.getDataType()) {
                 case DependencyData -> {
                     DependencyData data = (DependencyData) dataWrapper.getData();
                     persistentInfo.setDependencyData(data);
 
-                    if (data.getBuildTypes() == null || !dependency.getBuildTargets().containsAll(data.getBuildTypes())) {
+                    if (data.getBuildTypes() == null
+                            || !dependency.getBuildTargets().containsAll(data.getBuildTypes())) {
                         data.setBuildTypes(dependency.getBuildTargets());
                         persistentInfo.setDependencyTypeChanged();
                         persistentInfo.setDirty();
@@ -129,7 +132,5 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
                 default -> throw new IllegalStateException();
             }
         }
-
     }
-
 }

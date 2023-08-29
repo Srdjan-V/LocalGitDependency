@@ -1,12 +1,11 @@
 package io.github.srdjanv.localgitdependency.git;
 
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
+import java.io.IOException;
+import java.util.Optional;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.TagOpt;
-
-import java.io.IOException;
-import java.util.Optional;
 
 final class IntractableGitWrapper implements IGitTasks, AutoCloseable {
     private final GitWrapper gitWrapper;
@@ -47,7 +46,9 @@ final class IntractableGitWrapper implements IGitTasks, AutoCloseable {
     @Override
     public void clearLocalChanges() {
         if (gitWrapper.hasGitExceptions()) return;
-        ManagerLogger.info("Dependency {}, clearing local changes and marking dependency to be rebuild", gitWrapper.gitInfo.getDependency().getName());
+        ManagerLogger.info(
+                "Dependency {}, clearing local changes and marking dependency to be rebuild",
+                gitWrapper.gitInfo.getDependency().getName());
         try {
             if (Boolean.TRUE.equals(gitWrapper.hasLocalChanges())) {
                 gitWrapper.git.reset().setMode(ResetCommand.ResetType.HARD).call();

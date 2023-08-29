@@ -2,11 +2,10 @@ package io.github.srdjanv.localgitdependency;
 
 import io.github.srdjanv.localgitdependency.extentions.LGDManagers;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
-import org.gradle.api.Project;
-import org.gradle.testfixtures.ProjectBuilder;
-
 import java.io.*;
 import java.util.Properties;
+import org.gradle.api.Project;
+import org.gradle.testfixtures.ProjectBuilder;
 
 public class ProjectInstance {
 
@@ -14,8 +13,10 @@ public class ProjectInstance {
 
     private static String getBranch() {
         if (branch == null) {
-            try (InputStream stream = Runtime.getRuntime().exec("git rev-parse --abbrev-ref HEAD").getInputStream();
-                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream))) {
+            try (InputStream stream = Runtime.getRuntime()
+                            .exec("git rev-parse --abbrev-ref HEAD")
+                            .getInputStream();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream))) {
                 branch = bufferedReader.readLine();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);

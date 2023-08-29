@@ -4,23 +4,20 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
+import java.util.List;
 import org.gradle.api.JavaVersion;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 @NonNullData
 public class ProjectProbeData extends ProjectProbeDataFields {
-    public ProjectProbeData() {
-    }
+    public ProjectProbeData() {}
 
     private ProjectProbeData(Builder builder) {
         ClassUtil.instantiateObjectWithBuilder(this, builder, ProjectProbeDataFields.class);
     }
 
     public static class Builder extends ProjectProbeDataFields {
-        public Builder() {
-        }
+        public Builder() {}
 
         public Builder setPluginVersion(String version) {
             this.pluginVersion = version;
@@ -73,8 +70,7 @@ public class ProjectProbeData extends ProjectProbeDataFields {
         }
     }
 
-    @Nullable
-    public String getPluginVersion() {
+    @Nullable public String getPluginVersion() {
         return pluginVersion;
     }
 
@@ -94,13 +90,11 @@ public class ProjectProbeData extends ProjectProbeDataFields {
         return javaVersion;
     }
 
-    @Nullable
-    public Boolean isCanProjectUseWithSourcesJar() {
+    @Nullable public Boolean isCanProjectUseWithSourcesJar() {
         return canProjectUseWithSourcesJar;
     }
 
-    @Nullable
-    public Boolean isCanProjectUseWithJavadocJar() {
+    @Nullable public Boolean isCanProjectUseWithJavadocJar() {
         return canProjectUseWithJavadocJar;
     }
 

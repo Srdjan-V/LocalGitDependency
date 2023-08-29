@@ -1,7 +1,6 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -16,12 +15,14 @@ final class GradleInit {
         gradleInit.appendLine(1, "}");
 
         gradleInit.appendLine(1, "dependencies {");
-        gradleInit.appendLine(2, String.format("classpath \"io.github.srdjan-v:local-git-dependency:%s\"", Constants.PLUGIN_VERSION));
+        gradleInit.appendLine(
+                2, String.format("classpath \"io.github.srdjan-v:local-git-dependency:%s\"", Constants.PLUGIN_VERSION));
         gradleInit.appendLine(1, "}");
         gradleInit.appendLine(0, "}");
 
         gradleInit.appendLine(0, "rootProject {");
-        gradleInit.appendLine(1, "apply plugin: io.github.srdjanv.localgitdependency.injection.plugin.ModelInjectionPlugin");
+        gradleInit.appendLine(
+                1, "apply plugin: io.github.srdjanv.localgitdependency.injection.plugin.ModelInjectionPlugin");
 
         return gradleInit.render();
     }
@@ -79,12 +80,10 @@ final class GradleInit {
 
         if (jarTasks.isEmpty()) return;
 
-        for (JarTasks jarTask : jarTasks)
-            jarTask.buildJarTask(this);
+        for (JarTasks jarTask : jarTasks) jarTask.buildJarTask(this);
 
         appendLine(1, "artifacts {");
-        for (JarTasks jarTask : jarTasks)
-            appendLine(2, String.format("archives %s", jarTask.name));
+        for (JarTasks jarTask : jarTasks) appendLine(2, String.format("archives %s", jarTask.name));
         appendLine(1, "}");
     }
 

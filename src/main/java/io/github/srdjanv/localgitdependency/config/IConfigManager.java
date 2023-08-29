@@ -10,8 +10,11 @@ public interface IConfigManager extends Manager {
     static IConfigManager createInstance(Managers managers) {
         return new ConfigManager(managers);
     }
+
     PluginConfig getPluginConfig();
+
     DefaultableConfig getDefaultableConfig();
+
     @TaskDescription("finalizing configs")
     void finalizeConfigs();
 }

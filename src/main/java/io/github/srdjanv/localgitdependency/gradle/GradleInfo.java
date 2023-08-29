@@ -4,10 +4,9 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
 
 public final class GradleInfo {
     private final Dependency dependency;
@@ -21,21 +20,20 @@ public final class GradleInfo {
         this.dependency = dependency;
         this.launchers = GradleLaunchers.build(dependency, dependencyConfig);
         this.keepInitScriptUpdated = dependencyConfig.getKeepInitScriptUpdated().get();
-        // TODO: 25/08/2023 test 
+        // TODO: 25/08/2023 test
         this.initScript = Constants.persistentInitScript.apply(
-                Constants.lgdDir.apply(managers.getProject()).getAsFile(),
-                dependency.getName());
-        this.tryGeneratingSourceJar = dependencyConfig.getTryGeneratingSourceJar().get();
-        this.tryGeneratingJavaDocJar = dependencyConfig.getTryGeneratingJavaDocJar().get();
+                Constants.lgdDir.apply(managers.getProject()).getAsFile(), dependency.getName());
+        this.tryGeneratingSourceJar =
+                dependencyConfig.getTryGeneratingSourceJar().get();
+        this.tryGeneratingJavaDocJar =
+                dependencyConfig.getTryGeneratingJavaDocJar().get();
     }
 
-    @NotNull
-    public Dependency getDependency() {
+    @NotNull public Dependency getDependency() {
         return dependency;
     }
 
-    @NotNull
-    public File getInitScript() {
+    @NotNull public File getInitScript() {
         return initScript;
     }
 
@@ -51,8 +49,7 @@ public final class GradleInfo {
         return tryGeneratingJavaDocJar;
     }
 
-    @NotNull
-    public GradleLaunchers getLaunchers() {
+    @NotNull public GradleLaunchers getLaunchers() {
         return launchers;
     }
 

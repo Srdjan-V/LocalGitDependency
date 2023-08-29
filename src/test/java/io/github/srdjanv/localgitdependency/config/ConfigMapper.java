@@ -1,8 +1,7 @@
 package io.github.srdjanv.localgitdependency.config;
 
-import org.gradle.internal.impldep.com.google.common.base.Function;
-
 import java.util.function.BiConsumer;
+import org.gradle.internal.impldep.com.google.common.base.Function;
 
 public abstract class ConfigMapper<C, B, T> {
     private String name;
@@ -11,8 +10,7 @@ public abstract class ConfigMapper<C, B, T> {
     private Function<C, T> newValue;
     private BiConsumer<B, T> builderConfig;
 
-    protected ConfigMapper() {
-    }
+    protected ConfigMapper() {}
 
     public String getName() {
         return name;
@@ -21,7 +19,6 @@ public abstract class ConfigMapper<C, B, T> {
     public void setName(String name) {
         this.name = name;
     }
-
 
     public void setValueGetter(Function<C, T> valueGetter) {
         this.valueGetter = valueGetter;
@@ -34,7 +31,6 @@ public abstract class ConfigMapper<C, B, T> {
     public void setBuilder(BiConsumer<B, T> builderConfig) {
         this.builderConfig = builderConfig;
     }
-
 
     @SuppressWarnings("unchecked")
     public Function<C, Object> getValueGetter() {
@@ -50,7 +46,6 @@ public abstract class ConfigMapper<C, B, T> {
     public BiConsumer<B, Object> getBuilderConfig() {
         return (BiConsumer<B, Object>) builderConfig;
     }
-
 
     public Function<C, T> getValueGetterType() {
         return valueGetter;

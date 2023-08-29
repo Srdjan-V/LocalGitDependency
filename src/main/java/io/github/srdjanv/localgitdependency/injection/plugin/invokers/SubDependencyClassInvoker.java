@@ -2,10 +2,9 @@ package io.github.srdjanv.localgitdependency.injection.plugin.invokers;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import org.jetbrains.annotations.Nullable;
 
 public class SubDependencyClassInvoker {
     private final Class<SubDependencyData> clazz;
@@ -16,7 +15,8 @@ public class SubDependencyClassInvoker {
     private final MethodHandle method$getDependencyType;
     private final MethodHandle method$getGitDir;
 
-    public static SubDependencyClassInvoker createInvoker(MethodHandles.Lookup lookup, @Nullable SubDependencyClassInvoker invoker, Object subDep) throws Throwable {
+    public static SubDependencyClassInvoker createInvoker(
+            MethodHandles.Lookup lookup, @Nullable SubDependencyClassInvoker invoker, Object subDep) throws Throwable {
         var clazz = subDep.getClass();
         if (invoker == null) {
             invoker = new SubDependencyClassInvoker(lookup, clazz);

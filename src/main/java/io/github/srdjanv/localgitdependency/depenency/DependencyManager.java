@@ -6,12 +6,11 @@ import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultDepend
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import java.io.File;
+import java.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
-
-import java.io.File;
-import java.util.*;
 
 // TODO: 29/07/2023 rewrite
 final class DependencyManager extends ManagerBase implements IDependencyManager {
@@ -24,8 +23,7 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     }
 
     @Override
-    protected void managerConstructor() {
-    }
+    protected void managerConstructor() {}
 
     @Override
     public DependencyConfig registerDependency(@NotNull final String dependencyURL) {
@@ -84,11 +82,12 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
                 flatDir.dir(libs);
             });
         } else {
-            ManagerLogger.info("Skipping registration of {} repository for dependency: {}", dependency.getBuildTargets(), dependency.getName());
+            ManagerLogger.info(
+                    "Skipping registration of {} repository for dependency: {}",
+                    dependency.getBuildTargets(),
+                    dependency.getName());
         }
     }
-
-
 
     @Override
     @Unmodifiable

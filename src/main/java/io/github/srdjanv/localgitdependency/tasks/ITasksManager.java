@@ -8,6 +8,7 @@ public interface ITasksManager extends Manager {
     static ITasksManager createInstance(Managers managers) {
         return new TasksManager(managers);
     }
+
     @TaskDescription("creating tasks")
     void initTasks();
 }

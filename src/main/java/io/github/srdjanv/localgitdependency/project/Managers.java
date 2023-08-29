@@ -12,14 +12,24 @@ import org.gradle.api.Project;
 
 public interface Managers {
     Project getProject();
+
     IProjectManager getProjectManager();
+
     IConfigManager getConfigManager();
+
     IDependencyManager getDependencyManager();
+
     IIDEManager getIDEManager();
+
     IGitManager getGitManager();
+
     IGradleManager getGradleManager();
+
     IPersistenceManager getPersistenceManager();
+
     ITasksManager getTasksManager();
+
     ICleanupManager getCleanupManager();
+
     <T> T getLGDExtensionByType(Class<T> type);
 }

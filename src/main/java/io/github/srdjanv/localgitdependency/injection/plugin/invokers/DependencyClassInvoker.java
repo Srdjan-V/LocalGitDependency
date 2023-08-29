@@ -1,11 +1,9 @@
 package io.github.srdjanv.localgitdependency.injection.plugin.invokers;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import org.jetbrains.annotations.Nullable;
 
 public class DependencyClassInvoker {
     private final Class<Dependency> depClazz;
@@ -14,7 +12,8 @@ public class DependencyClassInvoker {
     private final MethodHandle method$getGitInfo;
     private final MethodHandle method$getPersistentInfo;
 
-    public static DependencyClassInvoker createInvoker(MethodHandles.Lookup lookup, @Nullable DependencyClassInvoker invoker, Object depObj) throws Throwable {
+    public static DependencyClassInvoker createInvoker(
+            MethodHandles.Lookup lookup, @Nullable DependencyClassInvoker invoker, Object depObj) throws Throwable {
         var depClazz = depObj.getClass();
         if (invoker == null) {
             invoker = new DependencyClassInvoker(lookup, depClazz);

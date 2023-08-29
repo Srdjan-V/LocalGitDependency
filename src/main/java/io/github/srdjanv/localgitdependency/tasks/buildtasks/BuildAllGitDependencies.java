@@ -3,9 +3,8 @@ package io.github.srdjanv.localgitdependency.tasks.buildtasks;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.tasks.basetasks.BaseProjectTask;
-import org.gradle.api.tasks.TaskAction;
-
 import javax.inject.Inject;
+import org.gradle.api.tasks.TaskAction;
 
 public class BuildAllGitDependencies extends BaseProjectTask implements BaseBuildGitTask {
 

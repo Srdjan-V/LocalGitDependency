@@ -8,15 +8,22 @@ import org.gradle.api.tasks.SourceSet;
 
 public interface SourceSetMapper {
     String getName();
+
     Property<Boolean> getRecursive();
+
     void map(SourceSet manSourceSet, Object... args);
+
     void mappings(Action<NamedDomainObjectContainer<Mapping>> action);
+
     NamedDomainObjectContainer<Mapping> getMappings();
 
     interface Mapping {
         String getName();
+
         Property<SourceSet> getTargetSourceSet();
+
         ListProperty<String> getDependents();
+
         Property<Boolean> getRecursive();
     }
 }

@@ -1,6 +1,16 @@
 package io.github.srdjanv.localgitdependency.git;
 
+import static io.github.srdjanv.localgitdependency.git.GitInfo.TargetType.BRANCH;
+import static org.eclipse.jgit.lib.Constants.R_HEADS;
+import static org.eclipse.jgit.lib.Constants.R_REMOTES;
+
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -9,17 +19,6 @@ import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.github.srdjanv.localgitdependency.git.GitInfo.TargetType.BRANCH;
-import static org.eclipse.jgit.lib.Constants.R_HEADS;
-import static org.eclipse.jgit.lib.Constants.R_REMOTES;
 
 // Some code has been taken from
 // https://github.com/alexvasilkov/GradleGitDependenciesPlugin/blob/master/src/main/groovy/com/alexvasilkov/gradle/git/utils/GitUtils.groovy
@@ -35,7 +34,8 @@ final class GitWrapper implements AutoCloseable {
     GitWrapper(GitInfo gitInfo) {
         this.gitInfo = gitInfo;
         try {
-            git = Git.open(io.github.srdjanv.localgitdependency.Constants.concatFile.apply(gitInfo.getDir(), Constants.DOT_GIT));
+            git = Git.open(io.github.srdjanv.localgitdependency.Constants.concatFile.apply(
+                    gitInfo.getDir(), Constants.DOT_GIT));
         } catch (RepositoryNotFoundException initRepo) {
             try {
                 cloneRepo();
@@ -50,13 +50,16 @@ final class GitWrapper implements AutoCloseable {
     public void setup() {
         try {
             if (hasGitExceptions()) return;
-            final String remoteUrl = git.getRepository().getConfig().getString("remote", Constants.DEFAULT_REMOTE_NAME, "url");
+            final String remoteUrl =
+                    git.getRepository().getConfig().getString("remote", Constants.DEFAULT_REMOTE_NAME, "url");
 
             if (remoteUrl == null) {
-                addGitExceptions(new Exception(String.format("The repo has no remote url, Delete directory %s and try again", gitInfo.getDir())));
+                addGitExceptions(new Exception(String.format(
+                        "The repo has no remote url, Delete directory %s and try again", gitInfo.getDir())));
                 return;
             } else if (!remoteUrl.equals(gitInfo.getUrl())) {
-                addGitExceptions(new Exception(String.format("The repo has a different remote url, Delete directory %s and try again", gitInfo.getDir())));
+                addGitExceptions(new Exception(String.format(
+                        "The repo has a different remote url, Delete directory %s and try again", gitInfo.getDir())));
                 return;
             }
 
@@ -68,14 +71,25 @@ final class GitWrapper implements AutoCloseable {
                         return;
                     }
                     final String localCommit = head().substring(0, 7);
-                    ManagerLogger.info("Local version {} is not equal to remote target {} for {}", localCommit, targetCommit, gitInfo.getDependency().getName());
+                    ManagerLogger.info(
+                            "Local version {} is not equal to remote target {} for {}",
+                            localCommit,
+                            targetCommit,
+                            gitInfo.getDependency().getName());
 
                     if (Boolean.TRUE.equals(hasLocalChanges())) {
-                        addGitExceptions(new Exception(String.format("Git repo cannot be updated to %s, %s contains local changes. Commit and push or revert all changes manually.", targetCommit, gitInfo.getDir())));
+                        addGitExceptions(new Exception(String.format(
+                                "Git repo cannot be updated to %s, %s contains local changes. Commit and push or revert all changes manually.",
+                                targetCommit, gitInfo.getDir())));
                     } else if (hasBranchLocalCommits()) {
-                        addGitExceptions(new Exception(String.format("Git repo cannot be updated to %s, %s contains local commits. Push to the remote or revert all changes manually.", targetCommit, gitInfo.getDir())));
+                        addGitExceptions(new Exception(String.format(
+                                "Git repo cannot be updated to %s, %s contains local commits. Push to the remote or revert all changes manually.",
+                                targetCommit, gitInfo.getDir())));
                     } else {
-                        ManagerLogger.info("Updating to version {} for {}", targetCommit, gitInfo.getDependency().getName());
+                        ManagerLogger.info(
+                                "Updating to version {} for {}",
+                                targetCommit,
+                                gitInfo.getDependency().getName());
                         update();
                     }
                 }
@@ -115,7 +129,9 @@ final class GitWrapper implements AutoCloseable {
             launchers.getStartup().getIsRunNeeded().set(true);
             persistentInfo.setStartupTasksTriggersSHA1(startupTasksTriggersSHA1);
         } else if (!persistentStartupTasksTriggersSHA1.equals(startupTasksTriggersSHA1)) {
-            ManagerLogger.info("Dependency {} has new local changes, for startupTasks marking dependency for reStartup", gitInfo.getDependency().getName());
+            ManagerLogger.info(
+                    "Dependency {} has new local changes, for startupTasks marking dependency for reStartup",
+                    gitInfo.getDependency().getName());
             launchers.getStartup().getIsRunNeeded().set(true);
             persistentInfo.setStartupTasksTriggersSHA1(startupTasksTriggersSHA1);
         }
@@ -125,7 +141,9 @@ final class GitWrapper implements AutoCloseable {
             launchers.getProbe().getIsRunNeeded().set(true);
             persistentInfo.setProbeTasksTriggersSHA1(probeTasksTriggersSHA1);
         } else if (!persistentProbeTasksTriggersSHA1.equals(probeTasksTriggersSHA1)) {
-            ManagerLogger.info("Dependency {} has new local changes, for probeTasks marking dependency for reProbe", gitInfo.getDependency().getName());
+            ManagerLogger.info(
+                    "Dependency {} has new local changes, for probeTasks marking dependency for reProbe",
+                    gitInfo.getDependency().getName());
             launchers.getProbe().getIsRunNeeded().set(true);
             persistentInfo.setProbeTasksTriggersSHA1(probeTasksTriggersSHA1);
         }
@@ -135,15 +153,17 @@ final class GitWrapper implements AutoCloseable {
             launchers.getBuild().getIsRunNeeded().set(true);
             persistentInfo.setBuildTasksTriggersSHA1(buildTasksTriggersSHA1);
         } else if (!persistentBuildTasksTriggersSHA1.equals(buildTasksTriggersSHA1)) {
-            ManagerLogger.info("Dependency {} has new local changes, for buildTasks marking dependency to be rebuild", gitInfo.getDependency().getName());
+            ManagerLogger.info(
+                    "Dependency {} has new local changes, for buildTasks marking dependency to be rebuild",
+                    gitInfo.getDependency().getName());
             launchers.getBuild().getIsRunNeeded().set(true);
             persistentInfo.setBuildTasksTriggersSHA1(buildTasksTriggersSHA1);
         }
     }
 
     private Boolean hasLocalChanges;
-    @Nullable
-    Boolean hasLocalChanges() throws GitAPIException, IOException {
+
+    @Nullable Boolean hasLocalChanges() throws GitAPIException, IOException {
         if (hasLocalChanges != null) return hasLocalChanges;
 
         try {
@@ -159,23 +179,23 @@ final class GitWrapper implements AutoCloseable {
 
             if (!changes.isEmpty()) {
                 var launchers = gitInfo.getDependency().getGradleInfo().getLaunchers();
-                startupTasksTriggersSHA1 = calculateSHA1(
-                        changes.stream().filter(
-                                string -> launchers.getStartup().
-                                        getTaskTriggers().get().contains(string)).collect(Collectors.toList()));
+                startupTasksTriggersSHA1 = calculateSHA1(changes.stream()
+                        .filter(string ->
+                                launchers.getStartup().getTaskTriggers().get().contains(string))
+                        .collect(Collectors.toList()));
 
-                probeTasksTriggersSHA1 = calculateSHA1(
-                        changes.stream().filter(
-                                string -> launchers.getProbe().
-                                        getTaskTriggers().get().contains(string)).collect(Collectors.toList()));
+                probeTasksTriggersSHA1 = calculateSHA1(changes.stream()
+                        .filter(string ->
+                                launchers.getProbe().getTaskTriggers().get().contains(string))
+                        .collect(Collectors.toList()));
 
                 if (launchers.getBuild().getTaskTriggers().get().isEmpty()) {
                     buildTasksTriggersSHA1 = calculateSHA1(changes);
                 } else {
-                    buildTasksTriggersSHA1 = calculateSHA1(
-                            changes.stream().filter(
-                                    string -> launchers.getBuild().
-                                            getTaskTriggers().get().contains(string)).collect(Collectors.toList()));
+                    buildTasksTriggersSHA1 = calculateSHA1(changes.stream()
+                            .filter(string ->
+                                    launchers.getBuild().getTaskTriggers().get().contains(string))
+                            .collect(Collectors.toList()));
                 }
 
                 return hasLocalChanges = true;
@@ -188,8 +208,7 @@ final class GitWrapper implements AutoCloseable {
         return null;
     }
 
-    @Nullable
-    private String calculateSHA1(List<String> changes) throws IOException {
+    @Nullable private String calculateSHA1(List<String> changes) throws IOException {
         if (changes.isEmpty()) return null;
 
         SHA1 sha1 = SHA1.newInstance();
@@ -215,22 +234,23 @@ final class GitWrapper implements AutoCloseable {
         long start = System.currentTimeMillis();
         ManagerLogger.info("Clone started {} at version {}", gitInfo.getUrl(), gitInfo.getTarget());
 
-        git = Git.cloneRepository().
-                setGitDir(io.github.srdjanv.localgitdependency.Constants.concatFile.apply(gitInfo.getDir(), Constants.DOT_GIT)).
-                setDirectory(gitInfo.getDir()).
-                setURI(gitInfo.getUrl()).
-                setRemote(Constants.DEFAULT_REMOTE_NAME).
-                setCloneAllBranches(false).
-                setBare(false).
-                setNoCheckout(true).
-                call();
+        git = Git.cloneRepository()
+                .setGitDir(io.github.srdjanv.localgitdependency.Constants.concatFile.apply(
+                        gitInfo.getDir(), Constants.DOT_GIT))
+                .setDirectory(gitInfo.getDir())
+                .setURI(gitInfo.getUrl())
+                .setRemote(Constants.DEFAULT_REMOTE_NAME)
+                .setCloneAllBranches(false)
+                .setBare(false)
+                .setNoCheckout(true)
+                .call();
 
         saveConfigAndFetch();
-        git.checkout().
-                setCreateBranch(true).
-                setName(getCorrespondingRemoteBranch()).
-                setStartPoint(gitInfo.getTargetRemote()).
-                call();
+        git.checkout()
+                .setCreateBranch(true)
+                .setName(getCorrespondingRemoteBranch())
+                .setStartPoint(gitInfo.getTargetRemote())
+                .call();
 
         gitInfo.setRefreshed();
         long spent = System.currentTimeMillis() - start;
@@ -251,15 +271,13 @@ final class GitWrapper implements AutoCloseable {
             }
         }
         if (git.getRepository().getRefDatabase().firstExactRef(localTargetBranch) != null) {
-            git.checkout().
-                    setName(gitInfo.getTarget()).
-                    call();
+            git.checkout().setName(gitInfo.getTarget()).call();
         } else {
-            git.checkout().
-                    setCreateBranch(true).
-                    setName(getCorrespondingRemoteBranch()).
-                    setStartPoint(gitInfo.getTargetRemote()).
-                    call();
+            git.checkout()
+                    .setCreateBranch(true)
+                    .setName(getCorrespondingRemoteBranch())
+                    .setStartPoint(gitInfo.getTargetRemote())
+                    .call();
         }
 
         gitInfo.setRefreshed();
@@ -293,8 +311,7 @@ final class GitWrapper implements AutoCloseable {
                 }
 
                 if (tagObjectId == null) {
-                    throw new GitAPIException(String.format("Was not able to locate tag with id %s", target)) {
-                    };
+                    throw new GitAPIException(String.format("Was not able to locate tag with id %s", target)) {};
                 }
 
                 return Objects.equals(ObjectId.toString(tagObjectId), headId);
@@ -305,8 +322,7 @@ final class GitWrapper implements AutoCloseable {
                 if (remote != null) {
                     return Objects.equals(remote.getObjectId().getName(), headId);
                 }
-                throw new GitAPIException("No remote nor any matching tags where found") {
-                };
+                throw new GitAPIException("No remote nor any matching tags where found") {};
             }
             default -> throw new IllegalStateException();
         }
@@ -319,7 +335,9 @@ final class GitWrapper implements AutoCloseable {
             if (localBranch == null) {
                 return false;
             }
-            return !Objects.equals(remoteBranch.getObjectId().getName(), localBranch.getObjectId().getName());
+            return !Objects.equals(
+                    remoteBranch.getObjectId().getName(),
+                    localBranch.getObjectId().getName());
         } else {
             return false;
         }
@@ -329,7 +347,7 @@ final class GitWrapper implements AutoCloseable {
         return ObjectId.toString(git.getRepository().resolve(Constants.HEAD));
     }
 
-    //Gets the branch from the remote based on the target type
+    // Gets the branch from the remote based on the target type
 
     private String remoteBranch;
 
@@ -340,19 +358,19 @@ final class GitWrapper implements AutoCloseable {
             } else {
                 final ObjectId objectid;
                 if (gitInfo.getTargetType() == GitInfo.TargetType.TAG) {
-                    objectid = git.getRepository().exactRef(gitInfo.getTargetRemote()).getObjectId();
+                    objectid = git.getRepository()
+                            .exactRef(gitInfo.getTargetRemote())
+                            .getObjectId();
                 } else {
                     objectid = ObjectId.fromString(gitInfo.getTargetRemote());
                 }
 
-                Map<ObjectId, String> map = git
-                        .nameRev()
-                        .addPrefix(R_REMOTES)
-                        .add(objectid)
-                        .call();
+                Map<ObjectId, String> map =
+                        git.nameRev().addPrefix(R_REMOTES).add(objectid).call();
 
                 Optional<String> optional = map.values().stream().findFirst();
-                String branch = optional.orElseThrow(() -> new RuntimeException(String.format("Target: %s not found in remote", gitInfo.getTarget())));
+                String branch = optional.orElseThrow(() ->
+                        new RuntimeException(String.format("Target: %s not found in remote", gitInfo.getTarget())));
                 if (branch.contains("~")) {
                     branch = branch.substring(0, branch.lastIndexOf("~"));
                 }
@@ -365,11 +383,15 @@ final class GitWrapper implements AutoCloseable {
     private void saveConfigAndFetch() throws IOException, GitAPIException {
         StoredConfig config = git.getRepository().getConfig();
         config.setString(
-                ConfigConstants.CONFIG_BRANCH_SECTION, getCorrespondingRemoteBranch(),
-                ConfigConstants.CONFIG_KEY_REMOTE, Constants.DEFAULT_REMOTE_NAME);
+                ConfigConstants.CONFIG_BRANCH_SECTION,
+                getCorrespondingRemoteBranch(),
+                ConfigConstants.CONFIG_KEY_REMOTE,
+                Constants.DEFAULT_REMOTE_NAME);
         config.setString(
-                ConfigConstants.CONFIG_BRANCH_SECTION, getCorrespondingRemoteBranch(),
-                ConfigConstants.CONFIG_KEY_MERGE, Constants.R_HEADS + getCorrespondingRemoteBranch());
+                ConfigConstants.CONFIG_BRANCH_SECTION,
+                getCorrespondingRemoteBranch(),
+                ConfigConstants.CONFIG_KEY_MERGE,
+                Constants.R_HEADS + getCorrespondingRemoteBranch());
 
         config.save();
         git.fetch().setTagOpt(TagOpt.FETCH_TAGS).call();

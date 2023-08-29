@@ -1,23 +1,20 @@
 package io.github.srdjanv.localgitdependency.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InvalidObjectException;
-import java.io.UncheckedIOException;
-import java.nio.file.Path;
-
 public final class FileUtil {
-    private FileUtil() {
-    }
+    private FileUtil() {}
 
-    @Nullable
-    public static File configureFilePath(@Nullable File defaultDir, @Nullable File dir) {
+    @Nullable public static File configureFilePath(@Nullable File defaultDir, @Nullable File dir) {
         if (dir == null) return null;
         if (dir.isAbsolute()) return dir;
         if (defaultDir == null) return null;
@@ -40,17 +37,17 @@ public final class FileUtil {
         } else if (object instanceof JavaLauncher javaLauncher) {
             return javaLauncher.getMetadata().getInstallationPath().getAsFile();
         } else {
-            throw new UncheckedIOException(
-                    new InvalidObjectException(String.format("Invalid data for method: %s, acceptable types are JavaLauncher, RegularFile, File, Path, String and Property, Provider of anny of these types", methodName))
-            );
+            throw new UncheckedIOException(new InvalidObjectException(String.format(
+                    "Invalid data for method: %s, acceptable types are JavaLauncher, RegularFile, File, Path, String and Property, Provider of anny of these types",
+                    methodName)));
         }
     }
 
     public static void checkExistsAndMkdirs(File file) {
         if (file.exists()) {
             if (!file.isDirectory()) {
-                throw new UncheckedIOException(
-                        new IOException(String.format("%s is not a directory, delete the file and refresh gradle", file.getAbsolutePath())));
+                throw new UncheckedIOException(new IOException(String.format(
+                        "%s is not a directory, delete the file and refresh gradle", file.getAbsolutePath())));
             }
             return;
         }

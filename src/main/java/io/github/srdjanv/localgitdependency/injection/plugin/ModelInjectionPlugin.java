@@ -1,10 +1,9 @@
 package io.github.srdjanv.localgitdependency.injection.plugin;
 
+import javax.inject.Inject;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry;
-
-import javax.inject.Inject;
 
 @SuppressWarnings("unused")
 public final class ModelInjectionPlugin implements Plugin<Project> {
@@ -21,5 +20,4 @@ public final class ModelInjectionPlugin implements Plugin<Project> {
             registry.register(new LocalGitDependencyJsonInfoModelBuilder());
         }
     }
-
 }

@@ -2,7 +2,6 @@ package io.github.srdjanv.localgitdependency.persistence.data.dependency;
 
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
-
 import java.util.Set;
 
 @NonNullData

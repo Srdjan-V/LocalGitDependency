@@ -2,7 +2,6 @@ package io.github.srdjanv.localgitdependency.persistence.data;
 
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
-
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Objects;
@@ -41,14 +40,15 @@ public class DataLayout implements Comparator<Object> {
     private final Set<DataMapper<?>> dataMappers = new HashSet<>();
     private int layoutIndex;
 
-    private DataLayout() {
-    }
+    private DataLayout() {}
 
     public <T> void registerDataMapper(Consumer<DataMapper<T>> dataMapper) {
         DataMapper<T> data = new DataMapper<>();
         dataMapper.accept(data);
         if (!dataMappers.add(data)) {
-            throw new RuntimeException(String.format("Duplicate dataMapper: %s for DataLayout", data.getDataType().name()));
+            throw new RuntimeException(String.format(
+                    "Duplicate dataMapper: %s for DataLayout",
+                    data.getDataType().name()));
         }
     }
 
@@ -133,5 +133,4 @@ public class DataLayout implements Comparator<Object> {
             return Objects.hash(dataType);
         }
     }
-
 }

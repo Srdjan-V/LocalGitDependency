@@ -3,7 +3,7 @@ package io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
-public class SubDependencyData extends SubDependencyFields{
+public class SubDependencyData extends SubDependencyFields {
 
     private SubDependencyData(Builder builder) {
         ClassUtil.instantiateObjectWithBuilder(this, builder, SubDependencyFields.class);
@@ -14,8 +14,7 @@ public class SubDependencyData extends SubDependencyFields{
     }
 
     public static class Builder extends SubDependencyFields {
-        private Builder() {
-        }
+        private Builder() {}
 
         public Builder setName(String name) {
             this.name = name;
@@ -26,7 +25,6 @@ public class SubDependencyData extends SubDependencyFields{
             this.projectID = projectID;
             return this;
         }
-
 
         public Builder setArchivesBaseName(String archivesBaseName) {
             this.archivesBaseName = archivesBaseName;
@@ -46,7 +44,6 @@ public class SubDependencyData extends SubDependencyFields{
         public SubDependencyData create() {
             return new SubDependencyData(this);
         }
-
     }
 
     public String getName() {
@@ -68,5 +65,4 @@ public class SubDependencyData extends SubDependencyFields{
     public String getGitDir() {
         return gitDir;
     }
-
 }

@@ -24,8 +24,7 @@ class TasksManager extends ManagerBase implements ITasksManager {
     }
 
     @Override
-    protected void managerConstructor() {
-    }
+    protected void managerConstructor() {}
 
     @Override
     public void initTasks() { // TODO: 30/07/2023 recursive task registration of subdeps
@@ -38,25 +37,48 @@ class TasksManager extends ManagerBase implements ITasksManager {
             taskCreator = this::createTask;
         }
 
-        if (Boolean.TRUE.equals(getConfigManager().getPluginConfig().getGenerateGradleTasks().get())) {
+        if (Boolean.TRUE.equals(
+                getConfigManager().getPluginConfig().getGenerateGradleTasks().get())) {
             taskCreator.create(Constants.STARTUP_ALL_DEPENDENCIES, RunAllStartupTasks.class, getProjectManagers());
-            taskCreator.create(Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class, getProjectManagers());
+            taskCreator.create(
+                    Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class, getProjectManagers());
             taskCreator.create(Constants.PROBE_ALL_DEPENDENCIES, ProbeAllDependenciesTask.class, getProjectManagers());
-            taskCreator.create(Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class, getProjectManagers());
-            taskCreator.create(Constants.PRINT_ALL_DEPENDENCIES_INFO, PrintAllDependenciesInfo.class, getProjectManagers());
+            taskCreator.create(
+                    Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class, getProjectManagers());
+            taskCreator.create(
+                    Constants.PRINT_ALL_DEPENDENCIES_INFO, PrintAllDependenciesInfo.class, getProjectManagers());
         }
 
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (!dependency.isGenerateGradleTasks()) continue;
 
-            taskCreator.create(Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency), UndoLocalGitChanges.class, getProjectManagers(), dependency);
-            taskCreator.create(Constants.PRINT_DEPENDENCY_INFO.apply(dependency), PrintDependencyInfo.class, getProjectManagers(), dependency);
-            taskCreator.create(Constants.STARTUP_DEPENDENCY.apply(dependency), RunStartupTasks.class, getProjectManagers(), dependency);
-            taskCreator.create(Constants.PROBE_DEPENDENCY.apply(dependency), RunProbeTasks.class, getProjectManagers(), dependency);
-            taskCreator.create(Constants.BUILD_GIT_DEPENDENCY.apply(dependency), RunBuildTasks.class, getProjectManagers(), dependency);
+            taskCreator.create(
+                    Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency),
+                    UndoLocalGitChanges.class,
+                    getProjectManagers(),
+                    dependency);
+            taskCreator.create(
+                    Constants.PRINT_DEPENDENCY_INFO.apply(dependency),
+                    PrintDependencyInfo.class,
+                    getProjectManagers(),
+                    dependency);
+            taskCreator.create(
+                    Constants.STARTUP_DEPENDENCY.apply(dependency),
+                    RunStartupTasks.class,
+                    getProjectManagers(),
+                    dependency);
+            taskCreator.create(
+                    Constants.PROBE_DEPENDENCY.apply(dependency),
+                    RunProbeTasks.class,
+                    getProjectManagers(),
+                    dependency);
+            taskCreator.create(
+                    Constants.BUILD_GIT_DEPENDENCY.apply(dependency),
+                    RunBuildTasks.class,
+                    getProjectManagers(),
+                    dependency);
         }
     }
-
 
     private interface TaskCreator {
         void create(String name, Class<? extends Task> taskClass, Object... constructorArgs);
@@ -71,5 +93,4 @@ class TasksManager extends ManagerBase implements ITasksManager {
         T task = getProject().getTasks().create(name, taskClass, constructorArgs);
         task.setGroup(Constants.TASKS_GROUP);
     }
-
 }

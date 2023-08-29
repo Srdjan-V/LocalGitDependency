@@ -1,16 +1,13 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.directoryset;
 
 import io.github.srdjanv.localgitdependency.ideintegration.adapters.Adapter;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
-
 import java.util.List;
 
 @NonNullData
 public class DirectorySetData extends DirectorySetDataFields {
-    public DirectorySetData() {
-    }
+    public DirectorySetData() {}
 
     private DirectorySetData(Builder builder) {
         ClassUtil.instantiateObjectWithBuilder(this, builder, DirectorySetDataFields.class);
@@ -21,8 +18,7 @@ public class DirectorySetData extends DirectorySetDataFields {
     }
 
     public static class Builder extends DirectorySetDataFields {
-        private Builder() {
-        }
+        private Builder() {}
 
         public Builder setBuildClassesDir(String buildClassesDir) {
             this.buildClassesDir = buildClassesDir;
@@ -38,6 +34,7 @@ public class DirectorySetData extends DirectorySetDataFields {
             this.sources = sources;
             return this;
         }
+
         public DirectorySetData create() {
             return new DirectorySetData(this);
         }

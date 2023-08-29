@@ -1,12 +1,11 @@
 package io.github.srdjanv.localgitdependency.logger;
 
-import io.github.srdjanv.localgitdependency.Constants;
-
 import static io.github.srdjanv.localgitdependency.logger.PluginLogger.*;
 
+import io.github.srdjanv.localgitdependency.Constants;
+
 public class ManagerLogger {
-    private ManagerLogger() {
-    }
+    private ManagerLogger() {}
 
     public static void infoUnFormatted(String info, Object... args) {
         PluginLogger.logger.lifecycle(info, args);
@@ -27,5 +26,4 @@ public class ManagerLogger {
     public static void warn(String log, Throwable t) {
         logger.warn(Constants.TAB_INDENTX2 + ANSI_YELLOW + log + ANSI_RESET, t);
     }
-
 }

@@ -7,12 +7,11 @@ import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
-import org.gradle.api.provider.Property;
-
-import javax.inject.Inject;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.inject.Inject;
+import org.gradle.api.provider.Property;
 
 public final class DefaultLaunchers {
 
@@ -30,7 +29,8 @@ public final class DefaultLaunchers {
             super(managers);
             getTaskTriggers().convention(Arrays.asList("settings.gradle", "build.gradle", "gradle.properties"));
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
-                File mainInit = Constants.concatFile.apply(Constants.lgdDir.apply(managers.getProject()).getAsFile(), Constants.MAIN_INIT_SCRIPT_GRADLE);
+                File mainInit = Constants.concatFile.apply(
+                        Constants.lgdDir.apply(managers.getProject()).getAsFile(), Constants.MAIN_INIT_SCRIPT_GRADLE);
                 return Arrays.asList("--init-script", mainInit.getAbsolutePath());
             }));
         }
@@ -42,9 +42,11 @@ public final class DefaultLaunchers {
             super(managers);
             getTaskTriggers().convention(Collections.emptyList());
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
-                return Arrays.asList("--init-script", dependencyProperty.get().getGradleInfo().getInitScript().getAbsolutePath());
+                return Arrays.asList(
+                        "--init-script",
+                        dependencyProperty.get().getGradleInfo().getInitScript().getAbsolutePath());
             }));
-            getMainTasks().convention(managers.getProject().provider(()-> {
+            getMainTasks().convention(managers.getProject().provider(() -> {
                 var tags = dependencyProperty.get().getBuildTargets();
                 if (tags.isEmpty()) return Collections.emptyList();
                 if (tags.contains(Dependency.Type.MavenLocal)) return Collections.singletonList("publishToMavenLocal");
@@ -83,6 +85,5 @@ public final class DefaultLaunchers {
         }
     }
 
-    private DefaultLaunchers() {
-    }
+    private DefaultLaunchers() {}
 }

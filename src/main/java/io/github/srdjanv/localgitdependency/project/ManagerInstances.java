@@ -11,12 +11,11 @@ import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.ideintegration.IIDEManager;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
-import org.gradle.api.Project;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.gradle.api.Project;
 
 final class ManagerInstances implements Managers {
     private final Project project;

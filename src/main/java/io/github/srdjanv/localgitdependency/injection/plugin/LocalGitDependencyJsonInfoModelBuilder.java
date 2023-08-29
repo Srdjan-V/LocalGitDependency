@@ -11,6 +11,9 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeD
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.directoryset.DirectorySetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
+import java.io.File;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 import org.gradle.api.Project;
 import org.gradle.api.UnknownDomainObjectException;
 import org.gradle.api.UnknownTaskException;
@@ -22,10 +25,6 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.tooling.provider.model.ToolingModelBuilder;
 import org.gradle.util.GradleVersion;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.File;
-import java.lang.invoke.MethodHandles;
-import java.util.*;
 
 public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingModelBuilder {
     private static final String MODEL_NAME = LocalGitDependencyJsonInfoModel.class.getName();
@@ -45,12 +44,15 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         String lgdPluginVersion;
         try {
             var manager = project.getExtensions().getByName(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION);
-            Class<Constants> constantsClass = (Class<Constants>) manager.getClass().getClassLoader().loadClass(Constants.class.getCanonicalName());
+            Class<Constants> constantsClass = (Class<Constants>)
+                    manager.getClass().getClassLoader().loadClass(Constants.class.getCanonicalName());
             var field$PLUGIN_VERSION = constantsClass.getField("PLUGIN_VERSION");
             lgdPluginVersion = (String) field$PLUGIN_VERSION.get(null);
 
-        } catch (UnknownDomainObjectException | ClassNotFoundException |
-                 NoSuchFieldException | IllegalAccessException e) {
+        } catch (UnknownDomainObjectException
+                | ClassNotFoundException
+                | NoSuchFieldException
+                | IllegalAccessException e) {
             lgdPluginVersion = null;
         }
 
@@ -106,7 +108,8 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
             archivesBaseName = base.getArchivesName().getOrElse(project.getName());
         } else {
             try {
-                @SuppressWarnings("deprecation") var base = project.getConvention().getPlugin(BasePluginConvention.class);
+                @SuppressWarnings("deprecation")
+                var base = project.getConvention().getPlugin(BasePluginConvention.class);
                 archivesBaseName = base.getArchivesBaseName();
             } catch (IllegalStateException ignore) {
                 archivesBaseName = project.getName();
@@ -129,7 +132,6 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
             builder.setSourceSetsData(Collections.emptyList());
             return;
         }
-
 
         List<SourceSetData> sourceSets = new ArrayList<>();
         for (SourceSet sourceSet : sourceContainer) {
@@ -164,15 +166,17 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
             }
 
             final List<String> resourcePaths = sourceSet.getResources().getSrcDirs().stream()
-                    .filter(File::exists).map(File::getAbsolutePath).collect(ArrayList::new, List::add, List::addAll);
+                    .filter(File::exists)
+                    .map(File::getAbsolutePath)
+                    .collect(ArrayList::new, List::add, List::addAll);
 
-            var builder = SourceSetData.builder().
-                    setName(sourceSet.getName()).
-                    addDirectorySet(buildJavaDirectorySet(sourceSet)).
-                    setBuildResourcesDir(buildResourcesDir).
-                    setCompileClasspath(compileClasspath).
-                    setDependentSourceSets(dependentSourceSets).
-                    setResources(resourcePaths);
+            var builder = SourceSetData.builder()
+                    .setName(sourceSet.getName())
+                    .addDirectorySet(buildJavaDirectorySet(sourceSet))
+                    .setBuildResourcesDir(buildResourcesDir)
+                    .setCompileClasspath(compileClasspath)
+                    .setDependentSourceSets(dependentSourceSets)
+                    .setResources(resourcePaths);
 
             sourceSets.add(builder.create());
         }
@@ -182,12 +186,15 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
 
     private DirectorySetData buildJavaDirectorySet(SourceSet sourceSet) {
         final List<String> sourcePaths = sourceSet.getJava().getSrcDirs().stream()
-                .filter(File::exists).map(File::getAbsolutePath).collect(ArrayList::new, List::add, List::addAll);
+                .filter(File::exists)
+                .map(File::getAbsolutePath)
+                .collect(ArrayList::new, List::add, List::addAll);
 
         var gradleVersion = GradleVersion.version(project.getGradle().getGradleVersion());
         var builder = DirectorySetData.builder().setSources(sourcePaths).setType(Adapter.Types.Java);
         if (gradleVersion.compareTo(GradleVersion.version("6.1")) >= 0) {
-            builder.setBuildClassesDir(sourceSet.getJava().getClassesDirectory().get().getAsFile().getAbsolutePath());
+            builder.setBuildClassesDir(
+                    sourceSet.getJava().getClassesDirectory().get().getAsFile().getAbsolutePath());
         } else {
             //noinspection deprecation
             builder.setBuildClassesDir(sourceSet.getJava().getOutputDir().getAbsolutePath());
@@ -217,7 +224,7 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         }
 
         var lookup = MethodHandles.lookup();
-        //Used to dynamically generate method handles based on the loaded class
+        // Used to dynamically generate method handles based on the loaded class
         DependencyClassInvoker depInvoker = null;
         ProjectProbeDataClassInvoker probeInvoker = null;
         PersistentInfoClassInvoker persistentInfoInvoker = null;
@@ -227,34 +234,32 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         for (Object dependency : dependencies) {
             var builder = SubDependencyData.builder();
 
-            //Refresh the invokers if a class changes, this should not be possible
+            // Refresh the invokers if a class changes, this should not be possible
             depInvoker = DependencyClassInvoker.createInvoker(lookup, depInvoker, dependency);
             persistentInfoInvoker = PersistentInfoClassInvoker.createInvoker(lookup, persistentInfoInvoker, depInvoker);
             probeInvoker = ProjectProbeDataClassInvoker.createInvoker(lookup, probeInvoker, persistentInfoInvoker);
             gitInfoInvoker = GitInfoCLassInvoker.createInvoker(lookup, gitInfoInvoker, depInvoker);
 
             var depName = depInvoker.getName();
-            builder.setName(depName).
-                    setProjectID(probeInvoker.getProjectID()).
-                    setDependencyType(depInvoker.getDependencyType()).
-                    setGitDir(gitInfoInvoker.getDir().getAbsolutePath()).
-                    setArchivesBaseName(probeInvoker.getArchivesBaseName());
+            builder.setName(depName)
+                    .setProjectID(probeInvoker.getProjectID())
+                    .setDependencyType(depInvoker.getDependencyType())
+                    .setGitDir(gitInfoInvoker.getDir().getAbsolutePath())
+                    .setArchivesBaseName(probeInvoker.getArchivesBaseName());
 
             subDependencyDataList.add(builder.create());
             for (Object subDependencyData : probeInvoker.getSubDependencyData()) {
                 subInvoker = SubDependencyClassInvoker.createInvoker(lookup, subInvoker, subDependencyData);
-                subDependencyDataList.add(
-                        SubDependencyData.builder().
-                                setName(depName + ":" + subInvoker.getName()).
-                                setProjectID(subInvoker.getProjectID()).
-                                setDependencyType(subInvoker.getDependencyType()).
-                                setGitDir(subInvoker.getGitDir()).
-                                setArchivesBaseName(subInvoker.getArchivesBaseName()).
-                                create());
+                subDependencyDataList.add(SubDependencyData.builder()
+                        .setName(depName + ":" + subInvoker.getName())
+                        .setProjectID(subInvoker.getProjectID())
+                        .setDependencyType(subInvoker.getDependencyType())
+                        .setGitDir(subInvoker.getGitDir())
+                        .setArchivesBaseName(subInvoker.getArchivesBaseName())
+                        .create());
             }
         }
 
         builder.setSubDependencyData(subDependencyDataList);
     }
-
 }

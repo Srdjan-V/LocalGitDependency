@@ -1,16 +1,15 @@
 package io.github.srdjanv.localgitdependency.git;
 
+import static org.eclipse.jgit.lib.Constants.*;
+
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.util.Objects;
-
-import static org.eclipse.jgit.lib.Constants.*;
+import org.jetbrains.annotations.NotNull;
 
 public final class GitInfo {
     private final Dependency dependency;
@@ -54,7 +53,11 @@ public final class GitInfo {
             if (dependencyConfig.getLibsDir().isPresent()) {
                 dir = FileUtil.toFile(dependencyConfig.getLibsDir().get(), "getLibsDir");
             } else {
-                dir = managers.getConfigManager().getPluginConfig().getLibsDir().get().getAsFile();
+                dir = managers.getConfigManager()
+                        .getPluginConfig()
+                        .getLibsDir()
+                        .get()
+                        .getAsFile();
             }
             this.dir = Constants.concatFile.apply(dir, dependency.getName());
         } else this.dir = null;
@@ -63,38 +66,31 @@ public final class GitInfo {
         this.keepGitUpdated = dependencyConfig.getKeepGitUpdated().get();
     }
 
-    @NotNull
-    public Dependency getDependency() {
+    @NotNull public Dependency getDependency() {
         return dependency;
     }
 
-    @NotNull
-    public String getUrl() {
+    @NotNull public String getUrl() {
         return url;
     }
 
-    @NotNull
-    public String getTarget() {
+    @NotNull public String getTarget() {
         return target;
     }
 
-    @NotNull
-    public String getTargetLocal() {
+    @NotNull public String getTargetLocal() {
         return targetLocal;
     }
 
-    @NotNull
-    public String getTargetRemote() {
+    @NotNull public String getTargetRemote() {
         return targetRemote;
     }
 
-    @NotNull
-    public TargetType getTargetType() {
+    @NotNull public TargetType getTargetType() {
         return targetType;
     }
 
-    @NotNull
-    public File getDir() {
+    @NotNull public File getDir() {
         return dir;
     }
 

@@ -12,7 +12,6 @@ import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.IPersistenceManager;
 import io.github.srdjanv.localgitdependency.project.ManagerRunner.RunLogType;
 import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -99,8 +98,7 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
     }
 
     @Override
-    protected void managerConstructor() {
-    }
+    protected void managerConstructor() {}
 
     @Override
     public void startPlugin() {
@@ -116,8 +114,7 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
         final long start = System.currentTimeMillis();
         PluginLogger.title("{} starting {} tasks", formattedName, Constants.EXTENSION_NAME);
         try {
-            for (ManagerRunner<?> projectRunner : PROJECT_RUNNERS)
-                projectRunner.runAndLog(getProjectManagers());
+            for (ManagerRunner<?> projectRunner : PROJECT_RUNNERS) projectRunner.runAndLog(getProjectManagers());
         } catch (Throwable e) {
             throwable = e;
         } finally {
@@ -137,5 +134,4 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
             throw new RuntimeException(throwable);
         }
     }
-
 }

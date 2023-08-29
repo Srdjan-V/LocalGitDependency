@@ -120,7 +120,7 @@ localGitDependency {
         tryGeneratingSourceJar = true
         tryGeneratingJavaDocJar = true
     }
-    
+
     add("https://example.com/repository.git", {
         //this is overwritten the global configuration
         tryGeneratingJavaDocJar = false

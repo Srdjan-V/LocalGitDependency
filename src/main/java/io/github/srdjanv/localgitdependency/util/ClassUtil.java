@@ -2,18 +2,16 @@ package io.github.srdjanv.localgitdependency.util;
 
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.util.annotations.NullableData;
-import org.gradle.api.provider.Property;
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.gradle.api.provider.Property;
+import org.jetbrains.annotations.NotNull;
 
 public final class ClassUtil {
-    private ClassUtil() {
-    }
+    private ClassUtil() {}
 
     public static <D> void instantiateObjectWithBuilder(final D object, final D builder, final Class<D> fieldsClazz) {
         iterateFields(fieldsClazz, field -> {
@@ -21,20 +19,20 @@ public final class ClassUtil {
         });
     }
 
-    //if both objects have non-null data, the default is the reference
-    public static <D> void mergeObjectsDefaultReference(final D newObject, final D referenceObject, final Class<D> clazz) {
+    // if both objects have non-null data, the default is the reference
+    public static <D> void mergeObjectsDefaultReference(
+            final D newObject, final D referenceObject, final Class<D> clazz) {
         iterateFields(clazz, field -> {
             Object referenceObjectData = field.get(referenceObject);
-            if (referenceObjectData != null)
-                field.set(newObject, referenceObjectData);
+            if (referenceObjectData != null) field.set(newObject, referenceObjectData);
         });
     }
 
-    //if both objects have non-null data, the default is the newObject
-    public static <D> void mergeObjectsDefaultNewObject(final D newObject, final D referenceObject, final Class<D> clazz) {
+    // if both objects have non-null data, the default is the newObject
+    public static <D> void mergeObjectsDefaultNewObject(
+            final D newObject, final D referenceObject, final Class<D> clazz) {
         iterateFields(clazz, field -> {
-            if (field.get(newObject) == null)
-                field.set(newObject, field.get(referenceObject));
+            if (field.get(newObject) == null) field.set(newObject, field.get(referenceObject));
         });
     }
 
@@ -48,7 +46,8 @@ public final class ClassUtil {
                 clazz = clazz.getSuperclass();
             } while (clazz != Object.class);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Unexpected error while reflecting %s class", clazz.getSimpleName()), e);
+            throw new RuntimeException(
+                    String.format("Unexpected error while reflecting %s class", clazz.getSimpleName()), e);
         }
     }
 
@@ -58,17 +57,21 @@ public final class ClassUtil {
     }
 
     public static <D> void finalizeProperties(final D targetObj, final Class<D> clazz) {
-        iterateMethods(clazz, method -> {
-            for (Class<?> anInterface : method.getReturnType().getInterfaces()) {
-                if (anInterface == Property.class) {
-                    ((Property<?>) method.invoke(targetObj)).finalizeValue();
-                    return;
-                }
-            }
-        }, Collections.singletonList(() -> ConfigFinalizer.class.getDeclaredMethod("finalizeProps")));
+        iterateMethods(
+                clazz,
+                method -> {
+                    for (Class<?> anInterface : method.getReturnType().getInterfaces()) {
+                        if (anInterface == Property.class) {
+                            ((Property<?>) method.invoke(targetObj)).finalizeValue();
+                            return;
+                        }
+                    }
+                },
+                Collections.singletonList(() -> ConfigFinalizer.class.getDeclaredMethod("finalizeProps")));
     }
 
-    public static void iterateMethods(Class<?> clazz, final MethodConsumer action, final List<MethodSuppler> methodBlackList) {
+    public static void iterateMethods(
+            Class<?> clazz, final MethodConsumer action, final List<MethodSuppler> methodBlackList) {
         try {
             var resolvedMethodBlackList = new ArrayList<Method>();
             for (MethodSuppler methodSupplier : methodBlackList) {
@@ -85,7 +88,8 @@ public final class ClassUtil {
                 if (clazz == null) break;
             } while (clazz != Object.class);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Unexpected error while reflecting %s class", clazz.getSimpleName()), e);
+            throw new RuntimeException(
+                    String.format("Unexpected error while reflecting %s class", clazz.getSimpleName()), e);
         }
     }
 
@@ -99,16 +103,14 @@ public final class ClassUtil {
         void accept(Method method) throws Exception;
     }
 
-    @NotNull
-    public static List<String> validData(Object data) {
+    @NotNull public static List<String> validData(Object data) {
         List<String> nulls = new ArrayList<>(0);
         validDataInternal(nulls, data.getClass(), data);
 
         return nulls;
     }
 
-    @NotNull
-    public static List<String> validData(Class<?> dataClazz, Object data) {
+    @NotNull public static List<String> validData(Class<?> dataClazz, Object data) {
         List<String> nulls = new ArrayList<>(0);
         validDataInternal(nulls, dataClazz, data);
 
@@ -120,16 +122,15 @@ public final class ClassUtil {
             do {
                 boolean clazzNullable = dataClazz.isAnnotationPresent(NullableData.class);
                 var resolvedFields = resolveFields(dataClazz, data);
-                for (var resolvedData : resolvedFields)
-                    validRawData(nulls, clazzNullable, resolvedData);
+                for (var resolvedData : resolvedFields) validRawData(nulls, clazzNullable, resolvedData);
 
-                for (var resolvedData : resolvedFields)
-                    validIterableData(nulls, resolvedData);
+                for (var resolvedData : resolvedFields) validIterableData(nulls, resolvedData);
 
                 dataClazz = dataClazz.getSuperclass();
             } while (dataClazz != Object.class);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Unexpected error while reflecting %s class", dataClazz.getSimpleName()), e);
+            throw new RuntimeException(
+                    String.format("Unexpected error while reflecting %s class", dataClazz.getSimpleName()), e);
         }
     }
 

@@ -3,17 +3,15 @@ package io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdat
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.directoryset.DirectorySetData;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import io.github.srdjanv.localgitdependency.util.annotations.NonNullData;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 @NonNullData
 public class SourceSetData extends SourceSetDataFields {
 
-    public SourceSetData() {
-    }
+    public SourceSetData() {}
 
     public SourceSetData(Builder builder) {
         ClassUtil.instantiateObjectWithBuilder(this, builder, SourceSetDataFields.class);
@@ -67,8 +65,7 @@ public class SourceSetData extends SourceSetDataFields {
         return name;
     }
 
-    @Nullable
-    public String getBuildResourcesDir() {
+    @Nullable public String getBuildResourcesDir() {
         return buildResourcesDir;
     }
 
