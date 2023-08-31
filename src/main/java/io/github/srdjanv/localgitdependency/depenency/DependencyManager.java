@@ -62,11 +62,11 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     }
 
     @Override
-    public void tagDep(String depName, Dependency.Type type) {
-        depName = depName.split(":")[0];
+    public void tagDep(String notation, Dependency.Type type) {
+        notation = notation.split(":")[0];
 
-        var notationMap = tags.computeIfAbsent(getDepName(depName, true), d -> new HashMap<>());
-        notationMap.computeIfAbsent(getDepName(depName, false), m -> new HashSet<>()).add(type);
+        var notationMap = tags.computeIfAbsent(getDepName(notation, true), d -> new HashMap<>());
+        notationMap.computeIfAbsent(getDepName(notation, false), m -> new HashSet<>()).add(type);
     }
 
 

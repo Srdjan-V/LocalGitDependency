@@ -1,14 +1,21 @@
 package io.github.srdjanv.localgitdependency.extentions;
 
 import groovy.lang.GroovyObjectSupport;
+import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.Managers;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import org.gradle.api.Action;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.Provider;
 import org.gradle.internal.Actions;
 import org.jetbrains.annotations.NotNull;
@@ -44,11 +51,27 @@ public class LGDHelper extends GroovyObjectSupport {
         return repo(Dependency.Type.JarFlatDir, notation, config);
     }
 
-    /*    //directly add jar dependencies to the project
-    public Provider<FileCollection> jar(@NotNull final String notation) {
-        getDependencyManager().markBuild(getDependencyName(notation), io.github.srdjanv.localgitdependency.depenency.Dependency.Type.Jar);
+    /**
+     * directly add jar dependencies to the project
+     */
+    public Provider<ConfigurableFileCollection> jar(@NotNull final String notation) {
+        return jar(notation, Actions.doNothing());
     }
 
+    public Provider<ConfigurableFileCollection> jar(@NotNull final String notation, @NotNull final Action<ConfigurableFileCollection> config) {
+        Objects.requireNonNull(notation);
+        Objects.requireNonNull(config);
+        managers.getDependencyManager().tagDep(notation, Dependency.Type.Jar);
+
+        return managers.getProject().provider(() -> {
+            var files = managers.getProject().getObjects().fileCollection();
+            files.setFrom(resolveJars(notation));
+            config.execute(files);
+            return files;
+        });
+    }
+
+    /*
     public Provider<FileCollection> task(String name) {
 
     }*/
@@ -80,8 +103,9 @@ public class LGDHelper extends GroovyObjectSupport {
     }
 
     private Dependency getDependency(final String[] notation) {
+        final var name = notation[0].split("\\.")[0];
         return managers.getDependencyManager().getDependencies().stream()
-                .filter(d -> d.getName().equals(notation[0]))
+                .filter(d -> d.getName().equals(name))
                 .findFirst()
                 .orElseThrow(() ->
                         new NoSuchElementException(String.format("Dependency with name: %s not found", notation[0])));
@@ -127,4 +151,39 @@ public class LGDHelper extends GroovyObjectSupport {
             default -> throw new IllegalStateException("Unexpected value: " + inputNotation.length);
         };
     }
+
+    private List<String> resolveJars(String notation) {
+        final var inputNotation = notation.split(":");
+        final var dep = getDependency(inputNotation);
+
+        final var subDep = getSubDependency(inputNotation, dep);
+        if (subDep == null) {
+            return getJars(inputNotation, dep.getGitInfo().getDir(),
+                    dep.getPersistentInfo().getProbeData().getArchivesBaseName(),
+                    dep.getPersistentInfo().getProbeData().getProjectID());
+        } else
+            return getJars(inputNotation, new File(subDep.getGitDir()), subDep.getArchivesBaseName(), subDep.getProjectID());
+    }
+
+    private List<String> getJars(String[] inputNotation, File libsDir, String archivesBaseName, String projectID) {
+        List<String> ret = new ArrayList<>();
+        libsDir = Constants.buildDir.apply(libsDir);
+
+        if (inputNotation.length > 1) {
+            var pattern = Pattern.compile(inputNotation[1]);
+            for (File file : Objects.requireNonNull(libsDir.listFiles())) {
+                if (pattern.matcher(file.getName()).find())
+                    ret.add(file.getAbsolutePath());
+            }
+            return ret;
+        }
+
+        var fileID = archivesBaseName + "-" + projectID.split(":")[2];
+        for (File file : Objects.requireNonNull(libsDir.listFiles())) {
+            if (file.getName().contains(fileID))
+                ret.add(file.getAbsolutePath());
+        }
+        return ret;
+    }
+
 }

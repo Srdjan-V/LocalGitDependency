@@ -26,7 +26,7 @@ public interface IDependencyManager extends Manager {
     @Unmodifiable
     Set<Dependency> getDependencies();
 
-    void tagDep(String depName, Dependency.Type type);
+    void tagDep(String notation, Dependency.Type type);
 
     @Nullable Set<Dependency.Type> getDepTags(String depName);
 }
