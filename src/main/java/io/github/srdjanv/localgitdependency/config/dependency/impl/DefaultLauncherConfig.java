@@ -14,7 +14,7 @@ public abstract class DefaultLauncherConfig extends GroovyObjectSupport implemen
     private final Launchers.Build build;
 
     @Inject
-    public DefaultLauncherConfig(Managers managers) {
+    public DefaultLauncherConfig(Managers managers, DefaultDependencyConfig dependencyConfig) {
         var defaultable = managers.getConfigManager()
                 .getDefaultableConfig()
                 .getBuildLauncher()
@@ -26,9 +26,9 @@ public abstract class DefaultLauncherConfig extends GroovyObjectSupport implemen
                 .convention(managers.getProject()
                         .provider(() -> defaultable.getForwardOutput().get()));
 
-        startup = managers.getProject().getObjects().newInstance(DefaultLaunchers.Startup.class, managers);
-        probe = managers.getProject().getObjects().newInstance(DefaultLaunchers.Probe.class, managers);
-        build = managers.getProject().getObjects().newInstance(DefaultLaunchers.Build.class, managers);
+        startup = managers.getProject().getObjects().newInstance(DefaultLaunchers.Startup.class, managers, dependencyConfig);
+        probe = managers.getProject().getObjects().newInstance(DefaultLaunchers.Probe.class, managers, dependencyConfig);
+        build = managers.getProject().getObjects().newInstance(DefaultLaunchers.Build.class, managers, dependencyConfig);
     }
 
     @Override

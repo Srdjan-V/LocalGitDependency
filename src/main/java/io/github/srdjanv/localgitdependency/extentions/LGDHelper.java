@@ -4,8 +4,10 @@ import groovy.lang.GroovyObjectSupport;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.Managers;
+
 import java.util.NoSuchElementException;
 import java.util.Objects;
+
 import org.gradle.api.Action;
 import org.gradle.api.provider.Provider;
 import org.gradle.internal.Actions;
@@ -57,8 +59,7 @@ public class LGDHelper extends GroovyObjectSupport {
             final @NotNull Action<org.gradle.api.artifacts.Dependency> config) {
         Objects.requireNonNull(notation);
         Objects.requireNonNull(config);
-        final var name = getDependencyName(notation);
-        managers.getDependencyManager().markBuild(name, type);
+        managers.getDependencyManager().tagDep(notation, type);
 
         return managers.getProject().provider(() -> {
             var resolvedNotation = resolveNotation(notation);
@@ -68,56 +69,35 @@ public class LGDHelper extends GroovyObjectSupport {
         });
     }
 
-    private String getDependencyName(final String notation) {
-        var args = notation.split(":");
-        if (args.length == 0) {
-            return notation;
-        } else return args[0];
-    }
-
     private String resolveNotation(final String notationTarget) {
         final var inputNotation = notationTarget.split(":");
-        final var dep = getDependency(notationTarget, inputNotation);
+        final var dep = getDependency(inputNotation);
 
-        final SubDependencyData subDep;
-        if (inputNotation.length > 1) {
-            subDep = getSubDependency(inputNotation, dep);
-        } else subDep = null;
-
+        final var subDep = getSubDependency(inputNotation, dep);
         if (subDep == null) {
             return getDepNotation(inputNotation, dep);
         } else return getSubDepNotation(inputNotation, subDep);
     }
 
-    private Dependency getDependency(final String notation, final String[] args) {
-        if (args.length == 0) {
-            return managers.getDependencyManager().getDependencies().stream()
-                    .filter(d -> d.getName().equals(notation))
-                    .findFirst()
-                    .orElseThrow(() ->
-                            new NoSuchElementException(String.format("Dependency with name: %s not found", notation)));
-        } else
-            return managers.getDependencyManager().getDependencies().stream()
-                    .filter(d -> d.getName().equals(args[0]))
-                    .findFirst()
-                    .orElseThrow(() ->
-                            new NoSuchElementException(String.format("Dependency with name: %s not found", args[0])));
+    private Dependency getDependency(final String[] notation) {
+        return managers.getDependencyManager().getDependencies().stream()
+                .filter(d -> d.getName().equals(notation[0]))
+                .findFirst()
+                .orElseThrow(() ->
+                        new NoSuchElementException(String.format("Dependency with name: %s not found", notation[0])));
     }
 
     private SubDependencyData getSubDependency(final String[] inputNotation, final Dependency dependency) {
+        final String subDepName;
+        int firstChar = inputNotation[0].indexOf('.');
+        if (firstChar != -1) {
+            subDepName = inputNotation[0].substring(firstChar + 1);
+        } else return null;
+
         for (SubDependencyData subDependency :
                 dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
-            var notation = subDependency.getName().split("\\.");
-            if (notation.length == 1 && inputNotation[1].equals(notation[0])) return subDependency;
-
-            if (notation.length > inputNotation.length) continue;
-
-            boolean valid = true;
-            for (int i = 0; i < notation.length; i++) {
-                if (!notation[i].equals(inputNotation[i])) valid = false;
-            }
-
-            if (valid) return subDependency;
+            if (subDependency.getName().equals(subDepName))
+                return subDependency;
         }
         return null;
     }
@@ -139,8 +119,8 @@ public class LGDHelper extends GroovyObjectSupport {
             case 1 -> depNotation[0] + ":" + archiveNotation + ":" + depNotation[2];
             case 2 -> depNotation[0] + ":" + inputNotation[1] + ":" + depNotation[2];
             case 3 -> {
-                if (inputNotation[1].split("\\.").length != 0) {
-                    yield depNotation[0] + ":" + archiveNotation + ":" + inputNotation[1];
+                if (inputNotation[2].split("\\.").length != 1) {
+                    yield depNotation[0] + ":" + archiveNotation + ":" + inputNotation[2];
                 }
                 yield depNotation[0] + ":" + inputNotation[1] + ":" + depNotation[2];
             }

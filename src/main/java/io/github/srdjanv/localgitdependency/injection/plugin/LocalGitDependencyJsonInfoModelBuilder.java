@@ -251,7 +251,7 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
             for (Object subDependencyData : probeInvoker.getSubDependencyData()) {
                 subInvoker = SubDependencyClassInvoker.createInvoker(lookup, subInvoker, subDependencyData);
                 subDependencyDataList.add(SubDependencyData.builder()
-                        .setName(depName + ":" + subInvoker.getName())
+                        .setName(depName + "." + subInvoker.getName())
                         .setProjectID(subInvoker.getProjectID())
                         .setDependencyType(subInvoker.getDependencyType())
                         .setGitDir(subInvoker.getGitDir())

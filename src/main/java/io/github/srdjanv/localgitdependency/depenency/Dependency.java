@@ -7,9 +7,11 @@ import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.project.Managers;
+
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -18,9 +20,8 @@ public class Dependency {
     private final String name;
     private final DefaultSourceSetMapper mappers;
     private final boolean ideSupport;
-    private final boolean shouldRegisterRepository;
     private final boolean generateGradleTasks;
-    private final Set<Type> buildTargets;
+    private final Set<Type> buildTags;
     private final GitInfo gitInfo;
     private final GradleInfo gradleInfo;
     private final PersistentInfo persistentInfo;
@@ -32,11 +33,9 @@ public class Dependency {
         this.ideSupport = mappers != null
                 ? mappers.getRecursive().get()
                 : lgdIde.getEnableIdeSupport().get();
-        this.shouldRegisterRepository =
-                dependencyConfig.getRegisterDependencyRepositoryToProject().get();
         this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks().get();
-        this.buildTargets =
-                Collections.unmodifiableSet(dependencyConfig.getBuildTargets().get());
+        this.buildTags =
+                Collections.unmodifiableSet(dependencyConfig.getDependecyTags().get());
 
         this.gitInfo = new GitInfo(managers, dependencyConfig, this);
         this.gradleInfo = new GradleInfo(managers, dependencyConfig, this);
@@ -55,17 +54,13 @@ public class Dependency {
         return ideSupport;
     }
 
-    public boolean shouldRegisterRepository() {
-        return shouldRegisterRepository;
-    }
-
     public boolean isGenerateGradleTasks() {
         return generateGradleTasks;
     }
 
     @NotNull @Unmodifiable
-    public Set<Type> getBuildTargets() {
-        return buildTargets;
+    public Set<Type> getBuildTags() {
+        return buildTags;
     }
 
     @NotNull public GitInfo getGitInfo() {

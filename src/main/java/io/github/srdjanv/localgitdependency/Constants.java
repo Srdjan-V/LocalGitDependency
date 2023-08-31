@@ -43,7 +43,6 @@ public final class Constants {
     public static final String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
     public static final String PROJECT_DATA_JSON = "projectData.json";
 
-    public static final Function<Dependency, String> RepositoryFlatDir = dependency -> dependency.getName() + "FlatDir";
     public static final Function<SubDependencyData, String> RepositorySubFlatDir =
             dependency -> dependency.getName() + "FlatDir";
     public static final Function<Dependency, String> RepositoryMavenProjectDependencyLocal =

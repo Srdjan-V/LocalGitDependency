@@ -31,18 +31,10 @@ public interface CommonConfig {
     Property<Boolean> getTryGeneratingJavaDocJar();
 
     /**
-     * If a repository should be added for the build dependency, this will not do anything for the Jar dependency type
-     *
-     * @see Dependency.Type
-     * @see org.gradle.api.artifacts.dsl.RepositoryHandler
-     */
-    Property<Boolean> getRegisterDependencyRepositoryToProject();
-
-    /**
      * Custom tasks can be generated for this dependency
      *
      */
     Property<Boolean> getGenerateGradleTasks();
 
-    SetProperty<Dependency.Type> getBuildTargets();
+    SetProperty<Dependency.Type> getDependecyTags();
 }

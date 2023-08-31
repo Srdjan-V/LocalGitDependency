@@ -28,13 +28,8 @@ public final class GradleLaunchers implements ConfigFinalizer {
         gradleDaemonMaxIdleTime = launcherConfig.getGradleDaemonMaxIdleTime().get();
 
         startup = (DefaultLaunchers.Startup) launcherConfig.getStartup();
-        startup.getDependencyProperty().set(dependency);
-
         probe = (DefaultLaunchers.Probe) launcherConfig.getProbe();
-        probe.getDependencyProperty().set(dependency);
-
         build = (DefaultLaunchers.Build) launcherConfig.getBuild();
-        build.getDependencyProperty().set(dependency);
     }
 
     @Override

@@ -7,26 +7,28 @@ import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.inject.Inject;
+
 import org.gradle.api.provider.Property;
 
 public final class DefaultLaunchers {
 
     public abstract static class Startup extends Base implements Launchers.Startup {
         @Inject
-        public Startup(final Managers managers) {
-            super(managers);
+        public Startup(final Managers managers, final DefaultDependencyConfig dependencyConfig) {
+            super(managers, dependencyConfig);
             getTaskTriggers().convention(Collections.emptyList());
         }
     }
 
     public abstract static class Probe extends Base implements Launchers.Probe {
         @Inject
-        public Probe(final Managers managers) {
-            super(managers);
+        public Probe(final Managers managers, final DefaultDependencyConfig dependencyConfig) {
+            super(managers, dependencyConfig);
             getTaskTriggers().convention(Arrays.asList("settings.gradle", "build.gradle", "gradle.properties"));
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
                 File mainInit = Constants.concatFile.apply(
@@ -38,16 +40,16 @@ public final class DefaultLaunchers {
 
     public abstract static class Build extends Base implements Launchers.Build {
         @Inject
-        public Build(final Managers managers) {
-            super(managers);
+        public Build(final Managers managers, final DefaultDependencyConfig dependencyConfig) {
+            super(managers, dependencyConfig);
             getTaskTriggers().convention(Collections.emptyList());
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
                 return Arrays.asList(
                         "--init-script",
-                        dependencyProperty.get().getGradleInfo().getInitScript().getAbsolutePath());
+                        dependencyConfig.getDependencyProperty().get().getGradleInfo().getInitScript().getAbsolutePath());
             }));
             getMainTasks().convention(managers.getProject().provider(() -> {
-                var tags = dependencyProperty.get().getBuildTargets();
+                var tags = dependencyConfig.getDependencyProperty().get().getBuildTags();
                 if (tags.isEmpty()) return Collections.emptyList();
                 if (tags.contains(Dependency.Type.MavenLocal)) return Collections.singletonList("publishToMavenLocal");
                 return Collections.singletonList("build");
@@ -56,10 +58,9 @@ public final class DefaultLaunchers {
     }
 
     public abstract static class Base extends GroovyObjectSupport implements Launchers.Base, ConfigFinalizer {
-        protected final Property<Dependency> dependencyProperty;
         protected final Property<Boolean> isRunNeeded;
 
-        public Base(final Managers managers) {
+        public Base(final Managers managers, final DefaultDependencyConfig dependencyConfig) {
             getExplicit().convention(false);
             getForwardOutput().convention(true);
             getPreTasksArguments().convention(Collections.emptyList());
@@ -67,12 +68,7 @@ public final class DefaultLaunchers {
             getPostTasksArguments().convention(Collections.emptyList());
             getPostTasks().convention(Collections.emptyList());
 
-            dependencyProperty = managers.getProject().getObjects().property(Dependency.class);
             isRunNeeded = managers.getProject().getObjects().property(Boolean.class);
-        }
-
-        public Property<Dependency> getDependencyProperty() {
-            return dependencyProperty;
         }
 
         public Property<Boolean> getIsRunNeeded() {
@@ -85,5 +81,6 @@ public final class DefaultLaunchers {
         }
     }
 
-    private DefaultLaunchers() {}
+    private DefaultLaunchers() {
+    }
 }

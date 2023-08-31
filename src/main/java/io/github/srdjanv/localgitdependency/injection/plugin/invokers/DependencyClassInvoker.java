@@ -29,7 +29,7 @@ public class DependencyClassInvoker {
         this.depClazz = (Class<Dependency>) clazz;
 
         method$getName = lookup.unreflect(depClazz.getDeclaredMethod("getName"));
-        method$getDependencyType = lookup.unreflect(depClazz.getDeclaredMethod("getBuildTargets"));
+        method$getDependencyType = lookup.unreflect(depClazz.getDeclaredMethod("getBuildTags"));
         method$getGitInfo = lookup.unreflect(depClazz.getDeclaredMethod("getGitInfo"));
         method$getPersistentInfo = lookup.unreflect(depClazz.getDeclaredMethod("getPersistentInfo"));
     }

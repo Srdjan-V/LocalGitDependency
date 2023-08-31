@@ -4,8 +4,11 @@ import groovy.lang.GroovyObjectSupport;
 import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
+import org.gradle.api.provider.Property;
+
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,6 +16,7 @@ import javax.inject.Inject;
 
 public abstract class DefaultDependencyConfig extends GroovyObjectSupport implements DependencyConfig, ConfigFinalizer {
     private final LauncherConfig launcherConfig;
+    private final Property<Dependency> dependencyProperty;
 
     @Inject
     public DefaultDependencyConfig(final String url, final Managers managers) {
@@ -35,20 +39,21 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
         getTryGeneratingJavaDocJar()
                 .convention(managers.getProject()
                         .provider(() -> defaultable.getTryGeneratingJavaDocJar().get()));
-        getRegisterDependencyRepositoryToProject()
-                .convention(managers.getProject().provider(() -> defaultable
-                        .getRegisterDependencyRepositoryToProject()
-                        .get()));
-        getBuildTargets().convention(managers.getProject().provider(() -> {
-            var defaultBuildTargets = defaultable.getBuildTargets().get();
-            var targetedBuilds =
-                    managers.getDependencyManager().getMarkedBuild(getName().get());
-            if (targetedBuilds == null) return defaultBuildTargets;
-            var newSet = new HashSet<>(defaultBuildTargets);
-            newSet.addAll(targetedBuilds);
+        getDependecyTags().convention(managers.getProject().provider(() -> {
+            var defaultDepTags = defaultable.getDependecyTags().get();
+            var depTags =
+                    managers.getDependencyManager().getDepTags(getName().get());
+            if (depTags == null) return defaultDepTags;
+            var newSet = new HashSet<>(defaultDepTags);
+            newSet.addAll(depTags);
             return newSet;
         }));
-        launcherConfig = managers.getProject().getObjects().newInstance(DefaultLauncherConfig.class, managers);
+        launcherConfig = managers.getProject().getObjects().newInstance(DefaultLauncherConfig.class, managers, this);
+        dependencyProperty = managers.getProject().getObjects().property(Dependency.class);
+    }
+
+    public Property<Dependency> getDependencyProperty() {
+        return dependencyProperty;
     }
 
     @Override

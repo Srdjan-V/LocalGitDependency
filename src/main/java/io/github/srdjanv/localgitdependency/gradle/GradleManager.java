@@ -314,7 +314,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                 dependency.getPersistentInfo().getProbeData().getProjectGradleVersion());
 
         List<Consumer<GradleInit>> initScriptBuilder = new ArrayList<>();
-        var tags = dependency.getBuildTargets();
+        var tags = dependency.getBuildTags();
 
         if (gradleVersion.compareTo(GradleVersion.version("6.0")) >= 0) {
             if (tags.stream().anyMatch(tag -> Arrays.asList(Type.MavenLocal, Type.JarFlatDir, Type.Jar, Type.Task)
