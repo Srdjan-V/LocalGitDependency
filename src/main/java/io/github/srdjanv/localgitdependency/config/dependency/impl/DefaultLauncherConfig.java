@@ -26,9 +26,15 @@ public abstract class DefaultLauncherConfig extends GroovyObjectSupport implemen
                 .convention(managers.getProject()
                         .provider(() -> defaultable.getForwardOutput().get()));
 
-        startup = managers.getProject().getObjects().newInstance(DefaultLaunchers.Startup.class, managers, dependencyConfig);
-        probe = managers.getProject().getObjects().newInstance(DefaultLaunchers.Probe.class, managers, dependencyConfig);
-        build = managers.getProject().getObjects().newInstance(DefaultLaunchers.Build.class, managers, dependencyConfig);
+        startup = managers.getProject()
+                .getObjects()
+                .newInstance(DefaultLaunchers.Startup.class, managers, dependencyConfig);
+        probe = managers.getProject()
+                .getObjects()
+                .newInstance(DefaultLaunchers.Probe.class, managers, dependencyConfig);
+        build = managers.getProject()
+                .getObjects()
+                .newInstance(DefaultLaunchers.Build.class, managers, dependencyConfig);
     }
 
     @Override

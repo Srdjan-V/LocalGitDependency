@@ -7,12 +7,11 @@ import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
-import org.gradle.api.provider.Property;
-
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
+import org.gradle.api.provider.Property;
 
 public abstract class DefaultDependencyConfig extends GroovyObjectSupport implements DependencyConfig, ConfigFinalizer {
     private final LauncherConfig launcherConfig;
@@ -41,8 +40,7 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
                         .provider(() -> defaultable.getTryGeneratingJavaDocJar().get()));
         getDependecyTags().convention(managers.getProject().provider(() -> {
             var defaultDepTags = defaultable.getDependecyTags().get();
-            var depTags =
-                    managers.getDependencyManager().getDepTags(getName().get());
+            var depTags = managers.getDependencyManager().getDepTags(getName().get());
             if (depTags == null) return defaultDepTags;
             var newSet = new HashSet<>(defaultDepTags);
             newSet.addAll(depTags);

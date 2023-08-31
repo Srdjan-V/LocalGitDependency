@@ -5,17 +5,14 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.Managers;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
 import org.gradle.api.Action;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.Provider;
 import org.gradle.internal.Actions;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +55,8 @@ public class LGDHelper extends GroovyObjectSupport {
         return jar(notation, Actions.doNothing());
     }
 
-    public Provider<ConfigurableFileCollection> jar(@NotNull final String notation, @NotNull final Action<ConfigurableFileCollection> config) {
+    public Provider<ConfigurableFileCollection> jar(
+            @NotNull final String notation, @NotNull final Action<ConfigurableFileCollection> config) {
         Objects.requireNonNull(notation);
         Objects.requireNonNull(config);
         managers.getDependencyManager().tagDep(notation, Dependency.Type.Jar);
@@ -120,8 +118,7 @@ public class LGDHelper extends GroovyObjectSupport {
 
         for (SubDependencyData subDependency :
                 dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
-            if (subDependency.getName().equals(subDepName))
-                return subDependency;
+            if (subDependency.getName().equals(subDepName)) return subDependency;
         }
         return null;
     }
@@ -158,11 +155,14 @@ public class LGDHelper extends GroovyObjectSupport {
 
         final var subDep = getSubDependency(inputNotation, dep);
         if (subDep == null) {
-            return getJars(inputNotation, dep.getGitInfo().getDir(),
+            return getJars(
+                    inputNotation,
+                    dep.getGitInfo().getDir(),
                     dep.getPersistentInfo().getProbeData().getArchivesBaseName(),
                     dep.getPersistentInfo().getProbeData().getProjectID());
         } else
-            return getJars(inputNotation, new File(subDep.getGitDir()), subDep.getArchivesBaseName(), subDep.getProjectID());
+            return getJars(
+                    inputNotation, new File(subDep.getGitDir()), subDep.getArchivesBaseName(), subDep.getProjectID());
     }
 
     private List<String> getJars(String[] inputNotation, File libsDir, String archivesBaseName, String projectID) {
@@ -172,18 +172,15 @@ public class LGDHelper extends GroovyObjectSupport {
         if (inputNotation.length > 1) {
             var pattern = Pattern.compile(inputNotation[1]);
             for (File file : Objects.requireNonNull(libsDir.listFiles())) {
-                if (pattern.matcher(file.getName()).find())
-                    ret.add(file.getAbsolutePath());
+                if (pattern.matcher(file.getName()).find()) ret.add(file.getAbsolutePath());
             }
             return ret;
         }
 
         var fileID = archivesBaseName + "-" + projectID.split(":")[2];
         for (File file : Objects.requireNonNull(libsDir.listFiles())) {
-            if (file.getName().contains(fileID))
-                ret.add(file.getAbsolutePath());
+            if (file.getName().contains(fileID)) ret.add(file.getAbsolutePath());
         }
         return ret;
     }
-
 }

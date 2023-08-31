@@ -7,12 +7,10 @@ import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.inject.Inject;
-
 import org.gradle.api.provider.Property;
 
 public final class DefaultLaunchers {
@@ -46,7 +44,12 @@ public final class DefaultLaunchers {
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
                 return Arrays.asList(
                         "--init-script",
-                        dependencyConfig.getDependencyProperty().get().getGradleInfo().getInitScript().getAbsolutePath());
+                        dependencyConfig
+                                .getDependencyProperty()
+                                .get()
+                                .getGradleInfo()
+                                .getInitScript()
+                                .getAbsolutePath());
             }));
             getMainTasks().convention(managers.getProject().provider(() -> {
                 var tags = dependencyConfig.getDependencyProperty().get().getBuildTags();
@@ -81,6 +84,5 @@ public final class DefaultLaunchers {
         }
     }
 
-    private DefaultLaunchers() {
-    }
+    private DefaultLaunchers() {}
 }

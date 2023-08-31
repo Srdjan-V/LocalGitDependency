@@ -7,10 +7,8 @@ import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-
 import java.io.File;
 import java.util.*;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -25,8 +23,7 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     }
 
     @Override
-    protected void managerConstructor() {
-    }
+    protected void managerConstructor() {}
 
     @Override
     public DependencyConfig registerDependency(@NotNull final String dependencyURL) {
@@ -41,7 +38,10 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
         for (var dependencyConfig : unResolvedDependencies) {
             ((DefaultDependencyConfig) dependencyConfig).finalizeProps();
             var dep = new Dependency(this, dependencyConfig);
-            ((DefaultDependencyConfig) dependencyConfig).getDependencyProperty().value(dep).finalizeValue();
+            ((DefaultDependencyConfig) dependencyConfig)
+                    .getDependencyProperty()
+                    .value(dep)
+                    .finalizeValue();
             dependencies.add(dep);
         }
         unResolvedDependencies.clear();
@@ -66,13 +66,15 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
         notation = notation.split(":")[0];
 
         var notationMap = tags.computeIfAbsent(getDepName(notation, true), d -> new HashMap<>());
-        notationMap.computeIfAbsent(getDepName(notation, false), m -> new HashSet<>()).add(type);
+        notationMap
+                .computeIfAbsent(getDepName(notation, false), m -> new HashSet<>())
+                .add(type);
     }
-
 
     @Override
     public @Nullable Set<Dependency.Type> getDepTags(String depName) {
-        for (Map.Entry<String, Set<Dependency.Type>> notationSetEntry : tags.get(getDepName(depName, true)).entrySet()) {
+        for (Map.Entry<String, Set<Dependency.Type>> notationSetEntry :
+                tags.get(getDepName(depName, true)).entrySet()) {
             if (depName.equals(notationSetEntry.getKey())) return notationSetEntry.getValue();
         }
         return null;
@@ -88,10 +90,10 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     }
 
     private void registerSubRepos(Dependency dependency) {
-        for (SubDependencyData subDependency : dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
+        for (SubDependencyData subDependency :
+                dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
             var subTags = getDepTags(dependency.getName() + "." + subDependency.getName());
-            if (subTags != null)
-                if (subTags.contains(Dependency.Type.JarFlatDir)) flatDirRepos(subDependency);
+            if (subTags != null) if (subTags.contains(Dependency.Type.JarFlatDir)) flatDirRepos(subDependency);
         }
     }
 
