@@ -317,12 +317,13 @@ final class GradleManager extends ManagerBase implements IGradleManager {
         var tags = dependency.getBuildTags();
 
         if (gradleVersion.compareTo(GradleVersion.version("6.0")) >= 0) {
-            if (tags.stream().anyMatch(tag -> Arrays.asList(Type.MavenLocal, Type.JarFlatDir, Type.Jar, Type.Task)
+            if (tags.stream().anyMatch(tag -> Arrays.asList(Type.MavenLocal, Type.JarFlatDir, Type.Jar)
                     .contains(tag))) buildJavaJars(dependency, initScriptBuilder);
 
         } else {
-            if (tags.stream().anyMatch(tag -> Arrays.asList(Type.JarFlatDir, Type.Jar, Type.Task)
-                    .contains(tag))) buildTaskJars(dependency, initScriptBuilder);
+            if (tags.stream()
+                    .anyMatch(tag -> Arrays.asList(Type.JarFlatDir, Type.Jar).contains(tag)))
+                buildTaskJars(dependency, initScriptBuilder);
         }
 
         return GradleInit.crateInitProject(initScriptBuilder);

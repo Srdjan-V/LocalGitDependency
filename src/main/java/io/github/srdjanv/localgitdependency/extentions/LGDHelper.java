@@ -69,11 +69,6 @@ public class LGDHelper extends GroovyObjectSupport {
         });
     }
 
-    /*
-    public Provider<FileCollection> task(String name) {
-
-    }*/
-
     private Provider<org.gradle.api.artifacts.Dependency> repo(
             final @NotNull Dependency.Type type,
             final @NotNull String notation,
@@ -177,7 +172,7 @@ public class LGDHelper extends GroovyObjectSupport {
             return ret;
         }
 
-        var fileID = archivesBaseName + "-" + projectID.split(":")[2];
+        final var fileID = archivesBaseName + "-" + projectID.split(":")[2];
         for (File file : Objects.requireNonNull(libsDir.listFiles())) {
             if (file.getName().contains(fileID)) ret.add(file.getAbsolutePath());
         }

@@ -90,6 +90,6 @@ public class Dependency {
         MavenLocal,
         JarFlatDir,
         Jar,
-        Task
+        Class
     }
 }
