@@ -51,13 +51,28 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     @Override
     public boolean registerRepos() {
         boolean didWork = false;
+        boolean mavenLocal = false;
         for (Dependency dependency : dependencies) {
             if (dependency.getBuildTags().contains(Dependency.Type.JarFlatDir)) {
                 didWork = true;
                 flatDirRepos(dependency);
-                registerSubRepos(dependency);
+            }
+            if (dependency.getBuildTags().contains(Dependency.Type.MavenLocal)) didWork = mavenLocal = true;
+
+            for (SubDependencyData subDependency :
+                    dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
+                var subTags = getDepTags(dependency.getName() + "." + subDependency.getName());
+                if (subTags == null) continue;
+
+                if (subTags.contains(Dependency.Type.JarFlatDir)) {
+                    didWork = true;
+                    flatDirRepos(subDependency);
+                }
+                if (subTags.contains(Dependency.Type.MavenLocal)) didWork = mavenLocal = true;
             }
         }
+        if (mavenLocal) getProject().getRepositories().mavenLocal();
+
         return didWork;
     }
 
@@ -73,8 +88,9 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
 
     @Override
     public @Nullable Set<Dependency.Type> getDepTags(String depName) {
-        for (Map.Entry<String, Set<Dependency.Type>> notationSetEntry :
-                tags.get(getDepName(depName, true)).entrySet()) {
+        var depTags = tags.get(getDepName(depName, true));
+        if (depTags == null) return null;
+        for (Map.Entry<String, Set<Dependency.Type>> notationSetEntry : depTags.entrySet()) {
             if (depName.equals(notationSetEntry.getKey())) return notationSetEntry.getValue();
         }
         return null;
@@ -87,14 +103,6 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
         if (topDep) {
             return notation.substring(0, charAt);
         } else return notation.substring(charAt + 1);
-    }
-
-    private void registerSubRepos(Dependency dependency) {
-        for (SubDependencyData subDependency :
-                dependency.getPersistentInfo().getProbeData().getSubDependencyData()) {
-            var subTags = getDepTags(dependency.getName() + "." + subDependency.getName());
-            if (subTags != null) if (subTags.contains(Dependency.Type.JarFlatDir)) flatDirRepos(subDependency);
-        }
     }
 
     private void flatDirRepos(SubDependencyData subDep) {
