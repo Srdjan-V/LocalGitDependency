@@ -2,9 +2,11 @@ package io.github.srdjanv.localgitdependency.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
+import org.gradle.api.InvalidUserDataException;
+import org.gradle.api.Project;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
@@ -37,9 +39,9 @@ public final class FileUtil {
         } else if (object instanceof JavaLauncher javaLauncher) {
             return javaLauncher.getMetadata().getInstallationPath().getAsFile();
         } else {
-            throw new UncheckedIOException(new InvalidObjectException(String.format(
+            throw new InvalidUserDataException(String.format(
                     "Invalid data for method: %s, acceptable types are JavaLauncher, RegularFile, File, Path, String and Property, Provider of anny of these types",
-                    methodName)));
+                    methodName));
         }
     }
 
@@ -55,5 +57,35 @@ public final class FileUtil {
             throw new UncheckedIOException(
                     new IOException(String.format("Unable to create directory %s", file.getAbsolutePath())));
         }
+    }
+
+    public static File concat(File root, String path) {
+        return new File(root, path);
+    }
+
+    public static File toBuildDir(File file) {
+        return new File(file, "/build/libs");
+    }
+
+    // Dependency data file generators
+    public static File getPersistentInitScript(File persistentFolder, String name) {
+        File persistentInitScript = new File(persistentFolder, name + "/" + name + "Init.gradle");
+        checkExistsAndMkdirs(persistentInitScript.getParentFile());
+        return persistentInitScript;
+    }
+
+    public static File getPersistentJsonFile(File persistentFolder, String name) {
+        File persistentJsonFile = new File(persistentFolder, name + "/" + name + ".json");
+        checkExistsAndMkdirs(persistentJsonFile.getParentFile());
+        return persistentJsonFile;
+    }
+
+    // Default plugin dirs
+    public static Directory getLibsDir(Project project) {
+        return project.getLayout().getProjectDirectory().dir("/libs");
+    }
+
+    public static Directory getLgdDir(Project project) {
+        return project.getLayout().getBuildDirectory().dir("/lgd").get();
     }
 }

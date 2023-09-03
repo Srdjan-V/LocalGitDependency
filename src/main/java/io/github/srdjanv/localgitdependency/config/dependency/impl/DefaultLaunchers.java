@@ -7,6 +7,7 @@ import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,8 +30,8 @@ public final class DefaultLaunchers {
             super(managers, dependencyConfig);
             getTaskTriggers().convention(Arrays.asList("settings.gradle", "build.gradle", "gradle.properties"));
             getMainTasksArguments().convention(managers.getProject().provider(() -> {
-                File mainInit = Constants.concatFile.apply(
-                        Constants.lgdDir.apply(managers.getProject()).getAsFile(), Constants.MAIN_INIT_SCRIPT_GRADLE);
+                File mainInit = FileUtil.concat(
+                        FileUtil.getLgdDir(managers.getProject()).getAsFile(), Constants.MAIN_INIT_SCRIPT_GRADLE);
                 return Arrays.asList("--init-script", mainInit.getAbsolutePath());
             }));
         }

@@ -5,6 +5,7 @@ import static org.eclipse.jgit.lib.Constants.R_HEADS;
 import static org.eclipse.jgit.lib.Constants.R_REMOTES;
 
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,8 +35,7 @@ final class GitWrapper implements AutoCloseable {
     GitWrapper(GitInfo gitInfo) {
         this.gitInfo = gitInfo;
         try {
-            git = Git.open(io.github.srdjanv.localgitdependency.Constants.concatFile.apply(
-                    gitInfo.getDir(), Constants.DOT_GIT));
+            git = Git.open(FileUtil.concat(gitInfo.getDir(), Constants.DOT_GIT));
         } catch (RepositoryNotFoundException initRepo) {
             try {
                 cloneRepo();
@@ -235,8 +235,7 @@ final class GitWrapper implements AutoCloseable {
         ManagerLogger.info("Clone started {} at version {}", gitInfo.getUrl(), gitInfo.getTarget());
 
         git = Git.cloneRepository()
-                .setGitDir(io.github.srdjanv.localgitdependency.Constants.concatFile.apply(
-                        gitInfo.getDir(), Constants.DOT_GIT))
+                .setGitDir(FileUtil.concat(gitInfo.getDir(), Constants.DOT_GIT))
                 .setDirectory(gitInfo.getDir())
                 .setURI(gitInfo.getUrl())
                 .setRemote(Constants.DEFAULT_REMOTE_NAME)

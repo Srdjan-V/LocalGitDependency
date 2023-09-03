@@ -11,6 +11,7 @@ import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -362,8 +363,8 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
     private void validateMainInitScript() {
         PluginConfig pluginConfig = getConfigManager().getPluginConfig();
-        File mainInit = Constants.concatFile.apply(
-                Constants.lgdDir.apply(getProject()).getAsFile(), Constants.MAIN_INIT_SCRIPT_GRADLE);
+        File mainInit =
+                FileUtil.concat(FileUtil.getLgdDir(getProject()).getAsFile(), Constants.MAIN_INIT_SCRIPT_GRADLE);
         validateScript(
                 mainInit,
                 pluginConfig.getKeepInitScriptUpdated().get(),

@@ -2,7 +2,6 @@ package io.github.srdjanv.localgitdependency.git;
 
 import static org.eclipse.jgit.lib.Constants.*;
 
-import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
@@ -48,19 +47,17 @@ public final class GitInfo {
             targetRemote = R_REMOTES + DEFAULT_REMOTE_NAME + "/" + target;
         }
 
-        if (dependency.getName() != null) {
-            File dir;
-            if (dependencyConfig.getLibsDir().isPresent()) {
-                dir = FileUtil.toFile(dependencyConfig.getLibsDir().get(), "getLibsDir");
-            } else {
-                dir = managers.getConfigManager()
-                        .getPluginConfig()
-                        .getLibsDir()
-                        .get()
-                        .getAsFile();
-            }
-            this.dir = Constants.concatFile.apply(dir, dependency.getName());
-        } else this.dir = null;
+        final File dir;
+        if (dependencyConfig.getLibsDir().isPresent()) {
+            dir = FileUtil.toFile(dependencyConfig.getLibsDir().get(), "getLibsDir");
+        } else {
+            dir = managers.getConfigManager()
+                    .getPluginConfig()
+                    .getLibsDir()
+                    .get()
+                    .getAsFile();
+        }
+        this.dir = FileUtil.concat(dir, dependency.getName());
 
         // TODO:25/08/2023 force disable if ideSup is used
         this.keepGitUpdated = dependencyConfig.getKeepGitUpdated().get();

@@ -1,12 +1,12 @@
 package io.github.srdjanv.localgitdependency.persistence;
 
-import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.dependency.DependencyData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.File;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -27,8 +27,8 @@ public final class PersistentInfo {
         this.dependency = dependency;
 
         // TODO: 25/08/2023 test
-        this.persistentFile = Constants.persistentJsonFile.apply(
-                Constants.lgdDir.apply(managers.getProject()).getAsFile(), dependency.getName());
+        this.persistentFile = FileUtil.getPersistentJsonFile(
+                FileUtil.getLgdDir(managers.getProject()).getAsFile(), dependency.getName());
     }
 
     public boolean hasDependencyTypeChanged() {

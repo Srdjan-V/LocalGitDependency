@@ -1,10 +1,10 @@
 package io.github.srdjanv.localgitdependency.extentions;
 
 import groovy.lang.GroovyObjectSupport;
-import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -162,7 +162,7 @@ public class LGDHelper extends GroovyObjectSupport {
 
     private List<String> getJars(String[] inputNotation, File libsDir, String archivesBaseName, String projectID) {
         List<String> ret = new ArrayList<>();
-        libsDir = Constants.buildDir.apply(libsDir);
+        libsDir = FileUtil.toBuildDir(libsDir);
 
         if (inputNotation.length > 1) {
             var pattern = Pattern.compile(inputNotation[1]);

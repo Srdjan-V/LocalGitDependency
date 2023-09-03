@@ -1,14 +1,7 @@
 package io.github.srdjanv.localgitdependency;
 
-import static io.github.srdjanv.localgitdependency.util.FileUtil.checkExistsAndMkdirs;
-
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
-import java.io.File;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import org.gradle.api.Project;
-import org.gradle.api.file.Directory;
 
 // Never change the name or package id
 public final class Constants {
@@ -42,50 +35,4 @@ public final class Constants {
     // Main plugin data
     public static final String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";
     public static final String PROJECT_DATA_JSON = "projectData.json";
-
-    public static final Function<SubDependencyData, String> RepositorySubFlatDir =
-            dependency -> dependency.getName() + "FlatDir";
-    public static final Function<Dependency, String> RepositoryMavenProjectDependencyLocal =
-            dependency -> dependency.getName() + "Repo";
-    public static final Function<SubDependencyData, String> RepositoryMavenProjectSubDependencyLocal =
-            dependency -> dependency.getName() + "Repo";
-
-    // Default plugin dirs
-    public static final Function<Project, File> defaultDir =
-            project -> new File(project.getLayout().getProjectDirectory().getAsFile(), "/localGitDependency");
-    public static final Function<File, File> defaultPersistentDir = file -> new File(file, "/!data");
-    public static final Function<File, File> defaultLibsDir = file -> new File(file, "/libs");
-    public static final Function<File, File> defaultMavenFolder = file -> new File(file, "/!maven");
-
-    public static final Function<Project, Directory> libsDir =
-            project -> project.getLayout().getProjectDirectory().dir("/libs");
-    public static final Function<Project, Directory> lgdDir =
-            project -> project.getLayout().getBuildDirectory().dir("/lgd").get();
-
-    // Maven directory generators
-    public static final Function<File, File> MavenProjectLocal = file -> {
-        checkExistsAndMkdirs(file);
-        return new File(file, "/!mavenProjectLocal");
-    };
-    public static final BiFunction<File, String, File> MavenProjectDependencyLocal = (file, name) -> {
-        File maven = new File(file, "/!mavenProjectDependencyLocal" + "/" + name);
-        checkExistsAndMkdirs(maven);
-        return maven;
-    };
-
-    // Dependency data file generators
-    public static final BiFunction<File, String, File> persistentInitScript = (persistentFolder, name) -> {
-        File persistentInitScript = new File(persistentFolder, name + "/" + name + "Init.gradle");
-        checkExistsAndMkdirs(persistentInitScript.getParentFile());
-        return persistentInitScript;
-    };
-    public static final BiFunction<File, String, File> persistentJsonFile = (persistentFolder, name) -> {
-        File persistentJsonFile = new File(persistentFolder, name + "/" + name + ".json");
-        checkExistsAndMkdirs(persistentJsonFile.getParentFile());
-        return persistentJsonFile;
-    };
-
-    public static final Function<File, File> buildDir = file -> new File(file, "/build/libs");
-    public static final BiFunction<File, String, File> concatFile = File::new;
-    public static final String RepositoryMavenProjectLocal = "MavenProjectLocal";
 }

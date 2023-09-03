@@ -1,12 +1,12 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
-import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultDependencyConfig;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.File;
 import java.util.*;
 import org.jetbrains.annotations.NotNull;
@@ -114,7 +114,7 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     }
 
     private void flatDirRepos(final String name, final File gitDir) {
-        final File libs = Constants.buildDir.apply(gitDir);
+        final File libs = FileUtil.toBuildDir(gitDir);
 
         if (!libs.exists()) {
             ManagerLogger.error("Dependency: {}, no libs folder was found", name);

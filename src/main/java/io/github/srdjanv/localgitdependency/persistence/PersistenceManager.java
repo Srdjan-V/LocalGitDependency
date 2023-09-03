@@ -10,6 +10,7 @@ import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeD
 import io.github.srdjanv.localgitdependency.persistence.data.project.ProjectData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -59,8 +60,7 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
 
     @Override
     public void loadProjectPersistentData() {
-        projectDataJson = Constants.concatFile.apply(
-                Constants.lgdDir.apply(getProject()).getAsFile(), Constants.PROJECT_DATA_JSON);
+        projectDataJson = FileUtil.concat(FileUtil.getLgdDir(getProject()).getAsFile(), Constants.PROJECT_DATA_JSON);
 
         if (projectDataJson.exists()) {
             if (projectDataJson.isDirectory()) {

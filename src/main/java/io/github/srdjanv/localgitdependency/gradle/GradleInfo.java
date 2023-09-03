@@ -1,9 +1,9 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
-import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.File;
 import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
@@ -21,8 +21,8 @@ public final class GradleInfo {
         this.launchers = GradleLaunchers.build(dependency, dependencyConfig);
         this.keepInitScriptUpdated = dependencyConfig.getKeepInitScriptUpdated().get();
         // TODO: 25/08/2023 test
-        this.initScript = Constants.persistentInitScript.apply(
-                Constants.lgdDir.apply(managers.getProject()).getAsFile(), dependency.getName());
+        this.initScript = FileUtil.getPersistentInitScript(
+                FileUtil.getLgdDir(managers.getProject()).getAsFile(), dependency.getName());
         this.tryGeneratingSourceJar =
                 dependencyConfig.getTryGeneratingSourceJar().get();
         this.tryGeneratingJavaDocJar =
