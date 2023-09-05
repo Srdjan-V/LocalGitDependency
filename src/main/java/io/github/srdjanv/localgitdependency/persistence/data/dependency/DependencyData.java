@@ -7,6 +7,7 @@ import java.util.Set;
 @NonNullData
 public class DependencyData {
     private String initFileSHA1;
+    private String gitTarget;
     private Boolean startupTasksSuccessful;
     private String startupTasksTriggersSHA1;
     private Boolean probeTasksSuccessful;
@@ -21,6 +22,14 @@ public class DependencyData {
 
     public void setInitFileSHA1(String initFileSHA1) {
         this.initFileSHA1 = initFileSHA1;
+    }
+
+    public String getGitTarget() {
+        return gitTarget;
+    }
+
+    public void setGitTarget(String gitTarget) {
+        this.gitTarget = gitTarget;
     }
 
     public Boolean getStartupTasksSuccessful() {

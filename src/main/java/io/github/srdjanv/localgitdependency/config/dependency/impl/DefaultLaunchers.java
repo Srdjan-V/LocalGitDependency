@@ -46,14 +46,14 @@ public final class DefaultLaunchers {
                 return Arrays.asList(
                         "--init-script",
                         dependencyConfig
-                                .getDependencyProperty()
+                                .getDependencyCallBack()
                                 .get()
                                 .getGradleInfo()
                                 .getInitScript()
                                 .getAbsolutePath());
             }));
             getMainTasks().convention(managers.getProject().provider(() -> {
-                var tags = dependencyConfig.getDependencyProperty().get().getBuildTags();
+                var tags = dependencyConfig.getDependencyCallBack().get().getBuildTags();
                 if (tags.isEmpty()) return Collections.emptyList();
                 if (tags.contains(Dependency.Type.MavenLocal)) return Collections.singletonList("publishToMavenLocal");
                 return Collections.singletonList("build");

@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultDependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultSourceSetMapper;
 import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
@@ -25,6 +26,11 @@ public class Dependency {
     private final PersistentInfo persistentInfo;
 
     public Dependency(Managers managers, DependencyConfig dependencyConfig) {
+        ((DefaultDependencyConfig) dependencyConfig)
+                .getDependencyCallBack()
+                .value(this)
+                .finalizeValue();
+
         this.name = dependencyConfig.getName().get();
         var lgdIde = managers.getLGDExtensionByType(LGDIDE.class);
         this.mappers = (DefaultSourceSetMapper) lgdIde.getMappers().findByName(name);

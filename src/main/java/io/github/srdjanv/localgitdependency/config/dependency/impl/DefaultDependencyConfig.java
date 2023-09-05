@@ -21,11 +21,16 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
     public DefaultDependencyConfig(final String url, final Managers managers) {
         getUrl().convention(url).finalizeValue();
         getName().convention(managers.getProject().provider(() -> getNameFromUrl(getUrl().get())));
+        dependencyProperty = managers.getProject().getObjects().property(Dependency.class);
 
         final var defaultable = managers.getConfigManager().getDefaultableConfig();
-        getKeepGitUpdated()
-                .convention(managers.getProject()
-                        .provider(() -> defaultable.getKeepGitUpdated().get()));
+        getKeepGitUpdated().convention(managers.getProject().provider(() -> {
+            var mapper = dependencyProperty.get().getSourceSetMapper();
+            if (mapper != null && mapper.getMappings().isEmpty()) {
+                return defaultable.getKeepGitUpdated().get();
+            }
+            return false;
+        }));
         getKeepInitScriptUpdated()
                 .convention(managers.getProject()
                         .provider(() -> defaultable.getKeepInitScriptUpdated().get()));
@@ -47,10 +52,9 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
             return newSet;
         }));
         launcherConfig = managers.getProject().getObjects().newInstance(DefaultLauncherConfig.class, managers, this);
-        dependencyProperty = managers.getProject().getObjects().property(Dependency.class);
     }
 
-    public Property<Dependency> getDependencyProperty() {
+    public Property<Dependency> getDependencyCallBack() {
         return dependencyProperty;
     }
 

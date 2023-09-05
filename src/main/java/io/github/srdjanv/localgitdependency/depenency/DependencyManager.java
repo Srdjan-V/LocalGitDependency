@@ -38,10 +38,6 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
         for (var dependencyConfig : unResolvedDependencies) {
             ((DefaultDependencyConfig) dependencyConfig).finalizeProps();
             var dep = new Dependency(this, dependencyConfig);
-            ((DefaultDependencyConfig) dependencyConfig)
-                    .getDependencyProperty()
-                    .value(dep)
-                    .finalizeValue();
             dependencies.add(dep);
         }
         unResolvedDependencies.clear();

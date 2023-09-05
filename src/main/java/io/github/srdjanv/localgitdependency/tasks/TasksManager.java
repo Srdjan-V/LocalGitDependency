@@ -12,8 +12,6 @@ import io.github.srdjanv.localgitdependency.tasks.probetasks.ProbeAllDependencie
 import io.github.srdjanv.localgitdependency.tasks.probetasks.RunProbeTasks;
 import io.github.srdjanv.localgitdependency.tasks.startuptasks.RunAllStartupTasks;
 import io.github.srdjanv.localgitdependency.tasks.startuptasks.RunStartupTasks;
-import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoAllLocalGitChanges;
-import io.github.srdjanv.localgitdependency.tasks.undotasks.UndoLocalGitChanges;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.util.GradleVersion;
@@ -37,11 +35,8 @@ class TasksManager extends ManagerBase implements ITasksManager {
             taskCreator = this::createTask;
         }
 
-        if (Boolean.TRUE.equals(
-                getConfigManager().getPluginConfig().getGenerateGradleTasks().get())) {
+        if (getConfigManager().getPluginConfig().getGenerateGradleTasks().get()) {
             taskCreator.create(Constants.STARTUP_ALL_DEPENDENCIES, RunAllStartupTasks.class, getProjectManagers());
-            taskCreator.create(
-                    Constants.UNDO_ALL_LOCAL_GIT_CHANGES, UndoAllLocalGitChanges.class, getProjectManagers());
             taskCreator.create(Constants.PROBE_ALL_DEPENDENCIES, ProbeAllDependenciesTask.class, getProjectManagers());
             taskCreator.create(
                     Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class, getProjectManagers());
@@ -52,11 +47,6 @@ class TasksManager extends ManagerBase implements ITasksManager {
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (!dependency.isGenerateGradleTasks()) continue;
 
-            taskCreator.create(
-                    Constants.UNDO_LOCAL_GIT_CHANGES.apply(dependency),
-                    UndoLocalGitChanges.class,
-                    getProjectManagers(),
-                    dependency);
             taskCreator.create(
                     Constants.PRINT_DEPENDENCY_INFO.apply(dependency),
                     PrintDependencyInfo.class,

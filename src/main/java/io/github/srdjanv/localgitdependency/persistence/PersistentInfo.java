@@ -52,6 +52,15 @@ public final class PersistentInfo {
         dependencyData.setInitFileSHA1(SHA1);
     }
 
+    @Nullable public String getGitTarget() {
+        return dependencyData.getGitTarget();
+    }
+
+    public void setGitTarget(String gitTarget) {
+        setDirty();
+        dependencyData.setGitTarget(gitTarget);
+    }
+
     public boolean isValidDataVersion() {
         return validDataVersion;
     }
