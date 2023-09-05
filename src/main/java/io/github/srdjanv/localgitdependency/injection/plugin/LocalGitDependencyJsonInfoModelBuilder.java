@@ -204,7 +204,6 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
     }
 
     private void buildSubDependencies() throws Throwable {
-        List<SubDependencyData> subDependencyDataList = new ArrayList<>();
         Collection<Object> dependencies;
 
         try {
@@ -219,7 +218,7 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
 
             dependencies = (Collection<Object>) method$getDependencies.invoke(dependencyManager);
         } catch (UnknownDomainObjectException e) {
-            builder.setSubDependencyData(subDependencyDataList);
+            builder.setSubDependencyData(Collections.emptyList());
             return;
         }
 
@@ -231,6 +230,7 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
         GitInfoCLassInvoker gitInfoInvoker = null;
         SubDependencyClassInvoker subInvoker = null;
 
+        List<SubDependencyData> subDependencyDataList = new ArrayList<>();
         for (Object dependency : dependencies) {
             var builder = SubDependencyData.builder();
 
@@ -243,7 +243,6 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
             var depName = depInvoker.getName();
             builder.setName(depName)
                     .setProjectID(probeInvoker.getProjectID())
-                    .setDependencyType(depInvoker.getDependencyType())
                     .setGitDir(gitInfoInvoker.getDir().getAbsolutePath())
                     .setArchivesBaseName(probeInvoker.getArchivesBaseName());
 
@@ -253,7 +252,6 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
                 subDependencyDataList.add(SubDependencyData.builder()
                         .setName(depName + "." + subInvoker.getName())
                         .setProjectID(subInvoker.getProjectID())
-                        .setDependencyType(subInvoker.getDependencyType())
                         .setGitDir(subInvoker.getGitDir())
                         .setArchivesBaseName(subInvoker.getArchivesBaseName())
                         .create());

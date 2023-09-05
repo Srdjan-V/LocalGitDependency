@@ -1,8 +1,10 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 final class GradleInit {
@@ -106,6 +108,35 @@ final class GradleInit {
             gradleInit.appendLine(2, String.format("from %s", sourceSets));
             gradleInit.appendLine(2, String.format("classifier = '%s'", classifier));
             gradleInit.appendLine(1, "}");
+        }
+    }
+
+    public void configureSubDeps(Consumer<List<SubDep>> configureSubDeps) {
+        List<SubDep> subDeps = new ArrayList<>();
+        configureSubDeps.accept(subDeps);
+
+        if (subDeps.isEmpty()) return;
+        appendLine(1, "afterEvaluate {");
+        appendLine(2, Constants.LOCAL_GIT_DEPENDENCY_MANAGER_INSTANCE_EXTENSION + " {");
+        for (var deps : subDeps) deps.buildSubDeps(this);
+        appendLine(2, "}");
+        appendLine(1, "}");
+    }
+
+    public static class SubDep {
+        private final String name;
+        private final Set<Dependency.Type> tags;
+
+        SubDep(String name, Set<Dependency.Type> tags) {
+            this.name = name;
+            this.tags = tags;
+        }
+
+        public void buildSubDeps(GradleInit gradleInit) {
+            for (Dependency.Type tag : tags) {
+                gradleInit.appendLine(
+                        3, String.format("%s, %s.%s", name, tag.getClass().getName(), tag));
+            }
         }
     }
 

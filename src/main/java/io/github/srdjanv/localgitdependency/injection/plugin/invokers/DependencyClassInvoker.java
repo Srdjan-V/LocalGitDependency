@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Nullable;
 public class DependencyClassInvoker {
     private final Class<Dependency> depClazz;
     private final MethodHandle method$getName;
-    private final MethodHandle method$getDependencyType;
     private final MethodHandle method$getGitInfo;
     private final MethodHandle method$getPersistentInfo;
 
@@ -29,7 +28,6 @@ public class DependencyClassInvoker {
         this.depClazz = (Class<Dependency>) clazz;
 
         method$getName = lookup.unreflect(depClazz.getDeclaredMethod("getName"));
-        method$getDependencyType = lookup.unreflect(depClazz.getDeclaredMethod("getBuildTags"));
         method$getGitInfo = lookup.unreflect(depClazz.getDeclaredMethod("getGitInfo"));
         method$getPersistentInfo = lookup.unreflect(depClazz.getDeclaredMethod("getPersistentInfo"));
     }
@@ -38,10 +36,6 @@ public class DependencyClassInvoker {
 
     public String getName() throws Throwable {
         return (String) method$getName.invoke(depObj);
-    }
-
-    public Dependency.Type getDependencyType() throws Throwable {
-        return Dependency.Type.values()[((Enum) method$getDependencyType.invoke(depObj)).ordinal()];
     }
 
     public Object getGitInfo() throws Throwable {

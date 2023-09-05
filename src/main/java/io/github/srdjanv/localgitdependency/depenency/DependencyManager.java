@@ -92,6 +92,21 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
         return null;
     }
 
+    @Override
+    public @Nullable Map<String, Set<Dependency.Type>> getSubDepTags(String depName) {
+        var topDep = getDepName(depName, true);
+        var depTags = tags.get(topDep);
+        if (depTags == null) return null;
+        Map<String, Set<Dependency.Type>> ret = null;
+        for (Map.Entry<String, Set<Dependency.Type>> notationSetEntry : depTags.entrySet()) {
+            if (notationSetEntry.getKey().equals(topDep)) continue;
+
+            if (ret == null) ret = new HashMap<>();
+            ret.put(notationSetEntry.getKey(), notationSetEntry.getValue());
+        }
+        return ret;
+    }
+
     private String getDepName(String notation, boolean topDep) {
         var charAt = notation.indexOf('.');
         if (charAt == -1) return notation;

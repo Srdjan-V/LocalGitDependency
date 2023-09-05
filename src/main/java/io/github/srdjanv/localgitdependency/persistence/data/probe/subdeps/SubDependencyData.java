@@ -1,6 +1,5 @@
 package io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps;
 
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
 public class SubDependencyData extends SubDependencyFields {
@@ -31,11 +30,6 @@ public class SubDependencyData extends SubDependencyFields {
             return this;
         }
 
-        public Builder setDependencyType(Dependency.Type dependecyType) {
-            this.dependencyType = dependecyType;
-            return this;
-        }
-
         public Builder setGitDir(String gitDir) {
             this.gitDir = gitDir;
             return this;
@@ -56,10 +50,6 @@ public class SubDependencyData extends SubDependencyFields {
 
     public String getArchivesBaseName() {
         return archivesBaseName;
-    }
-
-    public Dependency.Type getDependencyType() {
-        return dependencyType;
     }
 
     public String getGitDir() {

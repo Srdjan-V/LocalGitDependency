@@ -4,6 +4,7 @@ import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.project.Manager;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.project.TaskDescription;
+import java.util.Map;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,4 +29,6 @@ public interface IDependencyManager extends Manager {
     void tagDep(String notation, Dependency.Type type);
 
     @Nullable Set<Dependency.Type> getDepTags(String depName);
+
+    @Nullable Map<String, Set<Dependency.Type>> getSubDepTags(String depName);
 }

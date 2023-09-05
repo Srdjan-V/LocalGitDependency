@@ -42,7 +42,6 @@ final class GradleManager extends ManagerBase implements IGradleManager {
     protected void managerConstructor() {}
 
     private void cleanCache() {
-        ManagerLogger.info("Clearing gradle connector cache");
         gradleConnectorCache.clear();
     }
 
@@ -327,7 +326,22 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                 buildTaskJars(dependency, initScriptBuilder);
         }
 
+        var lgdPluginVersion = dependency.getPersistentInfo().getProbeData().getPluginVersion();
+        if (lgdPluginVersion != null) { // TODO: 05/09/2023 implement version check
+            tagSubDeps(dependency, initScriptBuilder);
+        }
+
         return GradleInit.crateInitProject(initScriptBuilder);
+    }
+
+    private void tagSubDeps(final Dependency dependency, final List<Consumer<GradleInit>> builder) {
+        final var tags = getDependencyManager().getSubDepTags(dependency.getName());
+        if (tags == null) return;
+        builder.add(gradleInit -> gradleInit.configureSubDeps(deps -> {
+            for (Map.Entry<String, Set<Type>> depTags : tags.entrySet()) {
+                deps.add(new GradleInit.SubDep(depTags.getKey(), depTags.getValue()));
+            }
+        }));
     }
 
     private void buildJavaJars(final Dependency dependency, final List<Consumer<GradleInit>> builder) {

@@ -1,6 +1,5 @@
 package io.github.srdjanv.localgitdependency.injection.plugin.invokers;
 
-import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -12,7 +11,6 @@ public class SubDependencyClassInvoker {
     private final MethodHandle method$getName;
     private final MethodHandle method$getProjectID;
     private final MethodHandle method$getArchivesBaseName;
-    private final MethodHandle method$getDependencyType;
     private final MethodHandle method$getGitDir;
 
     public static SubDependencyClassInvoker createInvoker(
@@ -33,7 +31,6 @@ public class SubDependencyClassInvoker {
         method$getName = lookup.unreflect(clazz.getDeclaredMethod("getName"));
         method$getProjectID = lookup.unreflect(clazz.getDeclaredMethod("getProjectID"));
         method$getArchivesBaseName = lookup.unreflect(clazz.getDeclaredMethod("getArchivesBaseName"));
-        method$getDependencyType = lookup.unreflect(clazz.getDeclaredMethod("getDependencyType"));
         method$getGitDir = lookup.unreflect(clazz.getDeclaredMethod("getGitDir"));
     }
 
@@ -49,10 +46,6 @@ public class SubDependencyClassInvoker {
 
     public String getArchivesBaseName() throws Throwable {
         return (String) method$getArchivesBaseName.invoke(subDep);
-    }
-
-    public Dependency.Type getDependencyType() throws Throwable {
-        return Dependency.Type.values()[((Enum) method$getDependencyType.invoke(subDep)).ordinal()];
     }
 
     public String getGitDir() throws Throwable {
