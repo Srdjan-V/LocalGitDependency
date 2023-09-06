@@ -13,6 +13,8 @@ import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import org.gradle.api.Project;
 
 public final class LGDManagers implements Managers {
+    public static final String NAME = "LGDManagers";
+
     private final IProjectManager manager;
 
     public LGDManagers(Project project) {

@@ -1,6 +1,8 @@
 package io.github.srdjanv.localgitdependency.injection.plugin;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.extentions.LGD;
+import io.github.srdjanv.localgitdependency.extentions.LGDManagers;
 import io.github.srdjanv.localgitdependency.ideintegration.adapters.Adapter;
 import io.github.srdjanv.localgitdependency.injection.model.DefaultLocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
@@ -43,9 +45,9 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
 
         String lgdPluginVersion;
         try {
-            var manager = project.getExtensions().getByName(Constants.LOCAL_GIT_DEPENDENCY_EXTENSION);
-            Class<Constants> constantsClass = (Class<Constants>)
-                    manager.getClass().getClassLoader().loadClass(Constants.class.getCanonicalName());
+            var lgd = project.getExtensions().getByName(LGD.NAME);
+            Class<Constants> constantsClass =
+                    (Class<Constants>) lgd.getClass().getClassLoader().loadClass(Constants.class.getCanonicalName());
             var field$PLUGIN_VERSION = constantsClass.getField("PLUGIN_VERSION");
             lgdPluginVersion = (String) field$PLUGIN_VERSION.get(null);
 
@@ -208,7 +210,7 @@ public final class LocalGitDependencyJsonInfoModelBuilder implements ToolingMode
 
         try {
             // The lgd object is loaded by a different class loader
-            Object lgd = project.getExtensions().getByName(Constants.LOCAL_GIT_DEPENDENCY_MANAGER_INSTANCE_EXTENSION);
+            Object lgd = project.getExtensions().getByName(LGDManagers.NAME);
             var method$getDependencyManager = lgd.getClass().getDeclaredMethod("getDependencyManager");
             method$getDependencyManager.setAccessible(true);
 

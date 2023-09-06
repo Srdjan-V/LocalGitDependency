@@ -2,6 +2,7 @@ package io.github.srdjanv.localgitdependency.gradle;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.extentions.LGDManagers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -117,7 +118,7 @@ final class GradleInit {
 
         if (subDeps.isEmpty()) return;
         appendLine(1, "afterEvaluate {");
-        appendLine(2, Constants.LOCAL_GIT_DEPENDENCY_MANAGER_INSTANCE_EXTENSION + " {");
+        appendLine(2, LGDManagers.NAME + " {");
         for (var deps : subDeps) deps.buildSubDeps(this);
         appendLine(2, "}");
         appendLine(1, "}");

@@ -162,7 +162,7 @@ public class IDEManager extends ManagerBase implements IIDEManager {
     }
 
     private String getSourceSetName(Dependency dependency, SourceSetData sourceSetData) {
-        return Constants.EXTENSION_NAME + "." + getProject().getName() + "." + dependency.getName() + "."
+        return Constants.PLUGIN_NAME + "." + getProject().getName() + "." + dependency.getName() + "."
                 + sourceSetData.getName();
     }
 }

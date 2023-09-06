@@ -107,12 +107,12 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
         String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
 
         if (getConfigManager().getPluginConfig().getDisablePluginExecution().get()) {
-            PluginLogger.title("{} skipping all {} tasks", formattedName, Constants.EXTENSION_NAME);
+            PluginLogger.title("{} skipping all {} tasks", formattedName, Constants.PLUGIN_NAME);
             return;
         }
 
         final long start = System.currentTimeMillis();
-        PluginLogger.title("{} starting {} tasks", formattedName, Constants.EXTENSION_NAME);
+        PluginLogger.title("{} starting {} tasks", formattedName, Constants.PLUGIN_NAME);
         try {
             for (ManagerRunner<?> projectRunner : PROJECT_RUNNERS) projectRunner.runAndLog(getProjectManagers());
         } catch (Throwable e) {
@@ -128,7 +128,7 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
                 }
             }
             final long spent = System.currentTimeMillis() - start;
-            PluginLogger.title("{} finished {} tasks in {} ms", formattedName, Constants.EXTENSION_NAME, spent);
+            PluginLogger.title("{} finished {} tasks in {} ms", formattedName, Constants.PLUGIN_NAME, spent);
         }
         if (throwable != null) {
             throw new RuntimeException(throwable);
