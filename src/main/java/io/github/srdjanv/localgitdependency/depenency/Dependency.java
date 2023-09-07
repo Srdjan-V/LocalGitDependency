@@ -32,6 +32,7 @@ public class Dependency {
                 .finalizeValue();
 
         this.name = dependencyConfig.getName().get();
+        if (name.contains(".")) throw new IllegalArgumentException("Illegal character '.' in dependency name");
         var lgdIde = managers.getLGDExtensionByType(LGDIDE.class);
         this.mappers = (DefaultSourceSetMapper) lgdIde.getMappers().findByName(name);
         this.ideSupport = mappers != null

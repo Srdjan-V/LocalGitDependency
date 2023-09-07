@@ -73,6 +73,6 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
         if (url == null) return null;
         // Splitting last url's part before ".git" suffix
         Matcher matcher = Pattern.compile("([^/]+)\\.git$").matcher(url);
-        return matcher.find() ? matcher.group(1) : null;
+        return matcher.find() ? matcher.group(1).replace(".", "") : null;
     }
 }
