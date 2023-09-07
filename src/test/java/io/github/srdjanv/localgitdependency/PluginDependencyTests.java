@@ -1,56 +1,63 @@
 package io.github.srdjanv.localgitdependency;
 
+import static io.github.srdjanv.localgitdependency.depenency.Dependency.Type.*;
+import static io.github.srdjanv.localgitdependency.depenency.Dependency.Type.JarFlatDir;
+
+import io.github.srdjanv.localgitdependency.dependency.DependencyRegistry;
+import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import java.util.stream.Stream;
+import org.gradle.api.Project;
+import org.gradle.api.artifacts.repositories.ArtifactRepository;
+import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
+
 public class PluginDependencyTests {
 
-    /*@TestFactory
+    @TestFactory
     Stream<DynamicTest> TestMavenLocal() {
         return createTestStream(Dependency.Type.MavenLocal);
     }
 
     @TestFactory
-    Stream<DynamicTest> TestMavenProjectLocal() {
-        return createTestStream(Dependency.Type.MavenProjectLocal);
-    }
-
-    @TestFactory
-    Stream<DynamicTest> TestMavenProjectDependencyLocal() {
-        return createTestStream(Dependency.Type.MavenProjectDependencyLocal);
-    }
-
-    @TestFactory
     Stream<DynamicTest> TestJarFlatDir() {
-        return createTestStream(Dependency.Type.JarFlatDir);
+        return createTestStream(JarFlatDir);
     }
 
     @TestFactory
     Stream<DynamicTest> TestJar() {
-        return createTestStream(Dependency.Type.Jar);
+        return createTestStream(Jar);
     }
 
     private Stream<DynamicTest> createTestStream(final Dependency.Type dependencyType) {
-        List<DependencyWrapper> dependencyWrappers = DependencyRegistry.getTestDependencies();
+        var testDependencies = DependencyRegistry.getTestDependencies(s -> {
+            return s.contains(DependencyRegistry.Types.BRANCH.identifier());
+        });
 
-        dependencyWrappers.forEach(dependencyWrapper -> {
-            dependencyWrapper.setTestName(dependencyType.name());
-            dependencyWrapper.setPluginClosure(clause -> {
-                clause.getAutomaticCleanup(false);
+        testDependencies.forEach(wrapper -> {
+            wrapper.setTestName(dependencyType.name());
+            wrapper.applyPluginConfiguration(config -> {
+                config.getAutomaticCleanup().set(false);
             });
-            dependencyWrapper.setDependencyClosure(builder -> {
-                builder.getName(dependencyWrapper.getTestName());
-                builder.dependencyType(dependencyType);
-                builder.getBuildLauncher(ClosureUtil.<LauncherConfig>configure(launcher -> {
-                    launcher.getGradleDaemonMaxIdleTime(0);
-                }));
-                builder.configuration(Constants.JAVA_IMPLEMENTATION);
+            wrapper.registerDepToExtension(config -> {
+                config.getName().set(wrapper.getTestName());
             });
-            dependencyWrapper.setTest(test -> {
-                printData(dependencyWrapper.getProjectManager().getProject());
-                assertTest(dependencyWrapper);
+            wrapper.registerDepToDependencies(lgdHelper -> switch (dependencyType) {
+                case MavenLocal -> lgdHelper.mavenLocal(wrapper.getTestName());
+                case JarFlatDir -> lgdHelper.flatDir(wrapper.getTestName());
+                case Jar -> lgdHelper.jar(wrapper.getTestName());
+                default -> throw new IllegalStateException("Unexpected value: " + dependencyType);
             });
         });
 
-        return dependencyWrappers.stream().
-                map(testWrapper -> DynamicTest.dynamicTest(testWrapper.getTestName(), testWrapper::startPluginAndRunTests));
+        return testDependencies.stream()
+                .map(testWrapper -> DynamicTest.dynamicTest(testWrapper.getTestName(), () -> {
+                    testWrapper.getProjectManager().startPlugin();
+                    printData(testWrapper.getProjectManager().getProject());
+                    assertTest(testWrapper);
+                }));
     }
 
     public static void printData(Project project) {
@@ -60,7 +67,8 @@ public class PluginDependencyTests {
             System.out.println("Repositories:");
             for (ArtifactRepository repository : project.getRepositories()) {
                 if (repository instanceof DefaultMavenArtifactRepository) {
-                    DefaultMavenArtifactRepository defaultMavenArtifactRepository = (DefaultMavenArtifactRepository) repository;
+                    DefaultMavenArtifactRepository defaultMavenArtifactRepository =
+                            (DefaultMavenArtifactRepository) repository;
 
                     System.out.println("=================================================");
                     System.out.println("    " + defaultMavenArtifactRepository.getName());
@@ -76,51 +84,59 @@ public class PluginDependencyTests {
 
         System.out.println(System.lineSeparator());
         System.out.println("Dependencies:");
-        project.getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
+        project.getConfigurations()
+                .getByName(Constants.JAVA_IMPLEMENTATION)
                 .getDependencies()
                 .forEach(dependency -> {
                     System.out.println("=================================================");
-                    System.out.println("    " + dependency.getGroup() + ":" + dependency.getName() + ":" + dependency.getVersion());
+                    System.out.println("    " + dependency.getGroup() + ":" + dependency.getName() + ":"
+                            + dependency.getVersion());
                     System.out.println("=================================================");
                 });
     }
 
     public static void assertTest(DependencyWrapper dependencyWrapper) {
-        final String repo;
-        repo = switch (dependencyWrapper.getDependency().getBuildTargets()) {
-            case JarFlatDir -> Constants.RepositoryFlatDir.apply(dependencyWrapper.getDependency());
-            case MavenLocal -> "MavenLocal";
-            case MavenProjectDependencyLocal ->
-                    Constants.RepositoryMavenProjectDependencyLocal.apply(dependencyWrapper.getDependency());
-            case MavenProjectLocal -> Constants.RepositoryMavenProjectLocal;
-            default -> null;
-        };
-
-        if (repo != null) {
-            long dependencyCount = dependencyWrapper.getProjectManager().getProject().getRepositories().stream()
-                    .filter(d -> d.getName().equals(repo)).count();
-
-            Assertions.assertEquals(1, dependencyCount, () -> dependencyWrapper.getDependencyName() + " repository is not registered wih gradle");
-        }
-
         final long dependencyCount;
-        switch (dependencyWrapper.getDependency().getBuildTargets()) {
-            case Jar -> {
-                dependencyCount = dependencyWrapper.getProjectManager().getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
-                        .getDependencies().size();
-            }
-            case MavenProjectLocal, MavenProjectDependencyLocal -> {
-                dependencyCount = dependencyWrapper.getProjectManager().getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
-                        .getDependencies().stream().filter(d -> d.getName().equals(dependencyWrapper.getDependency().getName())).count();
-            }
-            case JarFlatDir, MavenLocal -> {
-                dependencyCount = dependencyWrapper.getProjectManager().getProject().getConfigurations().getByName(Constants.JAVA_IMPLEMENTATION)
-                        .getDependencies().stream().filter(d -> d.getName().equals(dependencyWrapper.getDependency().getPersistentInfo().getProbeData().getArchivesBaseName())).count();
-            }
-            default -> throw new IllegalStateException();
-        }
+        var tags = dependencyWrapper.getDependency().getBuildTags();
 
+        if (tags.contains(Jar)) {
+            dependencyCount = dependencyWrapper
+                    .getProjectManager()
+                    .getProject()
+                    .getConfigurations()
+                    .getByName(Constants.JAVA_IMPLEMENTATION)
+                    .getDependencies()
+                    .size();
+        } else if (tags.contains(JarFlatDir) || tags.contains(MavenLocal)) {
+            long repoCount = dependencyWrapper
+                    .getProjectManager()
+                    .getProject()
+                    .getRepositories()
+                    .size();
+            Assertions.assertEquals(
+                    1,
+                    repoCount,
+                    () -> dependencyWrapper.getDependency().getName() + " repository is not registered wih gradle");
 
-        Assertions.assertEquals(1, dependencyCount, () -> dependencyWrapper.getDependency().getName() + " dependency is not registered wih gradle");
-    }*/
+            dependencyCount = dependencyWrapper
+                    .getProjectManager()
+                    .getProject()
+                    .getConfigurations()
+                    .getByName(Constants.JAVA_IMPLEMENTATION)
+                    .getDependencies()
+                    .stream()
+                    .filter(d -> d.getName()
+                            .equals(dependencyWrapper
+                                    .getDependency()
+                                    .getPersistentInfo()
+                                    .getProbeData()
+                                    .getArchivesBaseName()))
+                    .count();
+        } else dependencyCount = 0;
+
+        Assertions.assertEquals(
+                1,
+                dependencyCount,
+                () -> dependencyWrapper.getDependency().getName() + " dependency is not registered wih gradle");
+    }
 }

@@ -1,75 +1,38 @@
 package io.github.srdjanv.localgitdependency.dependency;
 
+import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.ProjectInstance;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableConfig;
+import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
+import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.extentions.LGD;
+import io.github.srdjanv.localgitdependency.extentions.LGDHelper;
+import io.github.srdjanv.localgitdependency.project.IProjectManager;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import org.gradle.api.Action;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
+
 public class DependencyWrapper {
-    /*   private IProjectManager projectManager;
-    private final String dependencyName;
-    private final String gitUrl;
-    private final String gitRev;
+    private final IProjectManager projectManager;
+    private final String identifier;
+    private final Action<DependencyConfig> configAction;
     private String testName;
-    private State state;
-    private Consumer<DependencyWrapper> test;
-    private Closure<PluginConfig> pluginClosure;
-    private Closure<CommonConfig> defaultableClosure;
-    private Closure<DependencyConfig> dependencyClosure;
-    private Dependency dependencyReference;
-    private String[] startupTasks;
 
-    public DependencyWrapper(DependencyRegistry registry) {
-        state = State.Starting;
-        this.dependencyName = registry.dependencyName;
-        this.gitUrl = registry.gitUrl;
-        this.gitRev = registry.gitRev;
-        this.startupTasks = registry.startupTasks;
-    }
-
-    public State getState() {
-        return state;
+    public DependencyWrapper(DependencyRegistry.Entry entry) {
+        projectManager = ProjectInstance.getProjectManager(ProjectInstance.createProject());
+        this.identifier = entry.name();
+        this.configAction = entry.configAction();
     }
 
     public IProjectManager getProjectManager() {
         return projectManager;
     }
 
-    public String getDependencyName() {
-        return dependencyName;
-    }
-
-    public Dependency getDependency() {
-        switch (state) {
-            case OnlyDependencyRegistered:
-            case Complete:
-                return dependencyReference;
-
-            default:
-                throw new IllegalStateException();
-        }
-    }
-
-    public void setPluginClosure(Consumer<PluginConfig> pluginClosure) {
-        this.pluginClosure = new Closure<PluginConfig>(null) {
-            public PluginConfig doCall() {
-                PluginConfig builder = (PluginConfig) getDelegate();
-                pluginClosure.accept(builder);
-                return builder;
-            }
-        };
-    }
-
-    public void setDependencyClosure(Consumer<DependencyConfig> dependencyClosure) {
-        this.dependencyClosure = new Closure<DependencyConfig>(null) {
-            public DependencyConfig doCall() {
-                DependencyConfig builder = (DependencyConfig) getDelegate();
-                dependencyClosure.accept(builder);
-                builder.getName(getTestName());
-                builder.getCommit(gitRev);
-                builder.getBuildLauncher(ClosureUtil.configure((LauncherConfig launcher) -> {
-                    launcher.getStartup(ClosureUtil.configure((Launchers.Startup startup) -> {
-                        startup.mainTasks(startupTasks);
-                    }));
-                }));
-                return builder;
-            }
-        };
+    public String getIdentifier() {
+        return identifier;
     }
 
     public String getTestName() {
@@ -77,94 +40,49 @@ public class DependencyWrapper {
     }
 
     public void setTestName(String testName) {
-        this.testName = dependencyName + testName;
+        this.testName = (identifier + "$" + testName).trim().replace(".", "");
     }
 
-    public void setTest(Consumer<DependencyWrapper> test) {
-        this.test = test;
+    public void applyPluginConfiguration(Action<PluginConfig> action) {
+        projectManager.getLGDExtensionByType(LGD.class).plugin(action);
     }
 
-    private void setPluginConfiguration() {
-        if (pluginClosure != null)
-            projectManager.getLocalGitDependencyExtension().configurePlugin(pluginClosure);
+    public void applyDefaultableConfiguration(Action<DefaultableConfig> action) {
+        projectManager.getLGDExtensionByType(LGD.class).defaults(action);
     }
 
-    private void setDefaultableConfiguration() {
-        if (defaultableClosure != null)
-            projectManager.getLocalGitDependencyExtension().configureDefaultable(defaultableClosure);
+    public void registerDepToExtension(Action<DependencyConfig> action) {
+        var dep = projectManager
+                .getDependencyManager()
+                .registerDependency("https://github.com/Srdjan-V/LocalGitDependencyTestRepo.git");
+        configAction.execute(dep);
+        action.execute(dep);
     }
 
-    private void registerDepToExtension() {
-        projectManager.getLocalGitDependencyExtension().add(gitUrl, dependencyClosure);
-    }
-
-    private void resolveDep() {
-        Optional<Dependency> optionalDependency = projectManager.getDependencyManager().getDependencies().stream().
-                filter(dependency1 -> dependency1.getName().equals(getTestName())).findFirst();
-
-        dependencyReference = optionalDependency.orElseThrow(() -> new RuntimeException("Dependency: " + getDependencyName() + " was not found in the DependencyManager"));
-    }
-
-    private void initPluginTasks() {
-        projectManager.startPlugin();
-    }
-
-    public void onlyRegisterDependencyAndRunTests() {
-        projectManager = ProjectInstance.getProjectManager(ProjectInstance.createProject());
-        checkDependencyState();
-
-        setPluginConfiguration();
-        setDefaultableConfiguration();
-        registerDepToExtension();
-        projectManager.getConfigManager().finalizeConfigs();
-        setState(State.OnlyDependencyRegistered);
-
-        test.accept(this);
-    }
-
-    public void startPluginAndRunTests() {
-        projectManager = ProjectInstance.getProjectManager(ProjectInstance.createProject());
-        checkDependencyState();
-
-        setPluginConfiguration();
-        setDefaultableConfiguration();
-        registerDepToExtension();
-        initPluginTasks();
-        setState(State.Complete);
-
-        test.accept(this);
-    }
-
-    private void checkDependencyState() {
-        Assertions.assertNotNull(testName, "testName cant be null");
-        if (dependencyClosure == null) {
-            dependencyClosure = new Closure<DependencyConfig>(null) {
-                public DependencyConfig doCall() {
-                    DependencyConfig builder = (DependencyConfig) getDelegate();
-                    builder.getName(getTestName());
-                    builder.getBuildLauncher(ClosureUtil.configure((LauncherConfig launcher) -> {
-                        launcher.getStartup(ClosureUtil.configure((Launchers.Startup startup) -> {
-                            startup.mainTasks(startupTasks);
-                        }));
-                    }));
-                    return builder;
-                }
-            };
+    public void registerDepToDependencies(List<Function<LGDHelper, ?>> actions) {
+        var deps = projectManager.getProject().getDependencies();
+        var lgdHelper = projectManager.getLGDExtensionByType(LGDHelper.class);
+        for (Function<LGDHelper, ?> action : actions) {
+            registerDepToDependencies(action, deps, lgdHelper);
         }
     }
 
-    private void setState(State state) {
-        if (this.state != State.Starting) {
-            throw new IllegalStateException();
-        }
-        resolveDep();
-        this.state = state;
+    public void registerDepToDependencies(Function<LGDHelper, ?> action) {
+        var deps = projectManager.getProject().getDependencies();
+        var lgdHelper = projectManager.getLGDExtensionByType(LGDHelper.class);
+        registerDepToDependencies(action, deps, lgdHelper);
     }
 
-    public enum State {
-        Complete,
-        OnlyDependencyRegistered,
-        Starting
-    }*/
+    private void registerDepToDependencies(Function<LGDHelper, ?> action, DependencyHandler deps, LGDHelper lgdHelper) {
+        deps.add(Constants.JAVA_IMPLEMENTATION, action.apply(lgdHelper));
+    }
 
+    public Dependency getDependency() {
+        Optional<Dependency> optionalDependency = projectManager.getDependencyManager().getDependencies().stream()
+                .filter(dependency1 -> dependency1.getName().equals(getTestName()))
+                .findFirst();
+
+        return optionalDependency.orElseThrow(() ->
+                new RuntimeException("Dependency: " + getIdentifier() + " was not found in the DependencyManager"));
+    }
 }

@@ -54,7 +54,7 @@ final class ManagerInstances implements Managers {
         ext = project.getExtensions().create(LGD.NAME, LGD.class, this);
         extensions.put(LGD.class, ext);
 
-        project.getDependencies().getExtensions().create(LGD.NAME, LGDHelper.class, this);
+        ext = project.getDependencies().getExtensions().create(LGD.NAME, LGDHelper.class, this);
         extensions.put(LGDHelper.class, ext);
 
         ext = project.getExtensions().create(LGDIDE.NAME, LGDIDE.class, this);

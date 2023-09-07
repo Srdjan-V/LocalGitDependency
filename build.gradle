@@ -38,6 +38,7 @@ dependencies {
     annotationProcessor jabelPlugin
     annotationProcessor jna
     testAnnotationProcessor jabelPlugin
+    testImplementation jabelPlugin
     testAnnotationProcessor jna
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
 }

@@ -1,37 +1,60 @@
 package io.github.srdjanv.localgitdependency.dependency;
 
+import com.github.bsideup.jabel.Desugar;
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import org.gradle.api.Action;
+
 public class DependencyRegistry {
-    /*  private static final List<DependencyRegistry> registry = new ArrayList<>();
+    private static final List<Entry> registry = new ArrayList<>();
 
-        static {
-            //gradle 8.1.1
-            registry.add(new DependencyRegistry(
-                    "TweakedLib",
-                    "https://github.com/Srdjan-V/TweakedLib.git",
-                    "3b17cffd8ee005a13179bf5ad865a93134ca807f",
-                    "setupDecompWorkspace"));
-            //gradle 4.10
-            registry.add(new DependencyRegistry(
-                    "GroovyScriptFG2",
-                    "https://github.com/CleanroomMC/GroovyScript.git",
-                    "627ac181f8d586cbc93a4b47daf8436e9fce7eab",
-                    "setupDecompWorkspace"));
+    public enum Types {
+        BRANCH("Branch");
+
+        private final String type;
+
+        Types(String type) {
+            this.type = type;
         }
 
-        public static List<DependencyWrapper> getTestDependencies() {
-            return registry.stream().map(DependencyWrapper::new).collect(Collectors.toList());
+        public String nameType(String baseName) {
+            return type + "$" + baseName;
         }
 
-        final String dependencyName;
-        final String gitUrl;
-        final String gitRev;
-        final String[] startupTasks;
-
-        private DependencyRegistry(String dependencyName, String gitUrl, String gitRev, String... startupTasks) {
-            this.dependencyName = dependencyName;
-            this.gitUrl = gitUrl;
-            this.gitRev = gitRev;
-            this.startupTasks = startupTasks;
+        public String identifier() {
+            return type;
         }
-    */
+    }
+
+    static {
+        registerGradleBranch("4.10");
+        registerGradleBranch("5.0");
+        registerGradleBranch("6.0");
+        registerGradleBranch("7.0");
+        registerGradleBranch("8.0");
+    }
+
+    private static void registerGradleBranch(final String gradleVersion) {
+        final var branchName = getGradleBranch(gradleVersion);
+        registry.add(new Entry(Types.BRANCH.nameType(branchName), config -> {
+            config.getBranch().set(branchName);
+        }));
+    }
+
+    public static String getGradleBranch(String version) {
+        return "Gradle-" + version;
+    }
+
+    public static List<DependencyWrapper> getTestDependencies(Predicate<String> filter) {
+        return registry.stream()
+                .filter(dep -> filter.test(dep.name()))
+                .map(DependencyWrapper::new)
+                .collect(Collectors.toList());
+    }
+
+    @Desugar
+    public record Entry(String name, Action<DependencyConfig> configAction) {}
 }
