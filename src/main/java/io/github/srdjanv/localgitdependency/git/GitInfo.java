@@ -59,7 +59,6 @@ public final class GitInfo {
         }
         this.dir = FileUtil.concat(dir, dependency.getName());
 
-        // TODO:25/08/2023 force disable if ideSup is used
         this.keepGitUpdated = dependencyConfig.getKeepGitUpdated().get();
     }
 

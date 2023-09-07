@@ -29,7 +29,7 @@ public final class GitUtils {
                 .call();
 
         gitInfo.setRefreshed();
-        ManagerLogger.info("Finished cleaning {}  in {} ms", gitInfo.getUrl(), System.currentTimeMillis() - start);
+        ManagerLogger.info("Finished cloning {} in {} ms", gitInfo.getUrl(), System.currentTimeMillis() - start);
         return git;
     }
 

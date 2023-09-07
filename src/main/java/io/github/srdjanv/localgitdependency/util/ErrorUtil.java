@@ -2,6 +2,7 @@ package io.github.srdjanv.localgitdependency.util;
 
 import io.github.srdjanv.localgitdependency.Constants;
 import java.util.List;
+import java.util.function.Function;
 import org.gradle.api.GradleException;
 
 public final class ErrorUtil {
@@ -49,11 +50,16 @@ public final class ErrorUtil {
 
     public RuntimeException toRuntimeException() {
         if (hasErrors()) return new RuntimeException(errors.toString());
-        throw new IllegalStateException("This should not be possible");
+        throw new IllegalStateException();
     }
 
     public GradleException toGradleException() {
         if (hasErrors()) return new GradleException(errors.toString());
-        throw new IllegalStateException("This should not be possible");
+        throw new IllegalStateException();
+    }
+
+    public <E> E toException(Function<String, E> eFunction) {
+        if (hasErrors()) return eFunction.apply(errors.toString());
+        throw new IllegalStateException();
     }
 }
