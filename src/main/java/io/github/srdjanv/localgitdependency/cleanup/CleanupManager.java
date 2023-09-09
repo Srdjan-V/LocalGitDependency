@@ -5,6 +5,7 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -26,15 +27,22 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
         PluginConfig props = getConfigManager().getPluginConfig();
 
         if (!props.getAutomaticCleanup().get()) return false;
-        return cleanLibsDir(props.getLibsDir().getAsFile().get());
+        return cleanLibsDir(props.getLibsDir().getAsFile().get())
+                || cleanDataDir(FileUtil.getLgdDir(getProject()).getAsFile());
     }
 
     private boolean cleanLibsDir(File libsDir) {
         if (!libsDir.exists()) return false;
-        return iterateDirs(libsDir, (dir, dep) -> dir.equals(dep.getGitInfo().getDir()));
+        return iterateDirs(
+                libsDir, true, (dir, dep) -> dir.equals(dep.getGitInfo().getDir()));
     }
 
-    private boolean iterateDirs(File fileDir, BiPredicate<File, Dependency> validDir) {
+    private boolean cleanDataDir(File dataDir) {
+        if (!dataDir.exists()) return false;
+        return iterateDirs(dataDir, false, (dir, dep) -> dep.getName().equals(dir.getName()));
+    }
+
+    private boolean iterateDirs(File fileDir, boolean log, BiPredicate<File, Dependency> validDir) {
         boolean didWork = false;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileDir.toPath())) {
             rootDir:
@@ -43,7 +51,7 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
                     for (Dependency dep : getDependencyManager().getDependencies()) {
                         if (validDir.test(path.toFile(), dep)) continue rootDir;
                     }
-                    ManagerLogger.info("Cleaning directory at {}", path.toAbsolutePath());
+                    if (log) ManagerLogger.info("Cleaning directory at {}", path.toAbsolutePath());
                     deleteDir(path);
                     didWork = true;
                 }

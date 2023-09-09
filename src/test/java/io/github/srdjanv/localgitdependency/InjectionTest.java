@@ -1,9 +1,12 @@
 package io.github.srdjanv.localgitdependency;
 
+import io.github.srdjanv.localgitdependency.dependency.DependencyRegistry;
 import io.github.srdjanv.localgitdependency.injection.model.LocalGitDependencyJsonInfoModel;
 import io.github.srdjanv.localgitdependency.injection.plugin.LocalGitDependencyJsonInfoModelBuilder;
 import io.github.srdjanv.localgitdependency.persistence.data.DataParser;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.ProjectProbeData;
+import io.github.srdjanv.localgitdependency.project.BuildScriptGenerator;
+import io.github.srdjanv.localgitdependency.project.ProjectInstance;
 import org.gradle.api.Project;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,7 +15,7 @@ import org.junit.jupiter.api.function.ThrowingSupplier;
 public class InjectionTest {
 
     @Test
-    void testInjectionPlugin() {
+    void basicInjectionPluginTest() {
         Project project = ProjectInstance.createProject();
 
         project.getRepositories().mavenCentral();
@@ -37,7 +40,51 @@ public class InjectionTest {
     }
 
     @Test
-    void testFailOnIncompleteData() {
+    void complexInjectionPluginTest() {
+        var dep = DependencyRegistry.getTestDependencies(id -> DependencyRegistry.Types.BRANCH
+                        .nameType(DependencyRegistry.getGradleBranch("8.0"))
+                        .equals(id))
+                .get(0);
+
+        var repoBuilder = new BuildScriptGenerator.Repo();
+        repoBuilder.append(
+                """
+                    mavenCentral()
+                    mavenLocal()
+                    gradlePluginPortal()
+                """);
+
+        var depBuilder = new BuildScriptGenerator.Deps();
+        depBuilder.append(String.format(
+                """
+                    %s 'org.jetbrains:annotations:24.0.1'
+                    %s 'com.google.code.gson:gson:2.10.1'
+                """,
+                Constants.JAVA_IMPLEMENTATION, Constants.JAVA_IMPLEMENTATION));
+
+        var lgdBuilder = new BuildScriptGenerator.LDGDeps();
+        lgdBuilder.append(
+                    """
+                        register("https://github.com/Srdjan-V/LocalGitDependencyTestRepo.git") {
+                            branch = "Gradle-8.0"
+                        }
+                    """);
+
+        dep.setTestName("complexInjectionPluginTest");
+        BuildScriptGenerator.generate(dep, repoBuilder, depBuilder, lgdBuilder);
+
+        dep.registerDepToExtension(config -> config.getName().set(dep.getTestName()));
+        dep.getProjectManager().startPlugin();
+        var data = dep.getDependency().getPersistentInfo().getProbeData();
+
+        Assertions.assertEquals(
+                2, data.getSourceSetsData().get(0).getCompileClasspath().size());
+
+        Assertions.assertEquals(1, data.getSubDependencyData().size());
+    }
+
+    @Test
+    void basicFailOnIncompleteDataTest() {
         var builder = new ProjectProbeData.Builder();
         builder.setPluginVersion(Constants.PLUGIN_VERSION);
 

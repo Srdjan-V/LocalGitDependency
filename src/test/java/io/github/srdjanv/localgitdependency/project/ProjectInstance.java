@@ -1,7 +1,7 @@
-package io.github.srdjanv.localgitdependency;
+package io.github.srdjanv.localgitdependency.project;
 
+import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.extentions.LGDManagers;
-import io.github.srdjanv.localgitdependency.project.IProjectManager;
 import java.io.*;
 import java.util.Properties;
 import org.gradle.api.Project;

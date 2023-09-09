@@ -1,7 +1,6 @@
 package io.github.srdjanv.localgitdependency.dependency;
 
 import io.github.srdjanv.localgitdependency.Constants;
-import io.github.srdjanv.localgitdependency.ProjectInstance;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableConfig;
 import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
@@ -9,7 +8,9 @@ import io.github.srdjanv.localgitdependency.depenency.Dependency;
 import io.github.srdjanv.localgitdependency.extentions.LGD;
 import io.github.srdjanv.localgitdependency.extentions.LGDHelper;
 import io.github.srdjanv.localgitdependency.project.IProjectManager;
+import io.github.srdjanv.localgitdependency.project.ProjectInstance;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import org.gradle.api.Action;
@@ -36,6 +37,7 @@ public class DependencyWrapper {
     }
 
     public String getTestName() {
+        Objects.requireNonNull(testName);
         return testName;
     }
 
@@ -82,7 +84,7 @@ public class DependencyWrapper {
                 .filter(dependency1 -> dependency1.getName().equals(getTestName()))
                 .findFirst();
 
-        return optionalDependency.orElseThrow(() ->
-                new RuntimeException("Dependency: " + getIdentifier() + " was not found in the DependencyManager"));
+        return optionalDependency.orElseThrow(
+                () -> new RuntimeException("Dependency: " + getTestName() + " was not found in the DependencyManager"));
     }
 }
