@@ -41,10 +41,9 @@ public class InjectionTest {
 
     @Test
     void complexInjectionPluginTest() {
-        var dep = DependencyRegistry.getTestDependencies(id -> DependencyRegistry.Types.BRANCH
-                        .nameType(DependencyRegistry.getGradleBranch("8.0"))
-                        .equals(id))
-                .get(0);
+        var dep = DependencyRegistry.getTestDependency(id -> DependencyRegistry.Types.BRANCH
+                .nameType(DependencyRegistry.getGradleBranch("8.0"))
+                .equals(id));
 
         var repoBuilder = new BuildScriptGenerator.Repo();
         repoBuilder.append(
@@ -64,7 +63,7 @@ public class InjectionTest {
 
         var lgdBuilder = new BuildScriptGenerator.LDGDeps();
         lgdBuilder.append(
-                    """
+                """
                         register("https://github.com/Srdjan-V/LocalGitDependencyTestRepo.git") {
                             branch = "Gradle-8.0"
                         }

@@ -42,6 +42,7 @@ public class DependencyWrapper {
     }
 
     public void setTestName(String testName) {
+        if (this.testName != null) throw new RuntimeException();
         this.testName = (identifier + "$" + testName).trim().replace(".", "");
     }
 

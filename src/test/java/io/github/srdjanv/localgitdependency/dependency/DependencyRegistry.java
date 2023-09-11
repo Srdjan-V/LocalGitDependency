@@ -4,6 +4,7 @@ import com.github.bsideup.jabel.Desugar;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.gradle.api.Action;
@@ -53,6 +54,14 @@ public class DependencyRegistry {
                 .filter(dep -> filter.test(dep.name()))
                 .map(DependencyWrapper::new)
                 .collect(Collectors.toList());
+    }
+
+    public static DependencyWrapper getTestDependency(Predicate<String> filter) {
+        return registry.stream()
+                .filter(dep -> filter.test(dep.name()))
+                .map(DependencyWrapper::new)
+                .findFirst()
+                .orElseThrow(NoSuchElementException::new);
     }
 
     @Desugar

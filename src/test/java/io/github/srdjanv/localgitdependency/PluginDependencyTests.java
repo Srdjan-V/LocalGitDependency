@@ -61,35 +61,31 @@ public class PluginDependencyTests {
     }
 
     public static void printData(Project project) {
-
         if (!project.getRepositories().isEmpty()) {
-            System.out.println(System.lineSeparator());
+            System.out.println();
             System.out.println("Repositories:");
             for (ArtifactRepository repository : project.getRepositories()) {
-                if (repository instanceof DefaultMavenArtifactRepository) {
-                    DefaultMavenArtifactRepository defaultMavenArtifactRepository =
-                            (DefaultMavenArtifactRepository) repository;
-
+                if (repository instanceof DefaultMavenArtifactRepository defaultMavenArtifactRepository) {
                     System.out.println("=================================================");
-                    System.out.println("    " + defaultMavenArtifactRepository.getName());
-                    System.out.println("    " + defaultMavenArtifactRepository.getUrl());
+                    System.out.println(Constants.TAB_INDENT + defaultMavenArtifactRepository.getName());
+                    System.out.println(Constants.TAB_INDENT + defaultMavenArtifactRepository.getUrl());
                     System.out.println("=================================================");
                     continue;
                 }
                 System.out.println("=================================================");
-                System.out.println("    " + repository.getName());
+                System.out.println(Constants.TAB_INDENT + repository.getName());
                 System.out.println("=================================================");
             }
         }
 
-        System.out.println(System.lineSeparator());
+        System.out.println();
         System.out.println("Dependencies:");
         project.getConfigurations()
                 .getByName(Constants.JAVA_IMPLEMENTATION)
                 .getDependencies()
                 .forEach(dependency -> {
                     System.out.println("=================================================");
-                    System.out.println("    " + dependency.getGroup() + ":" + dependency.getName() + ":"
+                    System.out.println(Constants.TAB_INDENT + dependency.getGroup() + ":" + dependency.getName() + ":"
                             + dependency.getVersion());
                     System.out.println("=================================================");
                 });
