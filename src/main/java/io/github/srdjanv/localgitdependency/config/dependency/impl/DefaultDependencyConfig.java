@@ -27,9 +27,9 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
         getKeepGitUpdated().convention(managers.getProject().provider(() -> {
             var mapper = dependencyProperty.get().getSourceSetMapper();
             if (mapper != null && mapper.getMappings().isEmpty()) {
-                return defaultable.getKeepGitUpdated().get();
+                return false;
             }
-            return false;
+            return defaultable.getKeepGitUpdated().get();
         }));
         getKeepInitScriptUpdated()
                 .convention(managers.getProject()
