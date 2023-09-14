@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.dependency;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.TestConstants;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableConfig;
 import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
@@ -18,13 +19,13 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 
 public class DependencyWrapper {
     private final IProjectManager projectManager;
-    private final String identifier;
+    private final String branch;
     private final Action<DependencyConfig> configAction;
     private String testName;
 
     public DependencyWrapper(DependencyRegistry.Entry entry) {
         projectManager = ProjectInstance.getProjectManager(ProjectInstance.createProject());
-        this.identifier = entry.name();
+        this.branch = entry.name();
         this.configAction = entry.configAction();
     }
 
@@ -32,8 +33,8 @@ public class DependencyWrapper {
         return projectManager;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public String getBranch() {
+        return branch;
     }
 
     public String getTestName() {
@@ -43,7 +44,7 @@ public class DependencyWrapper {
 
     public void setTestName(String testName) {
         if (this.testName != null) throw new RuntimeException();
-        this.testName = (identifier + "$" + testName).trim().replace(".", "");
+        this.testName = (branch + "$" + testName).trim().replace(".", "");
     }
 
     public void applyPluginConfiguration(Action<PluginConfig> action) {
@@ -57,7 +58,9 @@ public class DependencyWrapper {
     public void registerDepToExtension(Action<DependencyConfig> action) {
         var dep = projectManager
                 .getDependencyManager()
-                .registerDependency("https://github.com/Srdjan-V/LocalGitDependencyTestRepo.git");
+                .registerDependency(String.format(
+                        "https://github.com/%s/%s.git",
+                        TestConstants.GithubOwner, TestConstants.GithubTestProjectName));
         configAction.execute(dep);
         action.execute(dep);
     }

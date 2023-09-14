@@ -18,7 +18,7 @@ public class PluginDependencyTests {
 
     @TestFactory
     Stream<DynamicTest> TestMavenLocal() {
-        return createTestStream(Dependency.Type.MavenLocal);
+        return createTestStream(MavenLocal);
     }
 
     @TestFactory
@@ -32,9 +32,7 @@ public class PluginDependencyTests {
     }
 
     private Stream<DynamicTest> createTestStream(final Dependency.Type dependencyType) {
-        var testDependencies = DependencyRegistry.getTestDependencies(s -> {
-            return s.contains(DependencyRegistry.Types.BRANCH.identifier());
-        });
+        var testDependencies = DependencyRegistry.getAllTestDependencies();
 
         testDependencies.forEach(wrapper -> {
             wrapper.setTestName(dependencyType.name());

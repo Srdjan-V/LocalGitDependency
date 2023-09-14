@@ -41,9 +41,8 @@ public class InjectionTest {
 
     @Test
     void complexInjectionPluginTest() {
-        var dep = DependencyRegistry.getTestDependency(id -> DependencyRegistry.Types.BRANCH
-                .nameType(DependencyRegistry.getGradleBranch("8.0"))
-                .equals(id));
+        var dep = DependencyRegistry.getTestDependency(
+                id -> DependencyRegistry.getGradleBranch("8.0").equals(id));
 
         var repoBuilder = new BuildScriptGenerator.Repo();
         repoBuilder.append(

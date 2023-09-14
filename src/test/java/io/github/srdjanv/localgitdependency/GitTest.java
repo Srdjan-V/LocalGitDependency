@@ -1,9 +1,11 @@
 package io.github.srdjanv.localgitdependency;
 
+import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.dependency.DependencyRegistry;
 import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import org.gradle.api.Action;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -11,43 +13,70 @@ public class GitTest {
 
     @Test
     void testBranchSwitching() {
-        final Consumer<DependencyWrapper> defaultConfig = dep -> {
-            final String testName = "Gradle70To80";
-            dep.setTestName(testName);
-            dep.applyPluginConfiguration(config -> {
-                config.getAutomaticCleanup().set(false);
-            });
-            dep.registerDepToExtension(config -> {
-                config.getName().set(testName);
-                config.getKeepGitUpdated().set(true);
-            });
-            dep.registerDepToDependencies(lgdHelper -> lgdHelper.flatDir(testName));
+        final String testName = "Gradle70To80";
+
+        var dep70 = DependencyRegistry.getTestDependency(
+                id -> DependencyRegistry.getGradleBranch("7.0").equals(id));
+        configureTest(dep70, testName);
+        runTest(dep70, "7.0");
+
+        var dep80 = DependencyRegistry.getTestDependency(
+                id -> DependencyRegistry.getGradleBranch("8.0").equals(id));
+        configureTest(dep80, testName);
+        runTest(dep80, "8.0");
+    }
+
+    @Test
+    void testCommitSwitching() {
+        final String testName = "Commit70To80";
+
+        var dep70 = DependencyRegistry.getTestDependency(
+                id -> DependencyRegistry.getGradleBranch("7.0").equals(id));
+        var commits70 = DependencyRegistry.getCommitsOfBranch("7.0");
+        configureTest(dep70, testName, depConfig -> depConfig.getCommit().set(commits70.get(0)));
+        runTest(dep70, "7.0");
+
+        var dep80 = DependencyRegistry.getTestDependency(
+                id -> DependencyRegistry.getGradleBranch("8.0").equals(id));
+        var commits80 = DependencyRegistry.getCommitsOfBranch("8.0");
+        configureTest(dep80, testName, depConfig -> depConfig.getCommit().set(commits80.get(0)));
+        runTest(dep80, "8.0");
+    }
+
+    @SafeVarargs
+    private void configureTest(DependencyWrapper dep, String testName, Action<DependencyConfig>... actions) {
+        dep.setTestName(testName);
+        dep.applyPluginConfiguration(config -> {
+            config.getAutomaticCleanup().set(false);
+        });
+
+        Action<DependencyConfig> configAction = config -> {
+            config.getName().set(testName);
+            config.getKeepGitUpdated().set(true);
         };
-        final BiConsumer<DependencyWrapper, String> test = (dep, version) -> {
-            dep.getProjectManager().startPlugin();
-            var resolvedDep = dep
-                    .getProjectManager()
-                    .getProject()
-                    .getConfigurations()
-                    .getByName(Constants.JAVA_IMPLEMENTATION)
-                    .getDependencies()
-                    .stream()
-                    .findFirst();
 
-            Assertions.assertTrue(resolvedDep.isPresent());
-            Assertions.assertEquals(version, resolvedDep.get().getVersion());
-        };
+        if (actions != null) {
+            var actionsC = Arrays.stream(actions).collect(Collectors.toList());
+            actionsC.add(0, configAction);
+            dep.registerDepToExtension(
+                    depConfig -> actionsC.forEach(additionalConfig -> additionalConfig.execute(depConfig)));
+        } else dep.registerDepToExtension(configAction);
 
-        var dep70 = DependencyRegistry.getTestDependency(id -> DependencyRegistry.Types.BRANCH
-                .nameType(DependencyRegistry.getGradleBranch("7.0"))
-                .equals(id));
-        defaultConfig.accept(dep70);
-        test.accept(dep70, "7.0");
+        dep.registerDepToDependencies(lgdHelper -> lgdHelper.flatDir(testName));
+    }
 
-        var dep80 = DependencyRegistry.getTestDependency(id -> DependencyRegistry.Types.BRANCH
-                .nameType(DependencyRegistry.getGradleBranch("8.0"))
-                .equals(id));
-        defaultConfig.accept(dep80);
-        test.accept(dep80, "8.0");
+    private void runTest(DependencyWrapper dep, String expectedVersion) {
+        dep.getProjectManager().startPlugin();
+        var resolvedDep = dep
+                .getProjectManager()
+                .getProject()
+                .getConfigurations()
+                .getByName(Constants.JAVA_IMPLEMENTATION)
+                .getDependencies()
+                .stream()
+                .findFirst();
+
+        Assertions.assertTrue(resolvedDep.isPresent());
+        Assertions.assertEquals(expectedVersion, resolvedDep.get().getVersion());
     }
 }
