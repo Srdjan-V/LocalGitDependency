@@ -40,7 +40,7 @@ public class Dependency {
                 : lgdIde.getEnableIdeSupport().get();
         this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks().get();
         this.buildTags =
-                Collections.unmodifiableSet(dependencyConfig.getDependecyTags().get());
+                Collections.unmodifiableSet(dependencyConfig.getDependencyTags().get());
 
         this.gitInfo = new GitInfo(managers, dependencyConfig, this);
         this.gradleInfo = new GradleInfo(managers, dependencyConfig, this);

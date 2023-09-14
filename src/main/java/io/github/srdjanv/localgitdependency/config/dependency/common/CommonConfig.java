@@ -36,5 +36,5 @@ public interface CommonConfig {
      */
     Property<Boolean> getGenerateGradleTasks();
 
-    SetProperty<Dependency.Type> getDependecyTags();
+    SetProperty<Dependency.Type> getDependencyTags();
 }

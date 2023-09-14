@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.config.dependency;
 
 import io.github.srdjanv.localgitdependency.config.dependency.common.CommonConfig;
+import io.github.srdjanv.localgitdependency.git.GitInfo;
 import org.gradle.api.provider.Property;
 
 public interface DependencyConfig extends CommonConfig {
@@ -10,6 +11,8 @@ public interface DependencyConfig extends CommonConfig {
      * Sets the name of the dependency, it will also be used as the directory name
      */
     Property<String> getName();
+
+    Property<GitInfo.TargetType> getDefaultTargetType();
 
     Property<String> getCommit();
 

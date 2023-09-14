@@ -116,9 +116,10 @@ public class IDEManager extends ManagerBase implements IIDEManager {
                 }
             }
 
+            var mapper = dependency.getSourceSetMapper();
+            if (mapper == null) continue; // TODO: 12/09/2023 implement default mapper
             // link source sets to the main project using mappers
-            for (SourceSetMapper.Mapping mapping :
-                    dependency.getSourceSetMapper().getMappings()) {
+            for (SourceSetMapper.Mapping mapping : mapper.getMappings()) {
                 final Set<String> dependentSourceSets = new HashSet<>();
                 for (String dependentSourceSetName : mapping.getDependents().get()) {
                     if (sourceSetData.getName().equals(dependentSourceSetName)) {

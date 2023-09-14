@@ -5,6 +5,7 @@ import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import java.util.HashSet;
@@ -15,17 +16,18 @@ import org.gradle.api.provider.Property;
 
 public abstract class DefaultDependencyConfig extends GroovyObjectSupport implements DependencyConfig, ConfigFinalizer {
     private final LauncherConfig launcherConfig;
-    private final Property<Dependency> dependencyProperty;
+    private final Property<Dependency> dependencyCallBack;
 
     @Inject
     public DefaultDependencyConfig(final String url, final Managers managers) {
         getUrl().convention(url).finalizeValue();
         getName().convention(managers.getProject().provider(() -> getNameFromUrl(getUrl().get())));
-        dependencyProperty = managers.getProject().getObjects().property(Dependency.class);
+        dependencyCallBack = managers.getProject().getObjects().property(Dependency.class);
 
         final var defaultable = managers.getConfigManager().getDefaultableConfig();
+        getDefaultTargetType().convention(managers.getProject().provider(() -> GitInfo.TargetType.BRANCH));
         getKeepGitUpdated().convention(managers.getProject().provider(() -> {
-            var mapper = dependencyProperty.get().getSourceSetMapper();
+            var mapper = dependencyCallBack.get().getSourceSetMapper();
             if (mapper != null && mapper.getMappings().isEmpty()) {
                 return false;
             }
@@ -43,8 +45,8 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
         getTryGeneratingJavaDocJar()
                 .convention(managers.getProject()
                         .provider(() -> defaultable.getTryGeneratingJavaDocJar().get()));
-        getDependecyTags().convention(managers.getProject().provider(() -> {
-            var defaultDepTags = defaultable.getDependecyTags().get();
+        getDependencyTags().convention(managers.getProject().provider(() -> {
+            var defaultDepTags = defaultable.getDependencyTags().get();
             var depTags = managers.getDependencyManager().getDepTags(getName().get());
             if (depTags == null) return defaultDepTags;
             var newSet = new HashSet<>(defaultDepTags);
@@ -55,7 +57,7 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
     }
 
     public Property<Dependency> getDependencyCallBack() {
-        return dependencyProperty;
+        return dependencyCallBack;
     }
 
     @Override

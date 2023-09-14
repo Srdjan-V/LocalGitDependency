@@ -17,7 +17,7 @@ public abstract class DefaultDefaultableConfig extends GroovyObjectSupport
         getGenerateGradleTasks().convention(true);
         getTryGeneratingSourceJar().convention(false);
         getTryGeneratingJavaDocJar().convention(false);
-        getDependecyTags().convention(Collections.emptyList());
+        getDependencyTags().convention(Collections.emptyList());
         getBuildLauncher()
                 .convention(managers.getProject()
                         .getObjects()
