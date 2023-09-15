@@ -39,20 +39,24 @@ final class GitManager extends ManagerBase implements IGitManager {
         if (repo.isCloned()) return;
         if (!repo.getGitInfo().isKeepGitUpdated()) return;
 
-        if (repo.getLocalChanges().isEmpty() && GitUtils.isUpToDateWithRemote(repo, repo.getGitInfo())) return;
+        if (repo.getLocalChanges().isEmpty() && GitUtils.isUpToDateWithRemote(repo)) return;
         final String targetCommit = GitUtils.getTargetCommit(
                         repo, repo.getGitInfo().getTargetLocal())
                 .substring(0, 7); // TODO: 04/09/2023 test
-        if (!repo.getLocalChanges().isEmpty() || GitUtils.hasBranchLocalCommits(repo, repo.getGitInfo())) {
-            throw new RuntimeException(String.format(
-                    "Git repo cannot be updated to %s, %s contains local changes. Commit and push or revert all changes manually.",
-                    targetCommit, repo.getGitInfo().getDir()));
+        if (!repo.getLocalChanges().isEmpty() || GitUtils.hasBranchLocalCommits(repo)) {
+            if (repo.getGitInfo().isForceGitUpdate()) {
+                GitUtils.update(repo);
+            } else
+                throw new RuntimeException(String.format(
+                        "Git repo cannot be updated to %s, %s contains local changes."
+                                + " Commit and push or revert all changes manually. Or enable ForceGitUpdate to discard the local changes",
+                        targetCommit, repo.getGitInfo().getDir()));
         } else {
             ManagerLogger.info(
                     "Updating to version {} for {}",
                     targetCommit,
                     repo.getGitInfo().getDependency().getName());
-            GitUtils.update(repo, repo.getGitInfo());
+            GitUtils.update(repo);
         }
     }
 

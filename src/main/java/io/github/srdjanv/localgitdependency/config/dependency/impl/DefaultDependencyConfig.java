@@ -33,6 +33,12 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
             }
             return defaultable.getKeepGitUpdated().get();
         }));
+        getForceGitUpdate()
+                .convention(managers.getProject()
+                        .provider(() -> defaultable.getForceGitUpdate().get()));
+        getCloneGitSubmodules()
+                .convention(managers.getProject()
+                        .provider(() -> defaultable.getCloneGitSubmodules().get()));
         getKeepInitScriptUpdated()
                 .convention(managers.getProject()
                         .provider(() -> defaultable.getKeepInitScriptUpdated().get()));

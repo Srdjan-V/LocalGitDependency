@@ -33,10 +33,10 @@ public class GitRepo implements AutoCloseable {
             this.cloned = cloned;
         }
 
-        this.remoteBranchName = GitUtils.getCorrespondingRemoteBranchNameFromCurrentTarget(this, gitInfo);
+        this.remoteBranchName = GitUtils.getCorrespondingRemoteBranchNameFromCurrentTarget(this);
         if (cloned) {
             GitUtils.updateConfigAndFetch(this);
-            GitUtils.checkout(this, gitInfo);
+            GitUtils.checkout(this);
         } else {
             final String remoteUrl =
                     git.getRepository().getConfig().getString("remote", Constants.DEFAULT_REMOTE_NAME, "url");

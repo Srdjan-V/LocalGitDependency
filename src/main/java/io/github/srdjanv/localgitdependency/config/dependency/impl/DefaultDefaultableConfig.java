@@ -13,6 +13,8 @@ public abstract class DefaultDefaultableConfig extends GroovyObjectSupport
     @Inject
     public DefaultDefaultableConfig(Managers managers) {
         getKeepGitUpdated().convention(true);
+        getForceGitUpdate().convention(false);
+        getCloneGitSubmodules().convention(false);
         getKeepInitScriptUpdated().convention(true);
         getGenerateGradleTasks().convention(true);
         getTryGeneratingSourceJar().convention(false);

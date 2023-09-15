@@ -19,6 +19,8 @@ public final class GitInfo {
     private final TargetType targetType;
     private final File dir;
     private final boolean keepGitUpdated;
+    private final boolean forceGitUpdate;
+    private final boolean cloneGitSubmodules;
     private boolean refreshed;
 
     public GitInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency) {
@@ -60,6 +62,8 @@ public final class GitInfo {
         this.dir = FileUtil.concat(dir, dependency.getName());
 
         this.keepGitUpdated = dependencyConfig.getKeepGitUpdated().get();
+        this.forceGitUpdate = dependencyConfig.getForceGitUpdate().get();
+        this.cloneGitSubmodules = dependencyConfig.getCloneGitSubmodules().get();
     }
 
     @NotNull public Dependency getDependency() {
@@ -92,6 +96,14 @@ public final class GitInfo {
 
     public boolean isKeepGitUpdated() {
         return keepGitUpdated;
+    }
+
+    public boolean isForceGitUpdate() {
+        return forceGitUpdate;
+    }
+
+    public boolean isCloneGitSubmodules() {
+        return cloneGitSubmodules;
     }
 
     public boolean hasRefreshed() {

@@ -12,6 +12,9 @@ public interface CommonConfig {
      */
     Property<Boolean> getKeepGitUpdated();
 
+    Property<Boolean> getForceGitUpdate();
+
+    Property<Boolean> getCloneGitSubmodules();
     /**
      * If set to false the generated dependencyInitScript will never be updated of fixed if changes are detected
      *
