@@ -7,10 +7,6 @@ import io.github.srdjanv.localgitdependency.Constants;
 public class ManagerLogger {
     private ManagerLogger() {}
 
-    public static void infoUnFormatted(String info, Object... args) {
-        PluginLogger.logger.lifecycle(info, args);
-    }
-
     public static void info(String log, Object... args) {
         logger.lifecycle(Constants.TAB_INDENTX2 + ANSI_GREEN + log + ANSI_RESET, args);
     }

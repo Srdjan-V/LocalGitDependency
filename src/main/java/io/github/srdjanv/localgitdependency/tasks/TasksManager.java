@@ -6,8 +6,6 @@ import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.tasks.buildtasks.BuildAllGitDependencies;
 import io.github.srdjanv.localgitdependency.tasks.buildtasks.RunBuildTasks;
-import io.github.srdjanv.localgitdependency.tasks.printtasks.PrintAllDependenciesInfo;
-import io.github.srdjanv.localgitdependency.tasks.printtasks.PrintDependencyInfo;
 import io.github.srdjanv.localgitdependency.tasks.probetasks.ProbeAllDependenciesTask;
 import io.github.srdjanv.localgitdependency.tasks.probetasks.RunProbeTasks;
 import io.github.srdjanv.localgitdependency.tasks.startuptasks.RunAllStartupTasks;
@@ -40,18 +38,10 @@ class TasksManager extends ManagerBase implements ITasksManager {
             taskCreator.create(Constants.PROBE_ALL_DEPENDENCIES, ProbeAllDependenciesTask.class, getProjectManagers());
             taskCreator.create(
                     Constants.BUILD_ALL_GIT_DEPENDENCIES, BuildAllGitDependencies.class, getProjectManagers());
-            taskCreator.create(
-                    Constants.PRINT_ALL_DEPENDENCIES_INFO, PrintAllDependenciesInfo.class, getProjectManagers());
         }
 
         for (Dependency dependency : getDependencyManager().getDependencies()) {
             if (!dependency.isGenerateGradleTasks()) continue;
-
-            taskCreator.create(
-                    Constants.PRINT_DEPENDENCY_INFO.apply(dependency),
-                    PrintDependencyInfo.class,
-                    getProjectManagers(),
-                    dependency);
             taskCreator.create(
                     Constants.STARTUP_DEPENDENCY.apply(dependency),
                     RunStartupTasks.class,

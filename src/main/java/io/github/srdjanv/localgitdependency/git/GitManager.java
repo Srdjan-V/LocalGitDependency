@@ -19,33 +19,38 @@ final class GitManager extends ManagerBase implements IGitManager {
     protected void managerConstructor() {}
 
     @Override
-    public void initRepos() {
+    public boolean initRepos() {
+        boolean didWork = false;
         for (Dependency dependency : getDependencyManager().getDependencies()) {
-            initRepo(dependency);
+            didWork |= initRepo(dependency);
         }
+        return didWork;
     }
 
     @Override
-    public void initRepo(Dependency dependency) {
+    public boolean initRepo(Dependency dependency) {
+        boolean didWork = false;
         try (var repo = new GitRepo(dependency.getGitInfo())) {
-            updateRepoIfNeeded(repo);
-            updateTaskTriggersSHA(repo);
+            didWork |= updateRepoIfNeeded(repo);
+            didWork |= updateTaskTriggersSHA(repo);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return didWork;
     }
 
-    public void updateRepoIfNeeded(GitRepo repo) throws GitAPIException, IOException {
-        if (repo.isCloned()) return;
-        if (!repo.getGitInfo().isKeepGitUpdated()) return;
+    public boolean updateRepoIfNeeded(GitRepo repo) throws GitAPIException, IOException {
+        if (repo.isCloned()) return false;
+        if (!repo.getGitInfo().isKeepGitUpdated()) return false;
 
-        if (repo.getLocalChanges().isEmpty() && GitUtils.isUpToDateWithRemote(repo)) return;
+        if (repo.getLocalChanges().isEmpty() && GitUtils.isUpToDateWithRemote(repo)) return false;
         final String targetCommit = GitUtils.getTargetCommit(
                         repo, repo.getGitInfo().getTargetLocal())
                 .substring(0, 7); // TODO: 04/09/2023 test
         if (!repo.getLocalChanges().isEmpty() || GitUtils.hasBranchLocalCommits(repo)) {
             if (repo.getGitInfo().isForceGitUpdate()) {
                 GitUtils.update(repo);
+                return true;
             } else
                 throw new RuntimeException(String.format(
                         "Git repo cannot be updated to %s, %s contains local changes."
@@ -57,10 +62,11 @@ final class GitManager extends ManagerBase implements IGitManager {
                     targetCommit,
                     repo.getGitInfo().getDependency().getName());
             GitUtils.update(repo);
+            return true;
         }
     }
 
-    private void updateTaskTriggersSHA(GitRepo repo) throws IOException {
+    private boolean updateTaskTriggersSHA(GitRepo repo) throws IOException {
         final String startupTasksTriggersSHA1;
         final String probeTasksTriggersSHA1;
         final String buildTasksTriggersSHA1;
@@ -141,11 +147,13 @@ final class GitManager extends ManagerBase implements IGitManager {
             persistentInfo.setBuildTasksTriggersSHA1(buildTasksTriggersSHA1);
         }
 
-        if (tags.isEmpty()) return;
-        ManagerLogger.info(
-                "Dependency {} has new local changes, marking [{}] {} to be run",
-                repo.getGitInfo().getDependency().getName(),
-                tags,
-                tags.size() > 1 ? "stages" : "stage");
+        if (!tags.isEmpty()) {
+            ManagerLogger.info(
+                    "Dependency {} has new local changes, marking {} {} to be run",
+                    repo.getGitInfo().getDependency().getName(),
+                    tags,
+                    tags.size() > 1 ? "stages" : "stage");
+            return true;
+        } else return false;
     }
 }

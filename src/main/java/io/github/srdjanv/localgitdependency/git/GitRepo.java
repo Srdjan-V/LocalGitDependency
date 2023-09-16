@@ -43,10 +43,10 @@ public class GitRepo implements AutoCloseable {
 
             if (remoteUrl == null) {
                 throw new Exception(String.format(
-                        "The repo has no remote url, Delete directory %s and try again", gitInfo.getDir()));
+                        "The repo has no remote url, delete directory: %s and try again", gitInfo.getDir()));
             } else if (!remoteUrl.equals(gitInfo.getUrl()))
                 throw new Exception(String.format(
-                        "The repo has a different remote url, Delete directory %s and try again", gitInfo.getDir()));
+                        "The repo has a different remote url, delete directory: %s and try again", gitInfo.getDir()));
 
             if (!gitInfo.getTarget()
                     .equals(gitInfo.getDependency().getPersistentInfo().getGitTarget())) {

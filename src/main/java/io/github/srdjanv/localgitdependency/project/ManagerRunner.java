@@ -60,7 +60,6 @@ final class ManagerRunner<T extends Manager> {
         switch (runLogType) {
             case SILENT -> silent(manager);
             case MINIMAL -> minimal(manager);
-            case FULL -> full(manager);
         }
     }
 
@@ -83,14 +82,6 @@ final class ManagerRunner<T extends Manager> {
         }
         PluginLogger.task(
                 "{}: Finished {} in {} ms", manager.getManagerName(), taskName, System.currentTimeMillis() - start);
-    }
-
-    private void full(T manager) {
-        final long start = System.currentTimeMillis();
-        PluginLogger.task("{}: Started {}", manager.getManagerName(), taskName);
-        invokeMethod(manager);
-        final long spent = System.currentTimeMillis() - start;
-        PluginLogger.task("{}: Finished {} in {} ms", manager.getManagerName(), taskName, spent);
     }
 
     private Object invokeMethod(T manager) {
@@ -123,7 +114,8 @@ final class ManagerRunner<T extends Manager> {
                     taskName =
                             declaredMethod.getAnnotation(TaskDescription.class).value();
                     if (declaredMethod.getReturnType() != boolean.class && declaredMethod.getReturnType() != void.class)
-                        throw new RuntimeException();
+                        throw new RuntimeException(
+                                String.format("Method: %s in not returning boolean or void", method.getName()));
 
                     return;
                 } else {
@@ -143,7 +135,6 @@ final class ManagerRunner<T extends Manager> {
 
     public enum RunLogType {
         SILENT,
-        MINIMAL,
-        FULL
+        MINIMAL
     }
 }

@@ -11,7 +11,7 @@ public interface IGitManager extends Manager {
     }
 
     @TaskDescription("setting up repos")
-    void initRepos();
+    boolean initRepos();
 
-    void initRepo(Dependency dependency);
+    boolean initRepo(Dependency dependency);
 }

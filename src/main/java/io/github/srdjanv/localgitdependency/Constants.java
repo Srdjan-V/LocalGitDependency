@@ -22,8 +22,6 @@ public final class Constants {
     public static final Function<Dependency, String> PROBE_DEPENDENCY = s -> s.getName() + "-Probe";
     public static final String BUILD_ALL_GIT_DEPENDENCIES = "!BuildAll";
     public static final Function<Dependency, String> BUILD_GIT_DEPENDENCY = s -> s.getName() + "-Build";
-    public static final String PRINT_ALL_DEPENDENCIES_INFO = "!PrintAllInfo";
-    public static final Function<Dependency, String> PRINT_DEPENDENCY_INFO = s -> s.getName() + "-PrintInfo";
 
     // Main plugin data
     public static final String MAIN_INIT_SCRIPT_GRADLE = "mainInitScript.gradle";

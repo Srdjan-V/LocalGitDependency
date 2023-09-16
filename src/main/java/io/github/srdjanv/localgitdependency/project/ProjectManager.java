@@ -56,19 +56,19 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
         PROJECT_RUNNERS.add(ManagerRunner.<IGitManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getGitManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("initRepos"));
-            managerRunner.setRunLogType(RunLogType.FULL);
+            managerRunner.setRunLogType(RunLogType.MINIMAL);
             managerRunner.addSkipCheck(emptyDepsSkip);
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<IGradleManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getGradleManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("initGradleAPI"));
-            managerRunner.setRunLogType(RunLogType.FULL);
+            managerRunner.setRunLogType(RunLogType.MINIMAL);
             managerRunner.addSkipCheck(emptyDepsSkip);
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<IGradleManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getGradleManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("startBuildTasks"));
-            managerRunner.setRunLogType(RunLogType.FULL);
+            managerRunner.setRunLogType(RunLogType.MINIMAL);
             managerRunner.addSkipCheck(emptyDepsSkip);
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
