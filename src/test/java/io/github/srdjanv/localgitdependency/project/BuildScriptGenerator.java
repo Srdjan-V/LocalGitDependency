@@ -1,12 +1,15 @@
 package io.github.srdjanv.localgitdependency.project;
 
+import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Properties;
+
 import org.jetbrains.annotations.Nullable;
 
 public class BuildScriptGenerator {
@@ -16,10 +19,10 @@ public class BuildScriptGenerator {
     private static final String lgdPluginVersion = "LGDVersion";
 
     public static <G extends BaseGenerator> void generate(DependencyWrapper wrapper, G... generators) {
-        generate(
-                FileUtil.getLibsDir(wrapper.getProjectManager().getProject())
-                        .getAsFile()
-                        .toPath(),
+        var dir = FileUtil.getLibsDir(wrapper.getProjectManager().getProject())
+                .getAsFile();
+        dir.mkdirs();
+        generate(dir.toPath(),
                 wrapper.getTestName(),
                 generators);
     }
@@ -45,7 +48,8 @@ public class BuildScriptGenerator {
         try (var writer = Files.newBufferedWriter(
                 path.resolve(new File(baseFileName + GRADLE).toPath()),
                 StandardOpenOption.WRITE,
-                StandardOpenOption.TRUNCATE_EXISTING)) {
+                StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.CREATE)) {
             for (BaseGenerator generator : generators) {
                 writer.write(generator.prefix() + System.lineSeparator());
                 writer.write(generator.builder.toString());
@@ -116,6 +120,7 @@ public class BuildScriptGenerator {
         public LDGDeps() {
             super(new Properties());
             properties.put(lgdPlugin, Boolean.toString(true));
+            properties.put(lgdPluginVersion, Constants.PLUGIN_VERSION);
         }
 
         public void LGDVersion(String version) {
