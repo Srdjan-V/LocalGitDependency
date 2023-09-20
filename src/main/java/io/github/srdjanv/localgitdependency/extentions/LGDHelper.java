@@ -126,7 +126,7 @@ public class LGDHelper extends GroovyObjectSupport {
     }
 
     private String getSubDepNotation(final String[] inputNotation, final SubDependencyData dep) {
-        return getDepNotation(dep.getArchivesBaseName().split("\\."), inputNotation, dep.getArchivesBaseName());
+        return getDepNotation(dep.getProjectID().split(":"), inputNotation, dep.getArchivesBaseName());
     }
 
     private String getDepNotation(

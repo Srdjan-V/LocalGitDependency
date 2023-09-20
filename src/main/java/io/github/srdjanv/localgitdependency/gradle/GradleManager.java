@@ -244,11 +244,11 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             Function<GL, ListProperty<String>> tasksFunction,
             Function<Dependency, ResultHandler<Void>> function) {
         var tasks = tasksFunction.apply(baseLauncher);
-        if (tasks.get().isEmpty()) return;
-
         var args = argsFunction.apply(baseLauncher);
+        if (!tasks.get().isEmpty() && !args.get().isEmpty()) return;
+
         final String[] arrArgs;
-        if (args.get().isEmpty()) {
+        if (!args.get().isEmpty()) {
             arrArgs = args.get().toArray(new String[0]);
             ManagerLogger.info("Args: {}", (Object) arrArgs);
         } else arrArgs = new String[0];

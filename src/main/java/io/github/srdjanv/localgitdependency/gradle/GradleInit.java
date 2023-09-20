@@ -104,7 +104,7 @@ final class GradleInit {
             this.classifier = classifier;
         }
 
-        public void buildJarTask(GradleInit gradleInit) {
+        private void buildJarTask(GradleInit gradleInit) {
             gradleInit.appendLine(1, String.format("tasks.register(\"%s\", Jar) {", name));
             gradleInit.appendLine(2, String.format("from %s", sourceSets));
             gradleInit.appendLine(2, String.format("classifier = '%s'", classifier));
@@ -133,10 +133,10 @@ final class GradleInit {
             this.tags = tags;
         }
 
-        public void buildSubDeps(GradleInit gradleInit) {
+        private void buildSubDeps(GradleInit gradleInit) {
             for (Dependency.Type tag : tags) {
                 gradleInit.appendLine(
-                        3, String.format("%s, %s.%s", name, tag.getClass().getName(), tag));
+                        3, String.format("getDependencyManager().tagDep('%s', %s.%s)", name, tag.getClass().getName(), tag));
             }
         }
     }
