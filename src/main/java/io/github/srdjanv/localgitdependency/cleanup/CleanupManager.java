@@ -28,7 +28,7 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
 
         if (!props.getAutomaticCleanup().get()) return false;
         return cleanLibsDir(props.getLibsDir().getAsFile().get())
-                || cleanDataDir(FileUtil.getLgdDir(getProject()).getAsFile());
+                || cleanDataDir(FileUtil.getLgdDataDir(getProject()).getAsFile());
     }
 
     private boolean cleanLibsDir(File libsDir) {

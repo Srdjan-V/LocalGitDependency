@@ -20,9 +20,8 @@ public final class GradleInfo {
         this.dependency = dependency;
         this.launchers = GradleLaunchers.build(dependency, dependencyConfig);
         this.keepInitScriptUpdated = dependencyConfig.getKeepInitScriptUpdated().get();
-        // TODO: 25/08/2023 test
         this.initScript = FileUtil.getPersistentInitScript(
-                FileUtil.getLgdDir(managers.getProject()).getAsFile(), dependency.getName());
+                FileUtil.getLgdDataDir(managers.getProject()).getAsFile(), dependency.getName());
         this.tryGeneratingSourceJar =
                 dependencyConfig.getTryGeneratingSourceJar().get();
         this.tryGeneratingJavaDocJar =

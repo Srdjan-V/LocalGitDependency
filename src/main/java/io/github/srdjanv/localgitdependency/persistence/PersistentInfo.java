@@ -26,9 +26,8 @@ public final class PersistentInfo {
     public PersistentInfo(Managers managers, DependencyConfig dependencyConfig, Dependency dependency) {
         this.dependency = dependency;
 
-        // TODO: 25/08/2023 test
         this.persistentFile = FileUtil.getPersistentJsonFile(
-                FileUtil.getLgdDir(managers.getProject()).getAsFile(), dependency.getName());
+                FileUtil.getLgdDataDir(managers.getProject()).getAsFile(), dependency.getName());
     }
 
     public boolean hasDependencyTypeChanged() {

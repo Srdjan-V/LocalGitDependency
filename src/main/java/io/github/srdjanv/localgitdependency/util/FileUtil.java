@@ -88,4 +88,8 @@ public final class FileUtil {
     public static Directory getLgdDir(Project project) {
         return project.getLayout().getBuildDirectory().dir("/lgd").get();
     }
+
+    public static Directory getLgdDataDir(Project project) {
+        return project.getLayout().getBuildDirectory().dir("/lgd/data").get();
+    }
 }
