@@ -58,6 +58,11 @@ public final class DefaultLaunchers {
                 if (tags.contains(Dependency.Type.MavenLocal)) return Collections.singletonList("publishToMavenLocal");
                 return Collections.singletonList("build");
             }));
+            getExplicit().convention(managers.getProject().provider(() -> {
+                return managers.getDependencyManager()
+                                .getSubDepTags(dependencyConfig.getName().get())
+                        != null;
+            }));
         }
     }
 

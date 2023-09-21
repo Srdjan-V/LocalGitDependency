@@ -60,7 +60,6 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
     @Override
     public void initGradleAPI() {
-        // TODO: 30/07/2023 run one grade stage if the dep is using sub deps to allow the deps to rebuild if needed
         final var deps = getDependencyManager().getDependencies();
         if (deps.isEmpty()) return;
         validateMainInitScript();
@@ -127,9 +126,9 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
         if (checkTasks || !persistentSuccessStatus.test(dependency)) {
             final var targetLauncher = launcher.apply(dependency.getGradleInfo().getLaunchers());
-            if (targetLauncher instanceof Launchers.Probe) {
-                return true;
-            }
+            if (targetLauncher instanceof Launchers.Probe) return true;
+            if (targetLauncher instanceof Launchers.Build
+                    && targetLauncher.getExplicit().get()) return true;
 
             List<String> tasks = Stream.of(
                             targetLauncher.getPreTasks(), targetLauncher.getMainTasks(), targetLauncher.getPostTasks())
@@ -140,9 +139,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             if (tasks.isEmpty()) {
                 statusUpdater.accept(dependency.getPersistentInfo());
                 return false;
-            } else {
-                return true;
-            }
+            } else return true;
         }
         statusUpdater.accept(dependency.getPersistentInfo());
         return false;
@@ -243,17 +240,17 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             Function<GL, ListProperty<String>> argsFunction,
             Function<GL, ListProperty<String>> tasksFunction,
             Function<Dependency, ResultHandler<Void>> function) {
-        var tasks = tasksFunction.apply(baseLauncher);
-        var args = argsFunction.apply(baseLauncher);
-        if (!tasks.get().isEmpty() && !args.get().isEmpty()) return;
+        var tasks = tasksFunction.apply(baseLauncher).get();
+        var args = argsFunction.apply(baseLauncher).get();
+        if (tasks.isEmpty() && args.isEmpty()) return;
 
         final String[] arrArgs;
-        if (!args.get().isEmpty()) {
-            arrArgs = args.get().toArray(new String[0]);
+        if (!args.isEmpty()) {
+            arrArgs = args.toArray(new String[0]);
             ManagerLogger.info("Args: {}", (Object) arrArgs);
         } else arrArgs = new String[0];
 
-        final String[] arrTasks = tasks.get().toArray(new String[0]);
+        final String[] arrTasks = tasks.toArray(new String[0]);
         ManagerLogger.info("Tasks: {}", (Object) arrTasks);
 
         DefaultGradleConnector connector = getGradleConnector(dependency);
@@ -278,15 +275,14 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             GL baseLauncher,
             Function<GL, ListProperty<String>> argsFunction,
             Function<GL, ListProperty<String>> tasksFunction) {
-        var tasks = tasksFunction.apply(baseLauncher);
-        var args = argsFunction.apply(baseLauncher);
+        var tasks = tasksFunction.apply(baseLauncher).get();
+        var args = argsFunction.apply(baseLauncher).get();
+        if (tasks.isEmpty() && args.isEmpty()) return;
 
-        if (tasks.get().isEmpty() && args.get().isEmpty()) return;
-
-        final String[] arrArgs = args.get().toArray(new String[0]);
+        final String[] arrArgs = args.toArray(new String[0]);
         ManagerLogger.info("Args: {}", (Object) arrArgs);
 
-        final String[] arrTasks = tasks.get().toArray(new String[0]);
+        final String[] arrTasks = tasks.toArray(new String[0]);
         ManagerLogger.info("Tasks: {}", (Object) arrTasks);
 
         DefaultGradleConnector connector = getGradleConnector(dependency);

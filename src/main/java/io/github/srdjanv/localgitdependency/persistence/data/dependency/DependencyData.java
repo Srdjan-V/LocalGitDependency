@@ -14,7 +14,7 @@ public class DependencyData {
     private String probeTasksTriggersSHA1;
     private Boolean buildTasksSuccessful;
     private String buildTasksTriggersSHA1;
-    private Set<Dependency.Type> buildTypes;
+    private Set<Dependency.Type> buildTags;
 
     public String getInitFileSHA1() {
         return initFileSHA1;
@@ -80,11 +80,11 @@ public class DependencyData {
         this.buildTasksTriggersSHA1 = buildTasksTriggersSHA1;
     }
 
-    public Set<Dependency.Type> getBuildTypes() {
-        return buildTypes;
+    public Set<Dependency.Type> getBuildTags() {
+        return buildTags;
     }
 
-    public void setBuildTypes(Set<Dependency.Type> buildTypes) {
-        this.buildTypes = buildTypes;
+    public void setBuildTags(Set<Dependency.Type> buildTags) {
+        this.buildTags = buildTags;
     }
 }

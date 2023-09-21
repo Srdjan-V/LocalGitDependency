@@ -3,13 +3,11 @@ package io.github.srdjanv.localgitdependency.project;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Properties;
-
 import org.jetbrains.annotations.Nullable;
 
 public class BuildScriptGenerator {
@@ -19,12 +17,9 @@ public class BuildScriptGenerator {
     private static final String lgdPluginVersion = "LGDVersion";
 
     public static <G extends BaseGenerator> void generate(DependencyWrapper wrapper, G... generators) {
-        var dir = FileUtil.getLibsDir(wrapper.getProjectManager().getProject())
-                .getAsFile();
+        var dir = FileUtil.getLibsDir(wrapper.getProjectManager().getProject()).getAsFile();
         dir.mkdirs();
-        generate(dir.toPath(),
-                wrapper.getTestName(),
-                generators);
+        generate(dir.toPath(), wrapper.getTestName(), generators);
     }
 
     private static <G extends BaseGenerator> void generate(Path path, String baseFileName, G... generators) {

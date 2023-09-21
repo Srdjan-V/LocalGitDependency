@@ -9,6 +9,7 @@ import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.File;
 import java.util.*;
+import java.util.function.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -17,6 +18,7 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     private final Set<Dependency> dependencies = new HashSet<>();
     private final List<DependencyConfig> unResolvedDependencies = new ArrayList<>();
     private final Map<String, Map<String, Set<Dependency.Type>>> tags = new HashMap<>();
+    private final Map<String, Consumer<DependencyConfig>> resolutionCallbacks = new HashMap<>();
 
     DependencyManager(Managers managers) {
         super(managers);
@@ -36,6 +38,8 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
     @Override
     public boolean resolveRegisteredDependencies() {
         for (var dependencyConfig : unResolvedDependencies) {
+            var config = resolutionCallbacks.get(dependencyConfig.getName().get());
+            if (config != null) config.accept(dependencyConfig);
             ((DefaultDependencyConfig) dependencyConfig).finalizeProps();
             var dep = new Dependency(this, dependencyConfig);
             dependencies.add(dep);
@@ -80,6 +84,16 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
         notationMap
                 .computeIfAbsent(getDepName(notation, false), m -> new HashSet<>())
                 .add(type);
+    }
+
+    @Override
+    public void registerResolutionCallback(String dep, Consumer<DependencyConfig> config) {
+        resolutionCallbacks.put(dep, config);
+    }
+
+    @Override
+    public void tagDep(String notation, String type) {
+        tagDep(notation, Dependency.Type.valueOf(type));
     }
 
     @Override

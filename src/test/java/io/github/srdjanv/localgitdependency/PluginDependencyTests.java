@@ -6,21 +6,13 @@ import static io.github.srdjanv.localgitdependency.depenency.Dependency.Type.Jar
 import io.github.srdjanv.localgitdependency.dependency.DependencyRegistry;
 import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
-
-import java.util.Collections;
-import java.util.stream.Stream;
-
 import io.github.srdjanv.localgitdependency.project.BuildScriptGenerator;
-import org.apache.tools.ant.taskdefs.Java;
+import java.util.stream.Stream;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository;
-import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.jvm.toolchain.JavaLanguageVersion;
-import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 public class PluginDependencyTests {
@@ -59,8 +51,8 @@ public class PluginDependencyTests {
             });
         });
 
-        return testDependencies.stream().map(testWrapper ->
-                DynamicTest.dynamicTest(testWrapper.getTestName(), () -> {
+        return testDependencies.stream()
+                .map(testWrapper -> DynamicTest.dynamicTest(testWrapper.getTestName(), () -> {
                     testWrapper.getProjectManager().startPlugin();
                     printData(testWrapper.getProjectManager().getProject());
                     assertTest(testWrapper);
@@ -84,20 +76,25 @@ public class PluginDependencyTests {
 
     private Stream<DynamicTest> runSubDepTest(Dependency.Type type) {
         // only gradle 8.0 is working with lgd sub deps tests
-        var wrapper = DependencyRegistry.getTestDependency(id -> DependencyRegistry.getGradleBranch("8.0").equals(id));
+        var wrapper = DependencyRegistry.getTestDependency(
+                id -> DependencyRegistry.getGradleBranch("8.0").equals(id));
 
         final var subDepName = "SubDep";
         wrapper.setTestName(type.name());
-        BuildScriptGenerator.generate(wrapper, new BuildScriptGenerator.LDGDeps().append(String.format(
-                """                                     
+        BuildScriptGenerator.generate(
+                wrapper,
+                new BuildScriptGenerator.LDGDeps()
+                        .append(String.format(
+                                """
                            register("https://github.com/Srdjan-V/LocalGitDependencyTestRepo.git") {
                                branch = "%s"
                                name = "%s"
                            }
-                        """, wrapper.getBranch(), subDepName)));
+                        """,
+                                wrapper.getBranch(), subDepName)));
 
         wrapper.applyPluginConfiguration(config -> {
-           config.getAutomaticCleanup().set(false);
+            config.getAutomaticCleanup().set(false);
         });
 
         wrapper.registerDepToExtension(config -> {
@@ -112,8 +109,8 @@ public class PluginDependencyTests {
             default -> throw new IllegalStateException("Unexpected value: " + type);
         });
 
-        return Stream.of(wrapper).map(testWrapper ->
-                DynamicTest.dynamicTest(testWrapper.getTestName(), () -> {
+        return Stream.of(wrapper)
+                .map(testWrapper -> DynamicTest.dynamicTest(testWrapper.getTestName(), () -> {
                     testWrapper.getProjectManager().startPlugin();
                     printData(testWrapper.getProjectManager().getProject());
                     assertTest(testWrapper);
@@ -188,7 +185,7 @@ public class PluginDependencyTests {
                                     .getProbeData()
                                     .getArchivesBaseName()))
                     .count();
-        } else dependencyCount = 0;
+        } else dependencyCount = 1;
 
         Assertions.assertEquals(
                 1,

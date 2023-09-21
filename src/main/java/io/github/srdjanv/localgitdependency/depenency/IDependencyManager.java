@@ -6,6 +6,7 @@ import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.project.TaskDescription;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -27,6 +28,10 @@ public interface IDependencyManager extends Manager {
     Set<Dependency> getDependencies();
 
     void tagDep(String notation, Dependency.Type type);
+
+    void tagDep(String notation, String type);
+
+    void registerResolutionCallback(String dep, Consumer<DependencyConfig> config);
 
     @Nullable Set<Dependency.Type> getDepTags(String depName);
 

@@ -18,8 +18,7 @@ repositories {
     mavenCentral()
 }
 
-//using java 8 for compatibility with old projects
-java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 dependencies {
     implementation gradleApi()
@@ -170,6 +169,6 @@ def publishPluginsChecks = tasks.register("publishPluginsChecks") {
     }
 }
 
-tasks.getByName("publishPlugins").configure {
+tasks.named("publishPlugins").configure {
     dependsOn publishPluginsChecks
 }

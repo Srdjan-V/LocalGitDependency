@@ -118,6 +118,7 @@ final class GradleInit {
 
         if (subDeps.isEmpty()) return;
         appendLine(1, "afterEvaluate {");
+        appendLine(2, "println('Tagging Deps')");
         appendLine(2, LGDManagers.NAME + " {");
         for (var deps : subDeps) deps.buildSubDeps(this);
         appendLine(2, "}");
@@ -135,8 +136,12 @@ final class GradleInit {
 
         private void buildSubDeps(GradleInit gradleInit) {
             for (Dependency.Type tag : tags) {
+                gradleInit.appendLine(3, String.format("getDependencyManager().tagDep('%s', '%s')", name, tag.name()));
                 gradleInit.appendLine(
-                        3, String.format("getDependencyManager().tagDep('%s', %s.%s)", name, tag.getClass().getName(), tag));
+                        3,
+                        String.format(
+                                "getDependencyManager().registerResolutionCallback('%s', config -> config.getBuildLauncher().getBuild().getExplicit().set(true))",
+                                name));
             }
         }
     }

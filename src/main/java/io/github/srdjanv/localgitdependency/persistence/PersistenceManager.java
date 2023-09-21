@@ -115,9 +115,8 @@ final class PersistenceManager extends ManagerBase implements IPersistenceManage
                     DependencyData data = (DependencyData) dataWrapper.getData();
                     persistentInfo.setDependencyData(data);
 
-                    if (data.getBuildTypes() == null
-                            || !dependency.getBuildTags().containsAll(data.getBuildTypes())) {
-                        data.setBuildTypes(dependency.getBuildTags());
+                    if (data.getBuildTags() == null || !data.getBuildTags().containsAll(dependency.getBuildTags())) {
+                        data.setBuildTags(dependency.getBuildTags());
                         persistentInfo.setDependencyTypeChanged();
                         persistentInfo.setDirty();
                     }
