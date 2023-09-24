@@ -9,6 +9,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class DataParser {
     private DataParser() {}
@@ -39,47 +40,35 @@ public class DataParser {
     }
 
     public static List<DataWrapper> complexLoadDataFromFileJson(File file, DataLayout layout) {
-        boolean fileExits = file.exists();
-        ArrayList<DataWrapper> arrayList = new ArrayList<>();
-        JsonArray jsonArray = null;
+        JsonArray jsonArray;
 
-        if (fileExits) {
+        if (file.exists()) {
             JsonElement jsonElement;
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 jsonElement = JsonParser.parseReader(reader);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
 
             try {
                 jsonArray = jsonElement.getAsJsonArray();
             } catch (IllegalStateException ignore) {
-                for (DataLayout.DataMapper<?> dataMapper : layout.getDataMappers()) {
-                    arrayList.add(DataWrapper.create(dataMapper));
-                }
-                return arrayList;
+                return layout.getDataMappers().stream().map(DataWrapper::create).collect(Collectors.toList());
             }
-        }
+        } else return layout.getDataMappers().stream().map(DataWrapper::create).collect(Collectors.toList());
 
+        List<DataWrapper> wrappers = new ArrayList<>();
         for (DataLayout.DataMapper<?> dataMapper : layout.getDataMappers()) {
-            if (!fileExits) {
-                arrayList.add(DataWrapper.create(dataMapper));
-                continue;
-            }
-
             try {
                 Object data = gson.fromJson(jsonArray.get(dataMapper.getInstanceIndex()), dataMapper.getClazz());
                 if (validData(dataMapper.getClazz(), data).isEmpty()) {
-                    arrayList.add(DataWrapper.create(dataMapper, data));
-                } else {
-                    arrayList.add(DataWrapper.create(dataMapper));
-                }
-            } catch (JsonSyntaxException ignore) {
-                arrayList.add(DataWrapper.create(dataMapper));
+                    wrappers.add(DataWrapper.create(dataMapper, data));
+                } else wrappers.add(DataWrapper.create(dataMapper));
+            } catch (JsonSyntaxException | IndexOutOfBoundsException ignore) {
+                wrappers.add(DataWrapper.create(dataMapper));
             }
         }
-
-        return arrayList;
+        return wrappers;
     }
 
     public static void complexSaveDataToFileJson(File file, List<?> data, DataLayout layout) {
@@ -88,26 +77,22 @@ public class DataParser {
     }
 
     public static <T> T simpleLoadDataFromFileJson(File file, Class<T> clazz, Supplier<T> instanceSupplier) {
-        if (file.exists()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                T data = gson.fromJson(reader, clazz);
-                if (validData(clazz, data).isEmpty()) {
-                    return data;
-                } else {
-                    return instanceSupplier.get();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        if (!file.exists()) return instanceSupplier.get();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            T data = gson.fromJson(reader, clazz);
+            if (validData(clazz, data).isEmpty()) {
+                return data;
+            } else return instanceSupplier.get();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        return instanceSupplier.get();
     }
 
     public static void simpleSaveDataToFileJson(File file, Object data) {
         try (PrintWriter pw = new PrintWriter(file)) {
             pw.write(gson.toJson(data));
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 }
