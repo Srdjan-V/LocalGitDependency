@@ -71,11 +71,9 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
                     Files.delete(file);
                 } catch (AccessDeniedException exception) {
                     if (!Files.isWritable(file)) {
-                        FilePremonitions.getReadPermissions().accept(file); // read only files cant be deleted
+                        FilePremonitions.changeReadPermissions(file); // read only files cant be deleted
                         Files.delete(file);
-                    } else {
-                        throw exception;
-                    }
+                    } else throw exception;
                 }
                 return FileVisitResult.CONTINUE;
             }
