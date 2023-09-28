@@ -45,28 +45,14 @@ public class InjectionTest {
                 id -> DependencyRegistry.getGradleBranch("8.0").equals(id));
 
         var repoBuilder = new BuildScriptGenerator.Repo();
-        repoBuilder.append(
-                """
-                    mavenCentral()
-                    mavenLocal()
-                    gradlePluginPortal()
-                """);
+        repoBuilder.regMavenCentral().regMavenLocal().regGradlePluginPortal();
 
         var depBuilder = new BuildScriptGenerator.Deps();
-        depBuilder.append(String.format(
-                """
-                    %s 'org.jetbrains:annotations:24.0.1'
-                    %s 'com.google.code.gson:gson:2.10.1'
-                """,
-                Constants.JAVA_IMPLEMENTATION, Constants.JAVA_IMPLEMENTATION));
+        depBuilder.registerDep("org.jetbrains:annotations:24.0.1");
+        depBuilder.registerDep("com.google.code.gson:gson:2.10.1");
 
         var lgdBuilder = new BuildScriptGenerator.LDGDeps();
-        lgdBuilder.append(
-                """
-                        register("https://github.com/Srdjan-V/LocalGitDependencyTestRepo.git") {
-                            branch = "Gradle-8.0"
-                        }
-                    """);
+        lgdBuilder.registerDep(DependencyRegistry.getGradleBranch("8.0"));
 
         dep.setTestName("complexInjectionPluginTest");
         BuildScriptGenerator.generate(dep, repoBuilder, depBuilder, lgdBuilder);

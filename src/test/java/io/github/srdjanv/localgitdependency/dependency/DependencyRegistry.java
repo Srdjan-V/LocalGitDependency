@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.github.srdjanv.localgitdependency.TestConstants;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.project.JavaSupplier;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,6 +33,8 @@ public class DependencyRegistry {
         final var branchName = getGradleBranch(gradleVersion);
         registry.add(new Entry(branchName, config -> {
             config.getBranch().set(branchName);
+            config.getBuildLauncher().getExecutable().set(JavaSupplier.getJava8());
+            config.getForceGitUpdate().set(true);
         }));
     }
 

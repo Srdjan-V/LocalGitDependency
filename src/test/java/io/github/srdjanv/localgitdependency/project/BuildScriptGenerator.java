@@ -1,6 +1,7 @@
 package io.github.srdjanv.localgitdependency.project;
 
 import io.github.srdjanv.localgitdependency.Constants;
+import io.github.srdjanv.localgitdependency.TestConstants;
 import io.github.srdjanv.localgitdependency.dependency.DependencyWrapper;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
 import java.io.*;
@@ -55,7 +56,7 @@ public class BuildScriptGenerator {
         }
     }
 
-    public abstract static class BaseGenerator {
+    public abstract static class BaseGenerator<T extends BaseGenerator<?>> {
         private final StringBuilder builder = new StringBuilder();
         protected final Properties properties;
 
@@ -67,9 +68,9 @@ public class BuildScriptGenerator {
             this.properties = properties;
         }
 
-        public BaseGenerator append(String s) {
+        public T append(String s) {
             builder.append(s);
-            return this;
+            return (T) this;
         }
 
         abstract String prefix();
@@ -77,10 +78,25 @@ public class BuildScriptGenerator {
         abstract String suffix();
     }
 
-    public static class Repo extends BaseGenerator {
+    public static class Repo extends BaseGenerator<Repo> {
 
         public Repo() {
             super(null);
+        }
+
+        public Repo regMavenCentral() {
+            append(Constants.TAB_INDENT).append("mavenCentral()").append(System.lineSeparator());
+            return this;
+        }
+
+        public Repo regMavenLocal() {
+            append(Constants.TAB_INDENT).append("mavenLocal()").append(System.lineSeparator());
+            return this;
+        }
+
+        public Repo regGradlePluginPortal() {
+            append(Constants.TAB_INDENT).append("gradlePluginPortal()").append(System.lineSeparator());
+            return this;
         }
 
         @Override
@@ -94,9 +110,27 @@ public class BuildScriptGenerator {
         }
     }
 
-    public static class Deps extends BaseGenerator {
+    public static class Deps extends BaseGenerator<Deps> {
         public Deps() {
             super(null);
+        }
+
+        public Deps registerDep(String notation) {
+            append(String.format(
+                    """
+                                %s '%s'
+                            """,
+                    Constants.JAVA_IMPLEMENTATION, notation));
+            return this;
+        }
+
+        public Deps registerDep(String configuration, String notation) {
+            append(String.format(
+                    """
+                                %s '%s'
+                            """,
+                    configuration, notation));
+            return this;
         }
 
         @Override
@@ -110,7 +144,7 @@ public class BuildScriptGenerator {
         }
     }
 
-    public static class LDGDeps extends BaseGenerator {
+    public static class LDGDeps extends BaseGenerator<LDGDeps> {
 
         public LDGDeps() {
             super(new Properties());
@@ -120,6 +154,29 @@ public class BuildScriptGenerator {
 
         public void LGDVersion(String version) {
             properties.put(lgdPluginVersion, version);
+        }
+
+        public LDGDeps registerDep(String branch) {
+            append(String.format(
+                    """
+                                register("https://github.com/%s/%s.git") {
+                                    branch = "%s"
+                                }
+                            """,
+                    TestConstants.GithubOwner, TestConstants.GithubTestProjectName, branch));
+            return this;
+        }
+
+        public LDGDeps registerDep(String branch, String name) {
+            append(String.format(
+                    """
+                               register("https://github.com/%s/%s.git") {
+                                   branch = "%s"
+                                   name = "%s"
+                               }
+                            """,
+                    TestConstants.GithubOwner, TestConstants.GithubTestProjectName, branch, name));
+            return this;
         }
 
         @Override

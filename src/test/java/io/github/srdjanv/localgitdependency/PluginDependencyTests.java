@@ -75,41 +75,32 @@ public class PluginDependencyTests {
     }
 
     private Stream<DynamicTest> runSubDepTest(Dependency.Type type) {
-        // only gradle 8.0 is working with lgd sub deps tests
-        var wrapper = DependencyRegistry.getTestDependency(
-                id -> DependencyRegistry.getGradleBranch("8.0").equals(id));
+        var wrappers = DependencyRegistry.getAllTestDependencies();
 
         final var subDepName = "SubDep";
-        wrapper.setTestName(type.name());
-        BuildScriptGenerator.generate(
-                wrapper,
-                new BuildScriptGenerator.LDGDeps()
-                        .append(String.format(
-                                """
-                           register("https://github.com/Srdjan-V/LocalGitDependencyTestRepo.git") {
-                               branch = "%s"
-                               name = "%s"
-                           }
-                        """,
-                                wrapper.getBranch(), subDepName)));
+        wrappers.forEach(wrapper -> {
+            wrapper.setTestName(type.name());
+            BuildScriptGenerator.generate(
+                    wrapper, new BuildScriptGenerator.LDGDeps().registerDep(wrapper.getBranch(), subDepName));
 
-        wrapper.applyPluginConfiguration(config -> {
-            config.getAutomaticCleanup().set(false);
+            wrapper.applyPluginConfiguration(config -> {
+                config.getAutomaticCleanup().set(false);
+            });
+
+            wrapper.registerDepToExtension(config -> {
+                config.getName().set(wrapper.getTestName());
+                config.getKeepGitUpdated().set(false);
+            });
+
+            wrapper.registerDepToDependencies(lgdHelper -> switch (type) {
+                case MavenLocal -> lgdHelper.mavenLocal(wrapper.getTestName() + "." + subDepName);
+                case JarFlatDir -> lgdHelper.flatDir(wrapper.getTestName() + "." + subDepName);
+                case Jar -> lgdHelper.jar(wrapper.getTestName() + "." + subDepName);
+                default -> throw new IllegalStateException("Unexpected value: " + type);
+            });
         });
 
-        wrapper.registerDepToExtension(config -> {
-            config.getName().set(wrapper.getTestName());
-            config.getKeepGitUpdated().set(false);
-        });
-
-        wrapper.registerDepToDependencies(lgdHelper -> switch (type) {
-            case MavenLocal -> lgdHelper.mavenLocal(wrapper.getTestName() + "." + subDepName);
-            case JarFlatDir -> lgdHelper.flatDir(wrapper.getTestName() + "." + subDepName);
-            case Jar -> lgdHelper.jar(wrapper.getTestName() + "." + subDepName);
-            default -> throw new IllegalStateException("Unexpected value: " + type);
-        });
-
-        return Stream.of(wrapper)
+        return wrappers.stream()
                 .map(testWrapper -> DynamicTest.dynamicTest(testWrapper.getTestName(), () -> {
                     testWrapper.getProjectManager().startPlugin();
                     printData(testWrapper.getProjectManager().getProject());
