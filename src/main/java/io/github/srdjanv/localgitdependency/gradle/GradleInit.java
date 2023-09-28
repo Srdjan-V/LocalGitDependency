@@ -31,6 +31,7 @@ final class GradleInit {
     }
 
     private final StringBuilder stringBuilder;
+    private int lines;
 
     public static String crateInitProject(List<Consumer<GradleInit>> listGradle) {
         return new GradleInit(listGradle).render();
@@ -48,6 +49,7 @@ final class GradleInit {
     private void appendLine(int indent, String string) {
         for (int i = 0; i < indent; i++) stringBuilder.append(Constants.TAB_INDENT);
         stringBuilder.append(string).append(System.lineSeparator());
+        lines++;
     }
 
     public void configureJavaJars(Consumer<List<JavaJars>> configureJavaJars) {
@@ -147,6 +149,7 @@ final class GradleInit {
     }
 
     public String render() {
+        if (lines == 0) return "";
         appendLine(0, "}");
         var ret = stringBuilder.toString();
         stringBuilder.setLength(0);
