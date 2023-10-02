@@ -12,6 +12,7 @@ import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,12 +25,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+
 import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.tooling.*;
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import org.gradle.util.GradleVersion;
+import org.jetbrains.annotations.NotNull;
 
 final class GradleManager extends ManagerBase implements IGradleManager {
     private final Map<String, DefaultGradleConnector> gradleConnectorCache = new HashMap<>();
@@ -261,10 +264,10 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             if (dependency.getGradleInfo().getLaunchers().getExecutable() != null) {
                 build.setJavaHome(dependency.getGradleInfo().getLaunchers().getExecutable());
             }
-            // TODO: 15/07/2023 fix formatting
+
             if (baseLauncher.getForwardOutput().get()) {
-                build.setStandardOutput(System.out);
-                build.setStandardError(System.err);
+                build.setStandardOutput(new IndentingOutputStream(System.out));
+                build.setStandardError(new IndentingOutputStream(System.err));
             }
             build.run(function.apply(dependency));
         }
@@ -295,10 +298,10 @@ final class GradleManager extends ManagerBase implements IGradleManager {
                 customModelBuilder.setJavaHome(
                         dependency.getGradleInfo().getLaunchers().getExecutable());
             }
-            // TODO: 15/07/2023 fix formatting
+
             if (baseLauncher.getForwardOutput().get()) {
-                customModelBuilder.setStandardOutput(System.out);
-                customModelBuilder.setStandardError(System.err);
+                customModelBuilder.setStandardOutput(new IndentingOutputStream(System.out));
+                customModelBuilder.setStandardError(new IndentingOutputStream(System.err));
             }
 
             customModelBuilder.get(GradleManager.mainProbeTasksResultHandler.apply(dependency));
@@ -344,12 +347,12 @@ final class GradleManager extends ManagerBase implements IGradleManager {
         builder.add(gradleInit -> gradleInit.configureJavaJars(jars -> {
             if (dependency.getGradleInfo().isTryGeneratingSourceJar()
                     && Boolean.TRUE.equals(
-                            dependency.getPersistentInfo().getProbeData().isCanProjectUseWithSourcesJar()))
+                    dependency.getPersistentInfo().getProbeData().isCanProjectUseWithSourcesJar()))
                 jars.add(GradleInit.JavaJars.SOURCES);
 
             if (dependency.getGradleInfo().isTryGeneratingJavaDocJar()
                     && Boolean.TRUE.equals(
-                            dependency.getPersistentInfo().getProbeData().isCanProjectUseWithJavadocJar()))
+                    dependency.getPersistentInfo().getProbeData().isCanProjectUseWithJavadocJar()))
                 jars.add(GradleInit.JavaJars.JAVADOC);
         }));
     }
@@ -448,7 +451,7 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
     private void writeToFile(File file, String text) {
         try (BufferedOutputStream bufferedOutputStream =
-                new BufferedOutputStream(Files.newOutputStream(file.toPath()))) {
+                     new BufferedOutputStream(Files.newOutputStream(file.toPath()))) {
             bufferedOutputStream.write(text.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -487,20 +490,20 @@ final class GradleManager extends ManagerBase implements IGradleManager {
 
     public static final Function<Dependency, ResultHandler<LocalGitDependencyJsonInfoModel>>
             mainProbeTasksResultHandler = dependency -> {
-                return new ResultHandler<>() {
-                    @Override
-                    public void onComplete(LocalGitDependencyJsonInfoModel result) {
-                        dependency.getPersistentInfo().setProbeData(result.getJson());
-                        dependency.getPersistentInfo().setProbeTasksStatus(true);
-                    }
+        return new ResultHandler<>() {
+            @Override
+            public void onComplete(LocalGitDependencyJsonInfoModel result) {
+                dependency.getPersistentInfo().setProbeData(result.getJson());
+                dependency.getPersistentInfo().setProbeTasksStatus(true);
+            }
 
-                    @Override
-                    public void onFailure(GradleConnectionException failure) {
-                        dependency.getPersistentInfo().setProbeTasksStatus(false);
-                        throw failure;
-                    }
-                };
-            };
+            @Override
+            public void onFailure(GradleConnectionException failure) {
+                dependency.getPersistentInfo().setProbeTasksStatus(false);
+                throw failure;
+            }
+        };
+    };
 
     private static final Function<Dependency, ResultHandler<Void>> buildStatusResultHandler = dependency -> {
         return new ResultHandler<>() {
@@ -516,4 +519,46 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             }
         };
     };
+
+    static class IndentingOutputStream extends OutputStream {
+        private final StringBuilder builder = new StringBuilder();
+        private final Object out;
+        private boolean previousWasCarriageReturn = false;
+
+        public IndentingOutputStream(@NotNull List<String> list) {
+            this.out = list;
+        }
+
+        public IndentingOutputStream(@NotNull PrintStream out) {
+            this.out = out;
+        }
+
+        @Override
+        public void write(int c) {
+            if (c == '\n') {
+                if (previousWasCarriageReturn) {
+                    previousWasCarriageReturn = false;
+                    return; // Skip if previous was a carriage return
+                }
+                processCurrentString();
+            } else if (c == '\r') {
+                previousWasCarriageReturn = true;
+                processCurrentString();
+            } else {
+                previousWasCarriageReturn = false;
+                builder.append((char) c);
+            }
+        }
+
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        private void processCurrentString() {
+            String s = builder.length() > 0 ? builder.insert(0, Constants.TAB_INDENT).toString() : "";
+            builder.setLength(0);
+            if (out instanceof PrintStream printStream) {
+                printStream.println(s);
+            } else if (out instanceof List list) {
+                list.add(s);
+            } else throw new IllegalStateException();
+        }
+    }
 }
