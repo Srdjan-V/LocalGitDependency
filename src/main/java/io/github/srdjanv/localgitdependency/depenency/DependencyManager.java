@@ -3,6 +3,7 @@ package io.github.srdjanv.localgitdependency.depenency;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultDependencyConfig;
 import io.github.srdjanv.localgitdependency.logger.ManagerLogger;
+import io.github.srdjanv.localgitdependency.logger.PluginLogger;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.subdeps.SubDependencyData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
@@ -29,7 +30,7 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
 
     @Override
     public DependencyConfig registerDependency(@NotNull final String dependencyURL) {
-        Objects.requireNonNull(dependencyURL, "dependencyURL can`t be null");
+        Objects.requireNonNull(dependencyURL, "dependencyURL");
         var dep = getProject().getObjects().newInstance(DefaultDependencyConfig.class, dependencyURL, this);
         unResolvedDependencies.add(dep);
         return dep;
@@ -93,7 +94,14 @@ final class DependencyManager extends ManagerBase implements IDependencyManager 
 
     @Override
     public void tagDep(String notation, String type) {
-        tagDep(notation, Dependency.Type.valueOf(type));
+        Dependency.Type enumType;
+        try {
+            enumType = Dependency.Type.valueOf(type);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            PluginLogger.warn("Unable to tag dep: " + notation, e);
+            return;
+        }
+        tagDep(notation, enumType);
     }
 
     @Override

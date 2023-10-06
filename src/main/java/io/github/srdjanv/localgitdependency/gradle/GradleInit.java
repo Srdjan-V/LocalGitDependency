@@ -137,14 +137,14 @@ final class GradleInit {
         }
 
         private void buildSubDeps(GradleInit gradleInit) {
-            for (Dependency.Type tag : tags) {
-                gradleInit.appendLine(3, String.format("getDependencyManager().tagDep('%s', '%s')", name, tag.name()));
+            if (!tags.isEmpty())
                 gradleInit.appendLine(
                         3,
                         String.format(
                                 "getDependencyManager().registerResolutionCallback('%s', config -> config.getBuildLauncher().getBuild().getExplicit().set(true))",
                                 name));
-            }
+            for (Dependency.Type tag : tags)
+                gradleInit.appendLine(3, String.format("getDependencyManager().tagDep('%s', '%s')", name, tag.name()));
         }
     }
 

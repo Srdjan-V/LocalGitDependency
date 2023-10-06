@@ -17,6 +17,7 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
 
     @Override
     protected void managerConstructor() {
+        // TODO: 28/09/2023 make classes not abstract to allow for older gradle compat
         pluginConfig = getProject().getObjects().newInstance(DefaultPluginConfig.class, this);
         defaultableConfig = getProject().getObjects().newInstance(DefaultDefaultableConfig.class, this);
     }

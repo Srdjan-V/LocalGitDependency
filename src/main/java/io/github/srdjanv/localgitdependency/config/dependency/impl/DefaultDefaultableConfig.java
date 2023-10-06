@@ -29,5 +29,6 @@ public abstract class DefaultDefaultableConfig extends GroovyObjectSupport
     @Override
     public void finalizeProps() {
         ClassUtil.finalizeProperties(this, DefaultableConfig.class);
+        ((DefaultDefaultableLauncherConfig) getBuildLauncher().get()).finalizeProps();
     }
 }
