@@ -2,10 +2,13 @@ package io.github.srdjanv.localgitdependency.config;
 
 import io.github.srdjanv.localgitdependency.config.dependency.defaultable.DefaultableConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultDefaultableConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultSourceSetMapper;
 import io.github.srdjanv.localgitdependency.config.plugin.PluginConfig;
 import io.github.srdjanv.localgitdependency.config.plugin.impl.DefaultPluginConfig;
+import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 
 final class ConfigManager extends ManagerBase implements IConfigManager {
     private PluginConfig pluginConfig;
@@ -36,5 +39,9 @@ final class ConfigManager extends ManagerBase implements IConfigManager {
     public void finalizeConfigs() {
         ((DefaultPluginConfig) pluginConfig).finalizeProps();
         ((DefaultDefaultableConfig) defaultableConfig).finalizeProps();
+
+        var lgd = getLGDExtensionByType(LGDIDE.class);
+        ClassUtil.finalizeProperties(lgd, LGDIDE.class);
+        lgd.getMappers().forEach(mapper -> ((DefaultSourceSetMapper) mapper).finalizeProps());
     }
 }

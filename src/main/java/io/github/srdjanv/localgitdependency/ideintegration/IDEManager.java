@@ -2,22 +2,24 @@ package io.github.srdjanv.localgitdependency.ideintegration;
 
 import static io.github.srdjanv.localgitdependency.Constants.TASKS_GROUP_INTERNAL;
 
+import com.github.bsideup.jabel.Desugar;
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.ideintegration.adapters.Adapter;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.SourceSetData;
 import io.github.srdjanv.localgitdependency.persistence.data.probe.sourcesetdata.directoryset.DirectorySetData;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.gradle.api.UnknownTaskException;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.util.GradleVersion;
+import org.jetbrains.annotations.Nullable;
 
 public class IDEManager extends ManagerBase implements IIDEManager {
 
@@ -116,15 +118,14 @@ public class IDEManager extends ManagerBase implements IIDEManager {
                 }
             }
 
-            var mapper = dependency.getSourceSetMapper();
-            if (mapper == null) continue; // TODO: 12/09/2023 implement default mapper
             // link source sets to the main project using mappers
-            for (SourceSetMapper.Mapping mapping : mapper.getMappings()) {
+            for (SourceSetMapper.Mapping mapping :
+                    new SourceSetMapper(dependency.getSourceSetMappings()).getMappings()) {
                 final Set<String> dependentSourceSets = new HashSet<>();
-                for (String dependentSourceSetName : mapping.getDependents().get()) {
+                for (String dependentSourceSetName : mapping.dependents()) {
                     if (sourceSetData.getName().equals(dependentSourceSetName)) {
                         dependentSourceSets.add(dependentSourceSetName);
-                        if (mapping.getRecursive().get()) {
+                        if (mapping.recursive()) {
                             dependentSourceSets.addAll(sourceSetData.getDependentSourceSets());
                         }
                     }
@@ -133,13 +134,12 @@ public class IDEManager extends ManagerBase implements IIDEManager {
                 for (String dependentSourceSetName : dependentSourceSets) {
                     final SourceSet projectSet;
                     if (getProject() == rootProject) {
-                        projectSet = mapping.getTargetSourceSet().get();
+                        projectSet = mapping.targetSourceSet();
                     } else {
                         var subProjectSourceSetContainer =
                                 getProject().getExtensions().getByType(SourceSetContainer.class);
-                        projectSet = subProjectSourceSetContainer.getByName(mapping.getTargetSourceSet()
-                                .get()
-                                .getName()); // TODO: 25/08/2023 probably not needed, test
+                        projectSet = subProjectSourceSetContainer.getByName(
+                                mapping.targetSourceSet().getName()); // TODO: 25/08/2023 probably not needed, test
                     }
 
                     final var sourceData = dependency.getPersistentInfo().getProbeData().getSourceSetsData().stream()
@@ -165,5 +165,36 @@ public class IDEManager extends ManagerBase implements IIDEManager {
     private String getSourceSetName(Dependency dependency, SourceSetData sourceSetData) {
         return Constants.PLUGIN_NAME + "." + getProject().getName() + "." + dependency.getName() + "."
                 + sourceSetData.getName();
+    }
+
+    private class SourceSetMapper {
+        private final List<Mapping> mappings;
+
+        public SourceSetMapper(
+                @Nullable List<io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapper.Mapping> mappings) {
+            if (mappings == null) {
+                var lgdide = getConfigManager().getLGDExtensionByType(LGDIDE.class);
+                this.mappings = Collections.singletonList(new Mapping(
+                        "Default_Mapping",
+                        lgdide.getDefaultTargetSourceSet().get(),
+                        lgdide.getDefaultDepMappings().get(),
+                        lgdide.getRecursive().get()));
+            } else {
+                this.mappings = mappings.stream()
+                        .map(mapping -> new Mapping(
+                                mapping.getName(),
+                                mapping.getTargetSourceSet().get(),
+                                mapping.getDependents().get(),
+                                mapping.getRecursive().get()))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        public List<Mapping> getMappings() {
+            return mappings;
+        }
+
+        @Desugar
+        private record Mapping(String name, SourceSet targetSourceSet, List<String> dependents, boolean recursive) {}
     }
 }

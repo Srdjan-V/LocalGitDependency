@@ -5,6 +5,7 @@ import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.LauncherConfig;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
+import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.ClassUtil;
@@ -27,10 +28,10 @@ public abstract class DefaultDependencyConfig extends GroovyObjectSupport implem
         final var defaultable = managers.getConfigManager().getDefaultableConfig();
         getDefaultTargetType().convention(managers.getProject().provider(() -> GitInfo.TargetType.BRANCH));
         getKeepGitUpdated().convention(managers.getProject().provider(() -> {
-            var mapper = dependencyCallBack.get().getSourceSetMapper();
-            if (mapper != null && mapper.getMappings().isEmpty()) {
-                return false;
-            }
+            var mapper = managers.getLGDExtensionByType(LGDIDE.class)
+                    .getMappers()
+                    .findByName(dependencyCallBack.get().getName());
+            if (mapper != null && mapper.getMappings().isEmpty()) return false;
             return defaultable.getKeepGitUpdated().get();
         }));
         getForceGitUpdate()

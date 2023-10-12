@@ -7,6 +7,7 @@ import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.project.Managers;
+import io.github.srdjanv.localgitdependency.util.ClassUtil;
 import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
@@ -53,7 +54,8 @@ public abstract class DefaultSourceSetMapper extends GroovyObjectSupport impleme
 
     @Override
     public void finalizeProps() {
-        recursive.finalizeValue(); // TODO: 28/08/2023
+        ClassUtil.finalizeProperties(this, SourceSetMapper.class);
+        mappings.forEach(mapping -> ((DefaultMapping) mapping).finalizeProps());
     }
 
     @Override
@@ -100,7 +102,7 @@ public abstract class DefaultSourceSetMapper extends GroovyObjectSupport impleme
         map(container.maybeCreate(name), valueArr);
     }
 
-    public static class DefaultMapping extends GroovyObjectSupport implements Mapping {
+    public static class DefaultMapping extends GroovyObjectSupport implements Mapping, ConfigFinalizer {
         private final Property<SourceSet> targetSourceSet;
         private final ListProperty<String> dependents;
         private final Property<Boolean> recursive;
@@ -141,6 +143,11 @@ public abstract class DefaultSourceSetMapper extends GroovyObjectSupport impleme
         @Override
         public Property<Boolean> getRecursive() {
             return recursive;
+        }
+
+        @Override
+        public void finalizeProps() {
+            ClassUtil.finalizeProperties(this, Mapping.class);
         }
     }
 }

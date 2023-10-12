@@ -4,7 +4,6 @@ import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.cleanup.ICleanupManager;
 import io.github.srdjanv.localgitdependency.config.IConfigManager;
 import io.github.srdjanv.localgitdependency.depenency.IDependencyManager;
-import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.git.IGitManager;
 import io.github.srdjanv.localgitdependency.gradle.IGradleManager;
 import io.github.srdjanv.localgitdependency.ideintegration.IIDEManager;
@@ -15,6 +14,7 @@ import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import org.gradle.util.GradleVersion;
 
 final class ProjectManager extends ManagerBase implements IProjectManager {
     private static final List<ManagerRunner<?>> PROJECT_RUNNERS;
@@ -36,6 +36,10 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
             managerRunner.setManagerSupplier(Managers::getConfigManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("finalizeConfigs"));
             managerRunner.setRunLogType(RunLogType.SILENT);
+            managerRunner.addSkipCheck(managers ->
+                    GradleVersion.version(managers.getProject().getGradle().getGradleVersion())
+                                    .compareTo(GradleVersion.version("5.0"))
+                            < 0);
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getDependencyManager);
@@ -82,9 +86,6 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("handelSourceSets"));
             managerRunner.setRunLogType(RunLogType.MINIMAL);
             managerRunner.addSkipCheck(emptyDepsSkip);
-            managerRunner.addSkipCheck(managers -> {
-                return managers.getLGDExtensionByType(LGDIDE.class).getMappers().isEmpty();
-            });
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<ITasksManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getTasksManager);

@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Objects;
 import java.util.function.BiPredicate;
+import org.gradle.internal.impldep.bsh.commands.dir;
 
 final class CleanupManager extends ManagerBase implements ICleanupManager {
 
@@ -80,6 +82,8 @@ final class CleanupManager extends ManagerBase implements ICleanupManager {
 
             @Override
             public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                if (exc != null) throw exc;
+                Objects.requireNonNull(dir);
                 Files.delete(dir);
                 return FileVisitResult.CONTINUE;
             }

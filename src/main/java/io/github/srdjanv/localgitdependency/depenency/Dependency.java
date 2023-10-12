@@ -1,23 +1,24 @@
 package io.github.srdjanv.localgitdependency.depenency;
 
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
+import io.github.srdjanv.localgitdependency.config.dependency.SourceSetMapper;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultDependencyConfig;
-import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultSourceSetMapper;
 import io.github.srdjanv.localgitdependency.extentions.LGDIDE;
 import io.github.srdjanv.localgitdependency.git.GitInfo;
 import io.github.srdjanv.localgitdependency.gradle.GradleInfo;
 import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public class Dependency {
     private final String name;
-    private final DefaultSourceSetMapper mappers;
+    private final List<SourceSetMapper.Mapping> mappings;
     private final boolean ideSupport;
     private final boolean generateGradleTasks;
     private final Set<Type> buildTags;
@@ -34,10 +35,15 @@ public class Dependency {
         this.name = dependencyConfig.getName().get();
         if (name.contains(".")) throw new IllegalArgumentException("Illegal character '.' in dependency name");
         var lgdIde = managers.getLGDExtensionByType(LGDIDE.class);
-        this.mappers = (DefaultSourceSetMapper) lgdIde.getMappers().findByName(name);
-        this.ideSupport = mappers != null
-                ? mappers.getRecursive().get()
-                : lgdIde.getEnableIdeSupport().get();
+        var mapper = lgdIde.getMappers().findByName(name);
+        if (mapper != null) {
+            this.mappings =
+                    Collections.unmodifiableList(mapper.getMappings().stream().collect(Collectors.toList()));
+            this.ideSupport = mapper.getRecursive().get();
+        } else {
+            this.mappings = Collections.emptyList();
+            this.ideSupport = lgdIde.getEnableIdeSupport().get();
+        }
         this.generateGradleTasks = dependencyConfig.getGenerateGradleTasks().get();
         this.buildTags =
                 Collections.unmodifiableSet(dependencyConfig.getDependencyTags().get());
@@ -51,8 +57,9 @@ public class Dependency {
         return name;
     }
 
-    @Nullable public DefaultSourceSetMapper getSourceSetMapper() {
-        return mappers;
+    @Unmodifiable
+    public List<SourceSetMapper.Mapping> getSourceSetMappings() {
+        return mappings;
     }
 
     public boolean isIdeSupportEnabled() {
