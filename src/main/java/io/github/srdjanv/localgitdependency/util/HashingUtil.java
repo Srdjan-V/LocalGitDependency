@@ -10,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
-public class HashingUtil {
+public final class HashingUtil {
     private static final MessageDigest sha1Digest;
 
     static {

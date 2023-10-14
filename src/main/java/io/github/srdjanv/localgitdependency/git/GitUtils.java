@@ -50,12 +50,8 @@ public final class GitUtils {
                     case BRANCH -> repo.getGitInfo().getTargetLocal();
                     case TAG, COMMIT -> R_HEADS + repo.getRemoteBranchName();
                 };
-        if (repo.getGitInfo().isForceGitUpdate()) {
-            repo.getGit()
-                    .reset()
-                    .setMode(ResetCommand.ResetType.HARD)
-                    .addPath(DEFAULT_REMOTE_NAME + "/" + repo.getRemoteBranchName())
-                    .call();
+        if (repo.getGitInfo().isForceGitUpdate() && !repo.getLocalChanges().isEmpty()) {
+            repo.getGit().reset().setMode(ResetCommand.ResetType.HARD).call();
         }
         if (repo.getGit().getRepository().getRefDatabase().firstExactRef(localTargetBranch) != null) {
             repo.getGit().checkout().setName(repo.getGitInfo().getTarget()).call();
