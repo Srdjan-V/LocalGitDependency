@@ -12,6 +12,7 @@ import io.github.srdjanv.localgitdependency.persistence.PersistentInfo;
 import io.github.srdjanv.localgitdependency.project.ManagerBase;
 import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
+import io.github.srdjanv.localgitdependency.util.VersionUtil;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -324,7 +325,8 @@ final class GradleManager extends ManagerBase implements IGradleManager {
         }
 
         var lgdPluginVersion = dependency.getPersistentInfo().getProbeData().getPluginVersion();
-        if (lgdPluginVersion != null) { // TODO: 05/09/2023 implement version check
+        if (Objects.nonNull(lgdPluginVersion)
+                && VersionUtil.check("0.6.0", lgdPluginVersion, check -> check.equal() && check.greater())) {
             tagSubDeps(dependency, initScriptBuilder);
         }
 
