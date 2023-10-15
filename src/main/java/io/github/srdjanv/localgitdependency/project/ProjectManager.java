@@ -14,7 +14,6 @@ import io.github.srdjanv.localgitdependency.tasks.ITasksManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import org.gradle.util.GradleVersion;
 
 final class ProjectManager extends ManagerBase implements IProjectManager {
     private static final List<ManagerRunner<?>> PROJECT_RUNNERS;
@@ -36,10 +35,6 @@ final class ProjectManager extends ManagerBase implements IProjectManager {
             managerRunner.setManagerSupplier(Managers::getConfigManager);
             managerRunner.setTask(clazz -> clazz.getDeclaredMethod("finalizeConfigs"));
             managerRunner.setRunLogType(RunLogType.SILENT);
-            managerRunner.addSkipCheck(managers ->
-                    GradleVersion.version(managers.getProject().getGradle().getGradleVersion())
-                                    .compareTo(GradleVersion.version("5.0"))
-                            < 0);
         }));
         PROJECT_RUNNERS.add(ManagerRunner.<IDependencyManager>create(managerRunner -> {
             managerRunner.setManagerSupplier(Managers::getDependencyManager);

@@ -75,6 +75,8 @@ public final class VersionUtil {
             if (mather.matches()) {
                 String[] split = mather.group(1).split("\\.");
                 dev = "dev".equals(mather.group(2));
+                if (split.length != 3)
+                    throw new IllegalArgumentException("Invalid version string length: " + split.length);
                 for (int i = 0; i < split.length; i++) this.version[i] = Integer.parseInt(split[i]);
             } else throw new IllegalArgumentException("Invalid version string: " + version);
         }

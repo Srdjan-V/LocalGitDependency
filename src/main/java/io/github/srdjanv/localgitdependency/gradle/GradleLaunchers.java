@@ -1,6 +1,5 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
-import io.github.srdjanv.localgitdependency.config.ConfigFinalizer;
 import io.github.srdjanv.localgitdependency.config.dependency.DependencyConfig;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultLaunchers;
 import io.github.srdjanv.localgitdependency.depenency.Dependency;
@@ -9,7 +8,7 @@ import java.io.File;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class GradleLaunchers implements ConfigFinalizer {
+public final class GradleLaunchers {
     public static GradleLaunchers build(Dependency dependency, DependencyConfig dependencyConfig) {
         return new GradleLaunchers(dependency, dependencyConfig);
     }
@@ -31,9 +30,6 @@ public final class GradleLaunchers implements ConfigFinalizer {
         probe = (DefaultLaunchers.Probe) launcherConfig.getProbe();
         build = (DefaultLaunchers.Build) launcherConfig.getBuild();
     }
-
-    @Override
-    public void finalizeProps() {}
 
     @Nullable public File getExecutable() {
         return executable;
