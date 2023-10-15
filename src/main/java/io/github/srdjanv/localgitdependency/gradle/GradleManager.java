@@ -1,5 +1,8 @@
 package io.github.srdjanv.localgitdependency.gradle;
 
+import static io.github.srdjanv.localgitdependency.util.HashingUtil.generateShaForFile;
+import static io.github.srdjanv.localgitdependency.util.HashingUtil.generateShaForString;
+
 import io.github.srdjanv.localgitdependency.Constants;
 import io.github.srdjanv.localgitdependency.config.dependency.Launchers;
 import io.github.srdjanv.localgitdependency.config.dependency.impl.DefaultLaunchers;
@@ -14,8 +17,6 @@ import io.github.srdjanv.localgitdependency.project.Managers;
 import io.github.srdjanv.localgitdependency.util.FileUtil;
 import io.github.srdjanv.localgitdependency.util.VersionUtil;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -25,7 +26,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.eclipse.jgit.util.sha1.SHA1;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.tooling.*;
@@ -392,67 +392,45 @@ final class GradleManager extends ManagerBase implements IGradleManager {
             Supplier<String> scriptSupplier,
             Supplier<String> persistentSHASupplier,
             Consumer<String> persistentSHASetter) {
-        if (file.exists()) {
-            if (!file.isFile()) {
-                throw new RuntimeException(
-                        String.format("This path: '%s' leads to a folder, it must be a file", file.getAbsolutePath()));
-            }
-
-            if (keepUpdated) {
-                final String fileInitScriptSHA = generateShaForFile(file);
-                final String persistentInitScriptSHA = persistentSHASupplier.get();
-
-                if (!fileInitScriptSHA.equals(persistentInitScriptSHA)) {
-                    ManagerLogger.info("File {}, contains local changes, updating file", file.getName());
-                    final String initScript = scriptSupplier.get();
-                    writeToFile(file, initScript);
-                    persistentSHASetter.accept(generateShaForString(initScript));
-                    return;
-                }
-
-                final String initScript = scriptSupplier.get();
-                final String targetInitScriptSHA = generateShaForString(initScript);
-
-                if (!fileInitScriptSHA.equals(targetInitScriptSHA)) {
-                    ManagerLogger.info("Updating file {}", file.getName());
-                    writeToFile(file, initScript);
-                    persistentSHASetter.accept(targetInitScriptSHA);
-                }
-            }
-        } else {
+        if (!file.exists()) {
             ManagerLogger.info("Creating {}", file.getName());
             final String initScript = scriptSupplier.get();
             persistentSHASetter.accept(generateShaForString(initScript));
             writeToFile(file, initScript);
+            return;
         }
-    }
+        if (file.isDirectory()) {
+            throw new UncheckedIOException(new IOException(
+                    String.format("This path: '%s' leads to a folder, it must be a file", file.getAbsolutePath())));
+        }
+        if (!keepUpdated) return;
 
-    private String generateShaForFile(File file) {
-        SHA1 sha1 = SHA1.newInstance();
-        byte[] buffer = new byte[4096];
-        int read;
-
-        try (FileInputStream inputStream = new FileInputStream(file)) {
-            while ((read = inputStream.read(buffer)) > 0) {
-                sha1.update(buffer, 0, read);
-            }
+        final String fileInitScriptSHA;
+        try {
+            fileInitScriptSHA = generateShaForFile(file);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format("Error while checking %s file integrity", file.getName()), e);
         }
 
-        return sha1.toObjectId().getName();
-    }
+        final String initScript = scriptSupplier.get();
+        if (!fileInitScriptSHA.equals(persistentSHASupplier.get())) {
+            ManagerLogger.info("File {}, contains local changes, updating file", file.getName());
+            writeToFile(file, initScript);
+            persistentSHASetter.accept(generateShaForString(initScript));
+            return;
+        }
 
-    private String generateShaForString(String script) {
-        SHA1 sha1 = SHA1.newInstance();
-        sha1.update(script.getBytes(StandardCharsets.UTF_8));
-        return sha1.toObjectId().getName();
+        final String targetInitScriptSHA = generateShaForString(initScript);
+        if (!fileInitScriptSHA.equals(targetInitScriptSHA)) {
+            ManagerLogger.info("Updating file {}", file.getName());
+            writeToFile(file, initScript);
+            persistentSHASetter.accept(targetInitScriptSHA);
+        }
     }
 
     private void writeToFile(File file, String text) {
-        try (BufferedOutputStream bufferedOutputStream =
-                new BufferedOutputStream(Files.newOutputStream(file.toPath()))) {
-            bufferedOutputStream.write(text.getBytes(StandardCharsets.UTF_8));
+        try {
+            FileUtil.writeToFile(file, text);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

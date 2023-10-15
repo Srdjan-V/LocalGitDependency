@@ -1,8 +1,11 @@
 package io.github.srdjanv.localgitdependency.util;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Project;
@@ -42,6 +45,13 @@ public final class FileUtil {
             throw new InvalidUserDataException(String.format(
                     "Invalid data for method: %s, acceptable types are JavaLauncher, RegularFile, File, Path, String and Property, Provider of anny of these types",
                     methodName));
+        }
+    }
+
+    public static void writeToFile(File file, String text) throws IOException {
+        try (BufferedOutputStream bufferedOutputStream =
+                new BufferedOutputStream(Files.newOutputStream(file.toPath()))) {
+            bufferedOutputStream.write(text.getBytes(StandardCharsets.UTF_8));
         }
     }
 
